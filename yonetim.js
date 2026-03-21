@@ -280,32 +280,79 @@ async function loadStats() {
 // ─── Duyurular ───────────────────────────────────────
 function loadAnnouncements() {
   db.collection('announcements').where('marketId', '==', marketId).orderBy('order', 'asc')
-    .onSnapshot(function(snap) { renderAnnouncements(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); })); });
+    .onSnapshot(function(snap) {
+      renderAnnouncements(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); }));
+    }, function(error) {
+      console.error('Duyuru yükleme hatası:', error);
+      // Index eksikse kullanıcıya bilgi ver
+      if (error.code === 'failed-precondition') {
+        var c = document.getElementById('ann-list');
+        if (c) c.innerHTML = '<p class="empty-msg" style="color:#DC2626">⚠️ Firestore index gerekli. Tarayıcı konsolunu (F12) açıp hata linkine tıklayarak index oluşturun.</p>';
+      }
+    });
 }
 function renderAnnouncements(list) {
   var c = document.getElementById('ann-list'); c.innerHTML = '';
   if (!list.length) { c.innerHTML = '<p class="empty-msg">Henüz duyuru yok.</p>'; return; }
   list.forEach(function(a) {
-    c.innerHTML += '<div class="ann-card ' + (a.active ? 'ann-active' : 'ann-inactive') + '"><div class="ann-info"><div class="ann-title-text">' + escapeHtml(a.title) + '</div><div class="ann-content-text">' + escapeHtml(a.content || '') + '</div></div><div class="ann-actions"><button class="btn-sm ' + (a.active ? 'btn-warn' : 'btn-success') + '" onclick="toggleAnn(\'' + a.id + '\',' + !a.active + ')">' + (a.active ? 'Pasif' : 'Aktif') + '</button><button class="btn-sm btn-edit" onclick="editAnn(\'' + a.id + '\')">Düzenle</button><button class="btn-sm btn-del" onclick="deleteAnn(\'' + a.id + '\')">Sil</button></div></div>';
+    var card = document.createElement('div');
+    card.className = 'ann-card ' + (a.active ? 'ann-active' : 'ann-inactive');
+
+    // Thumbnail varsa göster
+    var thumbHtml = '';
+    if (a.imageUrl) {
+      thumbHtml = '<div class="ann-thumb"><img src="' + a.imageUrl + '" alt="" onerror="this.parentNode.style.display=\'none\'"></div>';
+    }
+
+    card.innerHTML = thumbHtml +
+      '<div class="ann-info"><div class="ann-title-text">' + escapeHtml(a.title) + '</div><div class="ann-content-text">' + escapeHtml(a.content || '') + '</div>' +
+      '<div class="ann-status-row"><span class="ann-order-badge">Sıra: ' + (a.order || 1) + '</span>' +
+      (a.imageUrl ? '<span class="ann-has-img">🖼 Görsel var</span>' : '<span class="ann-no-img">Görsel yok</span>') +
+      '</div></div>' +
+      '<div class="ann-actions">' +
+      '<button class="btn-sm ' + (a.active ? 'btn-warn' : 'btn-success') + '" onclick="toggleAnn(\'' + a.id + '\',' + !a.active + ')">' + (a.active ? 'Pasif' : 'Aktif') + '</button>' +
+      '<button class="btn-sm btn-edit" onclick="editAnn(\'' + a.id + '\')">Düzenle</button>' +
+      '<button class="btn-sm btn-del" onclick="deleteAnn(\'' + a.id + '\')">Sil</button>' +
+      '</div>';
+    c.appendChild(card);
   });
 }
 // ─── Upload Handling ─────────────────────────────────
-var uploadedImageData = null; // base64 data URL
+var uploadedImageData = null;
 
 function handleFileSelect(input) {
   var file = input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 2MB.'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 5MB.'); input.value = ''; return; }
   if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
 
-  // Sıkıştır ve önizle
-  compressImage(file, 1200, 0.8, function(dataUrl) {
-    uploadedImageData = dataUrl;
-    document.getElementById('upload-preview-img').src = dataUrl;
-    document.getElementById('upload-preview').style.display = 'block';
-    document.getElementById('upload-placeholder').style.display = 'none';
-    document.getElementById('form-ann-img').value = ''; // URL alanını temizle
+  document.getElementById('upload-placeholder').innerHTML = '<div style="padding:20px;text-align:center;color:var(--accent)"><div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Görsel işleniyor...</div>';
+
+  // Adım 1: 800px ve %45 kaliteyle sıkıştır
+  compressImage(file, 800, 0.45, function(dataUrl) {
+    var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+
+    // 700KB'dan büyükse daha da sıkıştır
+    if (sizeKB > 700) {
+      compressImage(file, 600, 0.3, function(smallUrl) {
+        sizeKB = Math.round(smallUrl.length * 0.75 / 1024);
+        finishUpload(smallUrl, sizeKB);
+      });
+    } else {
+      finishUpload(dataUrl, sizeKB);
+    }
   });
+}
+
+function finishUpload(dataUrl, sizeKB) {
+  uploadedImageData = dataUrl;
+  document.getElementById('upload-preview-img').src = dataUrl;
+  document.getElementById('upload-preview').style.display = 'block';
+  document.getElementById('upload-placeholder').style.display = 'none';
+  document.getElementById('upload-placeholder').innerHTML = '<div style="font-size:32px;margin-bottom:8px">📸</div><div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Max 5MB</div><div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır</div>';
+  var sizeEl = document.getElementById('upload-size');
+  if (sizeEl) sizeEl.textContent = sizeKB + ' KB';
+  document.getElementById('form-ann-img').value = '';
 }
 
 function removeUpload() {
@@ -324,8 +371,7 @@ function compressImage(file, maxWidth, quality, callback) {
       var w = img.width, h = img.height;
       if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
       canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       callback(canvas.toDataURL('image/jpeg', quality));
     };
     img.src = e.target.result;
@@ -370,15 +416,29 @@ async function saveAnn() {
   var c = document.getElementById('form-ann-content').value.trim();
   var urlImg = document.getElementById('form-ann-img').value.trim();
   var o = parseInt(document.getElementById('form-ann-order').value) || 1;
-  if (!t) { alert('Başlık zorunludur.'); return; }
+  var errEl = document.getElementById('ann-save-error');
+  errEl.style.display = 'none';
+
+  if (!t) { errEl.textContent = 'Başlık zorunludur.'; errEl.style.display = 'block'; return; }
 
   var btn = document.getElementById('btn-save-ann');
   btn.disabled = true; btn.textContent = 'Kaydediliyor...';
 
-  // Görsel: upload varsa onu kullan, yoksa URL'yi kullan
+  // Görsel: upload varsa onu, yoksa URL'yi kullan
   var imageUrl = uploadedImageData || urlImg;
 
-  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl, order: o, active: true };
+  // Base64 boyut kontrolü — Firestore 1MB/döküman limiti
+  if (imageUrl && imageUrl.indexOf('data:') === 0) {
+    var sizeKB = Math.round(imageUrl.length * 0.75 / 1024);
+    if (sizeKB > 900) {
+      errEl.textContent = 'Görsel çok büyük (' + sizeKB + ' KB). Lütfen daha küçük bir görsel kullanın veya URL olarak ekleyin.';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Kaydet';
+      return;
+    }
+  }
+
+  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl || '', order: o, active: true };
 
   try {
     if (editingAnnId) {
@@ -389,7 +449,17 @@ async function saveAnn() {
     }
     cancelAnnForm();
   } catch(e) {
-    alert('Kayıt hatası: ' + e.message);
+    console.error('Banner kayıt hatası:', e);
+    var msg = 'Kayıt hatası: ';
+    if (e.message && e.message.indexOf('exceeds the maximum') > -1) {
+      msg += 'Görsel çok büyük. Lütfen daha küçük bir görsel kullanın veya harici URL ile ekleyin.';
+    } else if (e.message && e.message.indexOf('PERMISSION_DENIED') > -1) {
+      msg += 'Yetki hatası. Firestore güvenlik kurallarını kontrol edin.';
+    } else {
+      msg += e.message || 'Bilinmeyen hata';
+    }
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
   }
   btn.disabled = false; btn.textContent = 'Kaydet';
 }

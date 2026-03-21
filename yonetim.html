@@ -194,34 +194,70 @@
 
     <!-- Duyurular -->
     <div id="section-announcements" class="section">
-      <div class="section-title">Duyurular</div>
-      <div class="section-sub">Müşterilere gösterilecek kampanya ve reklam bannerları</div>
-      <div class="ann-list-header"><span style="font-size:14px;font-weight:600">Duyuru Listesi</span><button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Duyuru</button></div>
+      <div class="section-title">Duyurular & Bannerlar</div>
+      <div class="section-sub">Müşterilerin telefonunda gösterilecek kampanya bannerları</div>
+
+      <!-- Banner Ölçü Rehberi -->
+      <div class="banner-guide">
+        <div class="guide-title">📐 Banner Tasarım Rehberi</div>
+        <div class="guide-grid">
+          <div class="guide-item">
+            <div class="guide-icon">📱</div>
+            <div class="guide-label">Yön</div>
+            <div class="guide-value">YATAY</div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-icon">📏</div>
+            <div class="guide-label">İdeal Ölçü</div>
+            <div class="guide-value">1080 × 1920 px</div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-icon">🔲</div>
+            <div class="guide-label">En-Boy Oranı</div>
+            <div class="guide-value">9:16 (dikey telefon)</div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-icon">📦</div>
+            <div class="guide-label">Format</div>
+            <div class="guide-value">JPG veya PNG · Max 5MB</div>
+          </div>
+        </div>
+        <div class="guide-tip">💡 Banner müşterinin telefon ekranının alt %70'ini kaplar. Metin ve fiyat bilgilerini görselin ortasına ve altına yerleştirin. Üst kısım sıra bilgisi ile kaplanabilir.</div>
+      </div>
+
+      <div class="ann-list-header">
+        <span style="font-size:14px;font-weight:600">Banner Listesi</span>
+        <button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Banner</button>
+      </div>
+
       <div id="ann-form">
-        <h3 id="ann-form-title">Yeni Duyuru</h3>
+        <h3 id="ann-form-title">Yeni Banner</h3>
+        <div id="ann-save-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:12px;border-radius:8px;margin-bottom:12px"></div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>
-        <div class="form-row"><label>İçerik</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
+        <div class="form-row"><label>Açıklama (opsiyonel)</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
         <div class="form-row">
-          <label>Banner Görseli</label>
+          <label>Banner Görseli (1080×1920px · 9:16 dikey · JPG/PNG)</label>
           <div class="upload-area" id="upload-area">
             <div class="upload-preview" id="upload-preview" style="display:none">
               <img id="upload-preview-img" src="" alt="">
               <button type="button" class="upload-remove" onclick="removeUpload()">✕</button>
+              <div class="upload-size" id="upload-size"></div>
             </div>
             <div class="upload-placeholder" id="upload-placeholder">
-              <div style="font-size:28px;margin-bottom:8px">📸</div>
+              <div style="font-size:32px;margin-bottom:8px">📸</div>
               <div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:4px">Sürükle bırak veya tıkla · JPG, PNG · Max 2MB</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Max 5MB</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır</div>
             </div>
             <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
             <span style="font-size:12px;color:var(--text3)">veya</span>
-            <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px">
+            <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
           </div>
         </div>
-        <div class="form-row"><label>Sıra (küçük numara önce)</label><input type="number" id="form-ann-order" value="1" min="1" max="20"></div>
-        <div style="display:flex;gap:10px;margin-top:8px">
+        <div class="form-row"><label>Gösterim Sırası (küçük numara önce)</label><input type="number" id="form-ann-order" value="1" min="1" max="20"></div>
+        <div style="display:flex;gap:10px;margin-top:12px">
           <button class="btn btn-accent" id="btn-save-ann" onclick="saveAnn()">Kaydet</button>
           <button class="btn" onclick="cancelAnnForm()">İptal</button>
         </div>

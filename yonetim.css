@@ -181,6 +181,30 @@ main{flex:1;margin-left:260px;min-height:100vh}
 .upload-preview img{width:100%;max-height:200px;object-fit:cover;display:block;border-radius:12px}
 .upload-remove{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:white;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5}
 .upload-remove:hover{background:#DC2626}
+.upload-size{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:white;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+
+/* ═══ BANNER TASARIM REHBERİ ═══ */
+.banner-guide{
+  background:var(--card);border:2px solid #60A5FA;box-shadow:0 0 12px rgba(96,165,250,.1);
+  border-radius:16px;padding:20px 24px;margin-bottom:20px;
+}
+.guide-title{font-size:15px;font-weight:700;color:#2563EB;margin-bottom:14px}
+.guide-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.guide-item{text-align:center;padding:12px 8px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.guide-icon{font-size:20px;margin-bottom:4px}
+.guide-label{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:2px}
+.guide-value{font-size:13px;font-weight:700;color:var(--text)}
+.guide-tip{font-size:12px;color:var(--text2);line-height:1.6;padding:10px 12px;background:#EFF6FF;border-radius:8px;border-left:3px solid #60A5FA}
+
+/* ═══ DUYURU LİSTESİ — Thumbnail ═══ */
+.ann-card{flex-wrap:nowrap}
+.ann-thumb{width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)}
+.ann-thumb img{width:100%;height:100%;object-fit:cover}
+.ann-status-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.ann-order-badge{font-size:11px;font-weight:700;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:4px}
+.ann-has-img{font-size:11px;color:#16A34A;font-weight:600}
+.ann-no-img{font-size:11px;color:var(--text3);font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ═══ RAPOR KARTLARI — Neon meyve renkleri ═══ */
 .report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
@@ -221,4 +245,5 @@ main{flex:1;margin-left:260px;min-height:100vh}
   .sidebar-footer{flex-direction:row;justify-content:space-between;align-items:center;padding:8px 12px}
   main{margin-left:0}
   .stats-row{grid-template-columns:repeat(2,1fr)}
+  .guide-grid{grid-template-columns:repeat(2,1fr)}
 }
