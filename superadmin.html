@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MarketPas — Süper Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="superadmin.css">
 </head>
 <body>
@@ -24,11 +24,21 @@
   <!-- Panel -->
   <div id="sa-panel" style="display:none">
     <div class="sa-header">
-      <div class="sa-header-logo">MARKET·PAS <span>ADMIN</span></div>
-      <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:16px">
         <span class="sa-market-count" id="sa-count">— market</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:12px;color:#94A3B8;letter-spacing:2px;font-weight:600;">MARKET·PAS</span>
         <button class="btn-sa-sm" onclick="saLogout()">Çıkış</button>
       </div>
+    </div>
+
+    <!-- İstatistikler -->
+    <div class="sa-stats" id="sa-stats">
+      <div class="sa-stat"><div class="sa-stat-num" id="stat-total">—</div><div class="sa-stat-label">Toplam Market</div></div>
+      <div class="sa-stat"><div class="sa-stat-num green" id="stat-active">—</div><div class="sa-stat-label">Aktif</div></div>
+      <div class="sa-stat"><div class="sa-stat-num orange" id="stat-pending">—</div><div class="sa-stat-label">Onay Bekleyen</div></div>
+      <div class="sa-stat"><div class="sa-stat-num red" id="stat-expired">—</div><div class="sa-stat-label">Süresi Dolmuş</div></div>
     </div>
 
     <!-- Filtre -->

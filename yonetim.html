@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MarketPas — Yönetim</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="yonetim.css">
 </head>
 <body>
@@ -15,25 +16,37 @@
       <div style="font-size:14px;color:#8b949e;margin-bottom:24px;">Yönetim Girişi</div>
       <div style="margin-bottom:16px;text-align:left;">
         <label style="font-size:12px;font-weight:600;color:#8b949e;display:block;margin-bottom:6px;">Şifre veya Kasiyer PIN</label>
-        <input type="password" id="auth-pin" placeholder="Şifreniz" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.04);color:#f0f6fc;font-size:15px;outline:none;" onkeydown="if(event.key==='Enter') handleAuth()">
+        <input type="password" id="auth-pin" placeholder="Şifreniz" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.04);color:#f0f6fc;font-size:15px;outline:none;font-family:'Outfit',sans-serif;" onkeydown="if(event.key==='Enter') handleAuth()">
       </div>
       <div id="auth-error" style="color:#ef4444;font-size:13px;margin-bottom:8px;display:none;"></div>
-      <button onclick="handleAuth()" style="width:100%;padding:14px;background:#0fdeaa;color:#080a0e;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;">Giriş Yap</button>
+      <button onclick="handleAuth()" style="width:100%;padding:14px;background:#22C55E;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Outfit',sans-serif;">Giriş Yap</button>
     </div>
   </div>
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-logo"><span>MarketPas</span><small>YÖNETİM PANELİ</small></div>
-    <div class="sidebar-market">Market<br><span id="panel-market-name">—</span></div>
+    <!-- Market adı — büyük, neon yeşil -->
+    <div class="sidebar-market-name" id="panel-market-name">—</div>
+    <div class="sidebar-market-sub">YÖNETİM PANELİ</div>
+
+    <!-- Lisans durumu -->
+    <div class="sidebar-license active" id="sidebar-license">
+      <span>⏳</span>
+      <span>Yükleniyor...</span>
+    </div>
+
+    <!-- Navigasyon -->
     <nav>
       <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span>📊</span><span>Dashboard</span></div>
       <div class="nav-item" id="nav-qr" onclick="showSection('qr')"><span>📱</span><span>QR Kodlar</span></div>
       <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>Duyurular</span></div>
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
     </nav>
-    <div style="margin-top:auto;padding:16px;">
-      <button onclick="handleLogout()" style="width:100%;padding:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#8b949e;font-size:13px;cursor:pointer;">⬅ Çıkış Yap</button>
+
+    <!-- Alt kısım — MARKET·PAS + Çıkış -->
+    <div class="sidebar-footer">
+      <div class="sidebar-brand">MARKET · PAS</div>
+      <button class="btn-logout" onclick="handleLogout()">⬅ Çıkış Yap</button>
     </div>
   </div>
 
@@ -44,10 +57,7 @@
       <div class="section-title">Dashboard</div>
       <div class="section-sub">Canlı kasa ve sıra durumu</div>
 
-      <!-- Lisans Uyarısı -->
       <div class="alert-card" id="license-warning" style="display:none"></div>
-
-      <!-- Yoğunluk Uyarısı -->
       <div class="alert-card" id="congestion-alert" style="display:none">
         <div class="alert-icon">⚠️</div>
         <div class="alert-content"><div class="alert-title">Yoğunluk</div><div class="alert-sub"></div></div>
@@ -60,7 +70,7 @@
         <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Toplam</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-timeout">—</div><div class="stat-label">Timeout</div></div>
       </div>
-      <div class="stats-row" style="margin-top:12px">
+      <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="stat-avg-time">—</div><div class="stat-label">Ort. İşlem</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-congestion">—</div><div class="stat-label">Yoğunluk</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-active-kasas">—</div><div class="stat-label">Açık Kasa</div></div>
@@ -75,7 +85,7 @@
         <div id="registers-grid"></div>
       </div>
 
-      <div class="card" id="perf-card">
+      <div class="card">
         <h3>Kasa Performans Raporu</h3>
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Her kasanın bugünkü ortalama işlem süresi</p>
         <div id="perf-grid"></div>
@@ -91,12 +101,10 @@
         <h3>📱 Müşteri QR Kodu</h3>
         <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Bu QR kodu markete yapıştırın.</p>
         <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap">
-          <div style="text-align:center">
-            <div id="qr-container" style="background:white;padding:20px;border-radius:12px;display:inline-block;border:1px solid var(--border)"></div>
-          </div>
+          <div style="text-align:center"><div id="qr-container" style="background:white;padding:20px;border-radius:12px;display:inline-block;border:1px solid var(--border)"></div></div>
           <div style="flex:1;min-width:220px">
             <div class="url-row" style="margin-bottom:16px"><label>Müşteri Linki:</label><code id="qr-url-display" style="font-size:11px;word-break:break-all"></code></div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-accent" onclick="downloadQR()">⬇ QR İndir</button><button class="btn" onclick="printQR()" style="background:var(--bg3)">🖨 Yazdır</button></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-accent" onclick="downloadQR()">⬇ QR İndir</button><button class="btn" onclick="printQR()">🖨 Yazdır</button></div>
           </div>
         </div>
       </div>
@@ -107,13 +115,13 @@
     <div id="section-announcements" class="section">
       <div class="section-title">Duyurular</div>
       <div class="ann-list-header"><span style="font-size:14px;font-weight:600">Duyuru Listesi</span><button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Duyuru</button></div>
-      <div id="ann-form" style="display:none">
+      <div id="ann-form">
         <h3 id="ann-form-title">Yeni Duyuru</h3>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title"></div>
         <div class="form-row"><label>İçerik</label><input type="text" id="form-ann-content"></div>
         <div class="form-row"><label>Görsel URL</label><input type="url" id="form-ann-img"></div>
         <div class="form-row"><label>Sıra</label><input type="number" id="form-ann-order" value="1" min="1"></div>
-        <div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-accent" onclick="saveAnn()">Kaydet</button><button class="btn" onclick="cancelAnnForm()" style="background:var(--bg3)">İptal</button></div>
+        <div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-accent" onclick="saveAnn()">Kaydet</button><button class="btn" onclick="cancelAnnForm()">İptal</button></div>
       </div>
       <div id="ann-list"></div>
     </div>

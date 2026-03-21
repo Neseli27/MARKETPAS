@@ -74,9 +74,36 @@ function startPanel() {
   loadCongestionStats();
   congestionInterval = setInterval(loadCongestionStats, 10000);
   checkLicenseWarning();
+  updateSidebarLicense();
 }
 
-// ─── Lisans Uyarısı ──────────────────────────────────
+// ─── Sidebar Lisans Durumu ───────────────────────────
+function updateSidebarLicense() {
+  var el = document.getElementById('sidebar-license');
+  if (!el) return;
+
+  if (!marketData.licenseExpiry) {
+    el.className = 'sidebar-license expired';
+    el.innerHTML = '<span>🚫</span><span>Lisans tanımlanmamış</span>';
+    return;
+  }
+
+  var days = getLicenseRemainingDays(marketData.licenseExpiry);
+  var expDate = (marketData.licenseExpiry.toDate ? marketData.licenseExpiry.toDate() : new Date(marketData.licenseExpiry)).toLocaleDateString('tr-TR');
+
+  if (days <= 0) {
+    el.className = 'sidebar-license expired';
+    el.innerHTML = '<span>🚫</span><div><div>Lisans süresi dolmuş</div><div style="font-size:11px;opacity:.7;margin-top:2px">Bitiş: ' + expDate + '</div></div>';
+  } else if (days <= 5) {
+    el.className = 'sidebar-license warning';
+    el.innerHTML = '<span>⚠️</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + (marketData.licenseDays || '') + ' günlük plan · ' + expDate + '</div></div>';
+  } else {
+    el.className = 'sidebar-license active';
+    el.innerHTML = '<span>✓</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + (marketData.licenseDays || '') + ' günlük plan · ' + expDate + '</div></div>';
+  }
+}
+
+// ─── Lisans Uyarısı (Dashboard) ──────────────────────
 function checkLicenseWarning() {
   var warn = document.getElementById('license-warning');
   if (!warn) return;
