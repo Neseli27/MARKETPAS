@@ -1,0 +1,75 @@
+:root {
+  --bg:#F8FAFC; --card:#fff; --text:#0F172A; --text2:#64748B; --text3:#94A3B8;
+  --border:#E2E8F0; --green:#16A34A; --green-light:#DCFCE7; --orange:#EA580C;
+  --danger:#DC2626; --warn:#D97706; --blue:#2563EB;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Login */
+#sa-login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:200}
+.sa-login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.06)}
+.sa-logo{font-size:28px;font-weight:900;letter-spacing:4px;text-align:center;margin-bottom:4px}
+.sa-login-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:24px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.fg input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;color:var(--text);background:#F8FAFC;outline:none;transition:all .2s}
+.fg input:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(22,163,74,.08)}
+.sa-error{color:var(--danger);font-size:13px;margin-bottom:8px;display:none;font-weight:600}
+.btn-sa{width:100%;padding:14px;background:var(--text);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-sa:hover{background:#1E293B}
+.btn-sa-sm{padding:8px 16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s}
+.btn-sa-sm:hover{background:#fff;border-color:var(--danger);color:var(--danger)}
+
+/* Header */
+.sa-header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.sa-header-logo{font-size:18px;font-weight:900;letter-spacing:3px}
+.sa-header-logo span{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:2px;margin-left:8px;vertical-align:middle}
+.sa-market-count{font-size:13px;color:var(--text2);font-weight:600}
+
+/* Filter */
+.sa-filter-bar{display:flex;gap:8px;padding:16px 24px;flex-wrap:wrap}
+.sa-filter{padding:8px 16px;border:1px solid var(--border);border-radius:100px;background:var(--card);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s}
+.sa-filter:hover{border-color:var(--green);color:var(--green)}
+.sa-filter.active{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* List */
+.sa-list{padding:0 24px 40px;display:flex;flex-direction:column;gap:12px}
+.sa-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:16px;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.sa-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.sa-card-info{flex:1;min-width:0}
+.sa-card-name{font-size:17px;font-weight:700;margin-bottom:2px}
+.sa-card-meta{font-size:13px;color:var(--text2);display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
+.sa-card-meta span{display:flex;align-items:center;gap:4px}
+.sa-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:100px}
+.sa-badge.pending{background:#FEF3C7;color:var(--warn)}
+.sa-badge.active{background:var(--green-light);color:var(--green)}
+.sa-badge.expired{background:#FEE2E2;color:var(--danger)}
+.sa-badge.suspended{background:#F1F5F9;color:var(--text2)}
+.sa-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.sa-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.sa-btn:hover{background:var(--bg)}
+.sa-btn.green{border-color:rgba(22,163,74,.3);color:var(--green);background:var(--green-light)}
+.sa-btn.green:hover{background:#BBF7D0}
+.sa-btn.red{border-color:rgba(220,38,38,.2);color:var(--danger)}
+.sa-btn.red:hover{background:#FEE2E2}
+.sa-btn.orange{border-color:rgba(234,88,12,.2);color:var(--orange)}
+.sa-btn.orange:hover{background:#FFEDD5}
+.sa-card-license{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* Modal */
+.sa-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+.sa-modal{background:var(--card);border-radius:20px;padding:32px;width:100%;max-width:420px;box-shadow:0 16px 64px rgba(0,0,0,.15)}
+.sa-modal-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.sa-modal-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
+.sa-license-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.license-btn{padding:16px 8px;border:2px solid var(--border);border-radius:12px;background:var(--card);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.license-btn small{font-size:11px;font-weight:500;color:var(--text3)}
+.license-btn:hover{border-color:var(--green);background:var(--green-light)}
+.btn-sa-close{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer}
+
+@media(max-width:600px){
+  .sa-card{flex-direction:column;align-items:flex-start}
+  .sa-card-actions{width:100%;margin-top:8px}
+  .sa-license-options{grid-template-columns:repeat(2,1fr)}
+}

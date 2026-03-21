@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>MarketPas — Kasiyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="kasiyer.css">
+</head>
+<body>
+
+  <!-- ─── Giriş ─── -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">MarketPas</div>
+      <div class="login-sub">Kasiyer Girişi</div>
+      <div class="form-group">
+        <label>Market ID</label>
+        <input type="text" id="login-market" placeholder="Yönetimden alınan ID" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label>Kasa Numarası</label>
+        <input type="number" id="login-kasa" placeholder="Örn: 3" min="1">
+      </div>
+      <div class="form-group">
+        <label>Kasiyer PIN</label>
+        <input type="password" id="login-pin" placeholder="PIN"
+          onkeydown="if(event.key==='Enter') handleLogin()">
+      </div>
+      <div id="login-error" style="color:#dc2626;font-size:13px;margin-bottom:8px;display:none"></div>
+      <button class="btn-login" id="btn-login" onclick="handleLogin()">Giriş Yap</button>
+    </div>
+  </div>
+
+  <!-- ─── Ana Ekran ─── -->
+  <div id="main-screen">
+
+    <div class="kasiyer-header">
+      <div>
+        <div class="header-kasa" id="kasa-no">Kasa —</div>
+        <div class="header-market" id="header-market-name"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="queue-badge" title="Sırada bekleyen müşteri sayısı">
+          <span>👥</span>
+          <span id="queue-count-display">0</span>
+          <span>bekliyor</span>
+        </div>
+        <div class="online-badge"><div class="online-dot"></div><span>Çevrimiçi</span></div>
+        <button class="btn-logout" onclick="handleLogout()">⬅</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+
+      <!-- AKTİF MÜŞTERİ KARTI -->
+      <div class="card-section-label">AKTİF MÜŞTERİ</div>
+      <div id="active-card" class="customer-card active-card empty">
+        <div class="card-badge">AKTİF</div>
+        <div class="card-empty-text">Aktif müşteri yok</div>
+      </div>
+
+      <!-- BEKLEYEN / ÇAĞRILAN MÜŞTERİ KARTI -->
+      <div class="card-section-label" style="margin-top:8px">BEKLEYEN MÜŞTERİ</div>
+      <div id="waiting-card" class="customer-card waiting-card empty">
+        <div class="card-badge">BEKLEME SLOTU</div>
+        <div class="card-empty-text">Boş — sıradaki müşteri buraya çağrılacak</div>
+      </div>
+
+      <!-- OTOMATİK / MANUEL TOGGLE + ÇAĞIR BUTONU -->
+      <div class="mode-bar">
+        <div class="mode-toggle-wrap">
+          <label class="mode-switch">
+            <input type="checkbox" id="auto-toggle" checked onchange="toggleAutoMode()">
+            <span class="mode-slider"></span>
+          </label>
+          <span class="mode-label" id="auto-label">Otomatik Çağırma AÇIK</span>
+        </div>
+        <button class="btn-cagir" id="btn-cagir" onclick="handleManuelCagir()" style="display:none">
+          📢 Sıradaki Müşteriyi Çağır
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="kasiyer.js"></script>
+</body>
+</html>

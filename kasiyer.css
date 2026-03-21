@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f8fafc; --bg2: #ffffff; --bg3: #f1f5f9;
+  --border: #e2e8f0; --text: #0f172a; --text2: #64748b;
+  --accent: #059669; --accent-bg: #ecfdf5;
+  --warn: #d97706; --warn-bg: #fffbeb;
+  --danger: #dc2626; --danger-bg: #fef2f2;
+  --blue: #2563eb; --radius: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ─── Login ─── */
+#login-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 100;
+}
+.login-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 380px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.06);
+}
+.login-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 32px;
+  letter-spacing: 3px; color: var(--text); margin-bottom: 4px;
+}
+.login-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 6px; }
+.form-group input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+  border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 15px;
+  background: var(--bg3); color: var(--text); outline: none; transition: all .2s;
+}
+.form-group input:focus { border-color: var(--accent); background: var(--bg2); box-shadow: 0 0 0 3px rgba(5,150,105,.1); }
+.btn-login {
+  width: 100%; padding: 14px; background: var(--text); color: white;
+  border: none; border-radius: 10px; font-family: 'Outfit', sans-serif;
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 4px;
+}
+.btn-login:hover { background: #1e293b; }
+.btn-login:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── Header ─── */
+#main-screen { display: none; flex-direction: column; flex: 1; min-height: 100vh; }
+.kasiyer-header {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.header-kasa { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; }
+.header-market { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.online-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--accent); font-weight: 500; }
+.online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.btn-logout { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 16px; transition: all .2s; }
+.btn-logout:hover { background: var(--danger-bg); border-color: var(--danger); }
+
+/* ─── Content ─── */
+.main-content { flex: 1; padding: 20px; max-width: 600px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* ─── Slot ─── */
+.slot-section-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.slot-box { background: var(--bg2); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 22px; transition: all .3s; }
+.slot-box.occupied { border-color: var(--blue); background: #eff6ff; }
+.slot-box.calling { border-color: var(--warn); background: var(--warn-bg); animation: pulse-border 2s ease infinite; }
+.slot-box.confirmed { border-color: var(--accent); background: var(--accent-bg); }
+.slot-box.empty { opacity: .7; }
+@keyframes pulse-border { 0%,100%{border-color:var(--warn)} 50%{border-color:rgba(217,119,6,.3)} }
+.slot-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+.slot-code { font-family: 'Bebas Neue', sans-serif; font-size: 44px; letter-spacing: 4px; line-height: 1; }
+.slot-status { font-size: 18px; font-weight: 600; }
+.slot-status.confirmed { color: var(--accent); }
+.slot-sub { font-size: 14px; color: var(--text2); }
+.slot-timer { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--warn); margin-top: 4px; }
+.slot-timer.urgent { color: var(--danger); animation: urgent-blink .5s ease infinite; }
+@keyframes urgent-blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ─── Kod Giriş ─── */
+#code-input-area { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+#code-display { font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 500; }
+.code-entry-row { display: flex; gap: 10px; }
+#code-entry {
+  flex: 1; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px;
+  text-align: center; color: var(--text); background: var(--bg3); outline: none;
+  text-transform: uppercase; transition: all .2s;
+}
+#code-entry:focus { border-color: var(--accent); background: var(--bg2); }
+#code-entry.shake { animation: shake .4s ease; border-color: var(--danger) !important; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+.btn-confirm { padding: 14px 20px; background: var(--accent); color: white; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-confirm:hover { filter: brightness(1.1); }
+
+/* ─── Butonlar ─── */
+.btn-siradaki { width: 100%; padding: 20px; background: var(--text); color: white; border: none; border-radius: var(--radius); font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; cursor: pointer; transition: all .2s; }
+.btn-siradaki:hover:not(:disabled) { background: #1e293b; transform: translateY(-2px); }
+.btn-siradaki:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-siradaki.idle { background: var(--bg3); color: var(--text2); border: 2px dashed var(--border); }
+.btn-hint { font-size: 12px; color: var(--text2); text-align: center; line-height: 1.5; }
+
+/* ─── Müşteri Kartları ─── */
+.card-section-label { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+
+.customer-card {
+  background: var(--bg2); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 20px 22px;
+  transition: all .3s;
+}
+.customer-card.occupied { border-color: var(--blue); background: #eff6ff; }
+.customer-card.calling  { border-color: var(--warn); background: var(--warn-bg); animation: pulse-border 2s ease infinite; }
+.customer-card.arrived  { border-color: var(--accent); background: var(--accent-bg); }
+.customer-card.empty    { opacity: .6; }
+
+.card-badge { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text2); margin-bottom:10px; }
+.card-code  { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:5px; line-height:1; margin-bottom:14px; }
+.card-timer { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--warn); margin-bottom:14px; }
+.card-timer.urgent { color:var(--danger); animation:urgent-blink .5s ease infinite; }
+.card-empty-text { font-size:14px; color:var(--text2); }
+.card-arrived-text { font-size:15px; font-weight:600; color:var(--accent); }
+
+/* ─── Kasiyer Butonları ─── */
+.btn-geldi {
+  width:100%; padding:16px;
+  background: var(--accent); color:white;
+  border:none; border-radius:10px;
+  font-family:'Outfit',sans-serif; font-size:16px; font-weight:700;
+  cursor:pointer; transition:all .2s;
+  letter-spacing:.5px;
+}
+.btn-geldi:hover { filter:brightness(1.1); transform:translateY(-1px); }
+
+.btn-islem-tamam {
+  width:100%; padding:16px;
+  background: var(--text); color:white;
+  border:none; border-radius:10px;
+  font-family:'Outfit',sans-serif; font-size:16px; font-weight:700;
+  cursor:pointer; transition:all .2s;
+  letter-spacing:.5px;
+}
+.btn-islem-tamam:hover { background:#1e293b; transform:translateY(-1px); }
+
+/* ─── Kuyruk Badge ─── */
+.queue-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  border-radius: 100px; padding: 6px 14px;
+  font-size: 13px; font-weight: 600; color: #2563eb;
+}
+
+/* ─── Manuel Çağır Butonu ─── */
+.btn-cagir {
+  width: 100%; padding: 18px;
+  background: linear-gradient(135deg, var(--accent), #047857);
+  color: white; border: none; border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+  letter-spacing: .5px;
+  box-shadow: 0 4px 14px rgba(5,150,105,.3);
+  margin-top: 4px;
+}
+.btn-cagir:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5,150,105,.35); }
+.btn-cagir:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ─── Otomatik/Manuel Mode Bar ─── */
+.mode-bar {
+  margin-top: 12px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.mode-toggle-wrap {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px;
+}
+.mode-label { font-size: 14px; font-weight: 600; color: var(--text2); }
+
+/* Toggle switch */
+.mode-switch {
+  position: relative; display: inline-block;
+  width: 44px; height: 24px; flex-shrink: 0;
+}
+.mode-switch input { opacity: 0; width: 0; height: 0; }
+.mode-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1; border-radius: 24px;
+  transition: .3s;
+}
+.mode-slider::before {
+  content: ''; position: absolute;
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background: white; border-radius: 50%;
+  transition: .3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+.mode-switch input:checked + .mode-slider { background: var(--accent); }
+.mode-switch input:checked + .mode-slider::before { transform: translateX(20px); }

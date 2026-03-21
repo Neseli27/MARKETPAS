@@ -1,0 +1,317 @@
+// =====================================================
+// MarketPas v3 — Yönetim Paneli
+// =====================================================
+
+var marketId = null;
+var marketData = null;
+var registersListener = null;
+var queueListener = null;
+var editingAnnId = null;
+var congestionInterval = null;
+
+// ─── Başlangıç ────────────────────────────────────────
+function init() {
+  var params = new URLSearchParams(window.location.search);
+  marketId = params.get('market');
+
+  // Session kontrolü
+  var savedId = localStorage.getItem('mp_market_id');
+  if (!marketId && savedId) { marketId = savedId; history.replaceState({}, '', '?market=' + marketId); }
+
+  if (marketId) {
+    document.getElementById('auth-overlay').style.display = 'flex';
+    // Otomatik giriş denemesi (session varsa)
+    if (savedId === marketId) { autoLogin(); }
+  } else {
+    window.location.href = '/';
+  }
+}
+
+async function autoLogin() {
+  try {
+    var doc = await db.collection('markets').doc(marketId).get();
+    if (doc.exists && doc.data().status !== 'deleted') {
+      document.getElementById('auth-overlay').style.display = 'none';
+      marketData = doc.data();
+      startPanel();
+    }
+  } catch(e) {}
+}
+
+// ─── Auth (PIN ile) ──────────────────────────────────
+async function handleAuth() {
+  var pin = document.getElementById('auth-pin').value.trim();
+  var errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+  if (!pin) { errEl.textContent = 'PIN veya şifre girin.'; errEl.style.display = 'block'; return; }
+
+  try {
+    var doc = await db.collection('markets').doc(marketId).get();
+    if (!doc.exists) { errEl.textContent = 'Market bulunamadı.'; errEl.style.display = 'block'; return; }
+    var d = doc.data();
+
+    // PIN veya şifre ile giriş
+    var passHash = await hashPassword(pin);
+    if (d.kasiyerPin !== pin && d.passwordHash !== passHash) {
+      errEl.textContent = 'Geçersiz PIN veya şifre.'; errEl.style.display = 'block'; return;
+    }
+    if (d.status === 'deleted' || d.status === 'suspended') {
+      errEl.textContent = 'Bu hesap aktif değil.'; errEl.style.display = 'block'; return;
+    }
+
+    localStorage.setItem('mp_market_id', marketId);
+    document.getElementById('auth-overlay').style.display = 'none';
+    marketData = d;
+    startPanel();
+  } catch(e) { errEl.textContent = 'Bağlantı hatası.'; errEl.style.display = 'block'; }
+}
+
+function startPanel() {
+  document.getElementById('panel-market-name').textContent = marketData.name;
+  showSection('dashboard');
+  startLiveListeners();
+  loadAnnouncements();
+  loadCongestionStats();
+  congestionInterval = setInterval(loadCongestionStats, 10000);
+  checkLicenseWarning();
+}
+
+// ─── Lisans Uyarısı ──────────────────────────────────
+function checkLicenseWarning() {
+  var warn = document.getElementById('license-warning');
+  if (!warn) return;
+  if (!marketData.licenseExpiry) {
+    warn.style.display = 'block';
+    warn.className = 'alert-card critical';
+    warn.innerHTML = '<div class="alert-icon">🚫</div><div class="alert-content"><div class="alert-title">Lisans Tanımlanmamış</div><div class="alert-sub">Sistem müşteri kodu üretemez. Lütfen yönetici ile iletişime geçin.</div></div>';
+    return;
+  }
+  var days = getLicenseRemainingDays(marketData.licenseExpiry);
+  if (days <= 0) {
+    warn.style.display = 'block';
+    warn.className = 'alert-card critical';
+    warn.innerHTML = '<div class="alert-icon">🚫</div><div class="alert-content"><div class="alert-title">Lisans Süresi Dolmuş</div><div class="alert-sub">Sistem müşteri kodu üretemiyor. Lisansınızı yenilemek için yönetici ile iletişime geçin.</div></div>';
+  } else if (days <= 5) {
+    warn.style.display = 'block';
+    warn.className = 'alert-card';
+    warn.innerHTML = '<div class="alert-icon">⚠️</div><div class="alert-content"><div class="alert-title">Lisans Süresi Doluyor — ' + days + ' gün kaldı</div><div class="alert-sub">Lisansınızı yenilemek için yönetici ile iletişime geçin.</div></div>';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+// ─── Canlı Dinleyiciler ──────────────────────────────
+function startLiveListeners() {
+  if (registersListener) registersListener();
+  if (queueListener) queueListener();
+  registersListener = db.collection('registers').where('marketId', '==', marketId).orderBy('kasaNo', 'asc')
+    .onSnapshot(function(snap) { renderRegisters(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); })); });
+  queueListener = db.collection('queue').where('marketId', '==', marketId).where('status', 'in', ['waiting', 'priority'])
+    .onSnapshot(function(snap) { document.getElementById('queue-count').textContent = snap.size; });
+  loadStats();
+}
+
+function renderRegisters(registers) {
+  var grid = document.getElementById('registers-grid');
+  grid.innerHTML = '';
+  registers.forEach(function(r) {
+    var sc = 'idle', st = 'BOŞTA';
+    if (r.activeQueueId && r.waitingQueueId) { sc = 'full'; st = 'DOLU'; }
+    else if (r.activeQueueId) { sc = 'active'; st = 'AKTİF'; }
+    else if (r.waitingQueueId) { sc = 'calling'; st = 'ÇAĞIRIYOR'; }
+
+    var card = document.createElement('div'); card.className = 'kasa-card ' + sc;
+    card.innerHTML = '<div class="kasa-num">Kasa ' + r.kasaNo + '</div><div class="kasa-status">' + st + '</div>';
+
+    var td = document.createElement('div'); td.className = 'kasa-toggle';
+    var lbl = document.createElement('label'); lbl.className = 'switch';
+    var inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = r.active;
+    inp.onchange = function() { toggleKasa(r.id, this.checked); };
+    var sl = document.createElement('span'); sl.className = 'slider';
+    lbl.appendChild(inp); lbl.appendChild(sl); td.appendChild(lbl);
+    var sp = document.createElement('span'); sp.textContent = r.active ? 'Açık' : 'Kapalı'; td.appendChild(sp);
+
+    // Sil butonu
+    var del = document.createElement('button');
+    del.className = 'btn btn-sm'; del.style.cssText = 'background:#FEE2E2;color:#DC2626;margin-left:8px;padding:4px 10px;font-size:11px;';
+    del.textContent = 'Sil';
+    del.onclick = function() { if (confirm('Kasa ' + r.kasaNo + ' silinsin mi?')) deleteKasa(r.id); };
+    td.appendChild(del);
+
+    card.appendChild(td);
+    grid.appendChild(card);
+  });
+}
+
+async function toggleKasa(regId, active) { await db.collection('registers').doc(regId).update({ active: active }); }
+
+async function deleteKasa(regId) {
+  try {
+    await db.collection('registers').doc(regId).delete();
+    await db.collection('markets').doc(marketId).update({ kasaSayisi: firebase.firestore.FieldValue.increment(-1) });
+  } catch(e) { alert('Hata: ' + e.message); }
+}
+
+async function handleAddKasa() {
+  try {
+    var snap = await db.collection('registers').where('marketId', '==', marketId).get();
+    var max = 0; snap.forEach(function(d) { if (d.data().kasaNo > max) max = d.data().kasaNo; });
+    await db.collection('registers').add({
+      marketId: marketId, kasaNo: max + 1, active: true,
+      activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null
+    });
+    await db.collection('markets').doc(marketId).update({ kasaSayisi: firebase.firestore.FieldValue.increment(1) });
+    alert('Kasa ' + (max + 1) + ' eklendi.');
+  } catch(e) { alert('Hata: ' + e.message); }
+}
+
+// ─── Yoğunluk + Performans ──────────────────────────
+async function loadCongestionStats() {
+  try {
+    var stats = await getMarketStats(marketId);
+    var avgEl = document.getElementById('stat-avg-time');
+    var congEl = document.getElementById('stat-congestion');
+    var kasaEl = document.getElementById('stat-active-kasas');
+    var waitEl = document.getElementById('stat-est-wait');
+    if (avgEl) avgEl.textContent = stats.avgProcessTime > 0 ? formatWaitTime(stats.avgProcessTime) : '—';
+    if (congEl) { congEl.textContent = '%' + stats.congestionPercent; congEl.style.color = stats.congestionLevel === 'yogun' ? '#EF4444' : stats.congestionLevel === 'normal' ? '#D97706' : '#16A34A'; }
+    if (kasaEl) kasaEl.textContent = stats.activeCasas;
+    if (waitEl) waitEl.textContent = stats.estimatedWait > 0 ? formatWaitTime(stats.estimatedWait) : '—';
+
+    var al = document.getElementById('congestion-alert');
+    if (stats.congestionPercent >= 90) { al.style.display = 'flex'; al.className = 'alert-card critical'; al.querySelector('.alert-icon').textContent = '🚨'; al.querySelector('.alert-title').textContent = 'Aşırı Yoğunluk! (%' + stats.congestionPercent + ')'; al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor. Acil yeni kasa açın!'; }
+    else if (stats.congestionPercent >= 70) { al.style.display = 'flex'; al.className = 'alert-card'; al.querySelector('.alert-icon').textContent = '⚠️'; al.querySelector('.alert-title').textContent = 'Yoğunluk Artıyor (%' + stats.congestionPercent + ')'; al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor.'; }
+    else { al.style.display = 'none'; }
+
+    await loadKasaPerformance();
+  } catch(e) {}
+}
+
+async function loadKasaPerformance() {
+  var grid = document.getElementById('perf-grid');
+  var empty = document.getElementById('perf-empty');
+  if (!grid) return;
+  try {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var todayTs = firebase.firestore.Timestamp.fromDate(today);
+    var doneSnap = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').where('createdAt', '>=', todayTs).get();
+    var ks = {};
+    doneSnap.forEach(function(doc) {
+      var d = doc.data(); var kNo = d.kasaNo; if (!kNo) return;
+      if (!ks[kNo]) ks[kNo] = { count: 0, totalTime: 0, times: [] };
+      ks[kNo].count++;
+      if (d.arrivedAt && d.completedAt) {
+        var a = d.arrivedAt.toDate ? d.arrivedAt.toDate() : new Date(d.arrivedAt);
+        var c = d.completedAt.toDate ? d.completedAt.toDate() : new Date(d.completedAt);
+        var pt = c.getTime() - a.getTime();
+        if (pt > 0 && pt < 1800000) { ks[kNo].totalTime += pt; ks[kNo].times.push(pt); }
+      }
+    });
+    var keys = Object.keys(ks).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+    if (!keys.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+    if (empty) empty.style.display = 'none';
+    var gTotal = 0, gCount = 0;
+    keys.forEach(function(k) { if (ks[k].times.length) { gTotal += ks[k].totalTime; gCount += ks[k].times.length; } });
+    var gAvg = gCount > 0 ? gTotal / gCount : 0;
+    grid.innerHTML = '';
+    keys.forEach(function(k) {
+      var s = ks[k]; var avg = s.times.length ? s.totalTime / s.times.length : 0;
+      var rankCls = '', rankText = '';
+      if (avg > 0 && gAvg > 0) {
+        if (avg <= gAvg * 0.85) { rankCls = 'fast'; rankText = '⚡ Hızlı'; }
+        else if (avg >= gAvg * 1.15) { rankCls = 'slow'; rankText = '🐌 Yavaş'; }
+        else { rankCls = 'normal'; rankText = '— Normal'; }
+      }
+      grid.innerHTML += '<div class="perf-card"><div class="perf-kasa">Kasa ' + k + '</div><div class="perf-time">' + (avg > 0 ? formatWaitTime(avg) : '—') + '</div><div class="perf-count">' + s.count + ' müşteri bugün</div>' + (rankCls ? '<div class="perf-rank ' + rankCls + '">' + rankText + '</div>' : '') + '</div>';
+    });
+  } catch(e) {}
+}
+
+// ─── İstatistikler ───────────────────────────────────
+async function loadStats() {
+  try {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var ts = firebase.firestore.Timestamp.fromDate(today);
+    var t1 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').where('createdAt', '>=', ts).get();
+    var t2 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').get();
+    var t3 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'timeout').where('createdAt', '>=', ts).get();
+    document.getElementById('stat-today').textContent = t1.size;
+    document.getElementById('stat-total').textContent = t2.size;
+    document.getElementById('stat-timeout').textContent = t3.size;
+  } catch(e) {}
+}
+
+// ─── Duyurular ───────────────────────────────────────
+function loadAnnouncements() {
+  db.collection('announcements').where('marketId', '==', marketId).orderBy('order', 'asc')
+    .onSnapshot(function(snap) { renderAnnouncements(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); })); });
+}
+function renderAnnouncements(list) {
+  var c = document.getElementById('ann-list'); c.innerHTML = '';
+  if (!list.length) { c.innerHTML = '<p class="empty-msg">Henüz duyuru yok.</p>'; return; }
+  list.forEach(function(a) {
+    c.innerHTML += '<div class="ann-card ' + (a.active ? 'ann-active' : 'ann-inactive') + '"><div class="ann-info"><div class="ann-title-text">' + escapeHtml(a.title) + '</div><div class="ann-content-text">' + escapeHtml(a.content || '') + '</div></div><div class="ann-actions"><button class="btn-sm ' + (a.active ? 'btn-warn' : 'btn-success') + '" onclick="toggleAnn(\'' + a.id + '\',' + !a.active + ')">' + (a.active ? 'Pasif' : 'Aktif') + '</button><button class="btn-sm btn-edit" onclick="editAnn(\'' + a.id + '\')">Düzenle</button><button class="btn-sm btn-del" onclick="deleteAnn(\'' + a.id + '\')">Sil</button></div></div>';
+  });
+}
+function showAnnForm(id) { editingAnnId = id || null; document.getElementById('ann-form').style.display = 'block'; document.getElementById('ann-form-title').textContent = id ? 'Düzenle' : 'Yeni Duyuru'; if (!id) { document.getElementById('form-ann-title').value = ''; document.getElementById('form-ann-content').value = ''; document.getElementById('form-ann-img').value = ''; document.getElementById('form-ann-order').value = '1'; } }
+async function editAnn(id) { var d = (await db.collection('announcements').doc(id).get()).data(); showAnnForm(id); document.getElementById('form-ann-title').value = d.title; document.getElementById('form-ann-content').value = d.content || ''; document.getElementById('form-ann-img').value = d.imageUrl || ''; document.getElementById('form-ann-order').value = d.order || 1; }
+async function saveAnn() { var t = document.getElementById('form-ann-title').value.trim(); var c = document.getElementById('form-ann-content').value.trim(); var img = document.getElementById('form-ann-img').value.trim(); var o = parseInt(document.getElementById('form-ann-order').value) || 1; if (!t) { alert('Başlık zorunlu.'); return; } var data = { marketId: marketId, title: t, content: c, imageUrl: img, order: o, active: true }; if (editingAnnId) await db.collection('announcements').doc(editingAnnId).update(data); else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('announcements').add(data); } cancelAnnForm(); }
+function cancelAnnForm() { document.getElementById('ann-form').style.display = 'none'; editingAnnId = null; }
+async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
+async function deleteAnn(id) { if (confirm('Duyuru silinsin mi?')) await db.collection('announcements').doc(id).delete(); }
+
+// ─── Ayarlar ──────────────────────────────────────────
+async function saveSettings() {
+  var name = document.getElementById('settings-name').value.trim();
+  var pin = document.getElementById('settings-pin').value.trim();
+  var logo = document.getElementById('settings-logo').value.trim();
+  var thanks = document.getElementById('settings-thanks').value.trim();
+  var u = {};
+  if (name) u.name = name; if (pin && pin.length >= 4) u.kasiyerPin = pin;
+  if (logo !== undefined) u.logoUrl = logo; if (thanks) u.thanksMessage = thanks;
+  if (!Object.keys(u).length) { alert('Değişiklik yok.'); return; }
+  await db.collection('markets').doc(marketId).update(u);
+  if (u.name) { marketData.name = u.name; document.getElementById('panel-market-name').textContent = u.name; }
+  alert('Kaydedildi.');
+}
+
+// ─── QR ───────────────────────────────────────────────
+var qrInstance = null;
+function getBaseUrl() { return window.location.origin + '/'; }
+function buildQR() {
+  if (!marketId) return;
+  var base = getBaseUrl(); var url = base + 'musteri.html?market=' + marketId;
+  document.getElementById('qr-url-display').textContent = url;
+  var c = document.getElementById('qr-container'); c.innerHTML = '';
+  qrInstance = new QRCode(c, { text: url, width: 200, height: 200, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+  var kc = document.getElementById('kasiyer-links'); if (!kc || !marketData) return; kc.innerHTML = '';
+  for (var i = 1; i <= (marketData.kasaSayisi || 1); i++) {
+    kc.innerHTML += '<div class="url-row" style="margin-bottom:10px"><label>Kasa ' + i + ':</label><code style="font-size:12px;word-break:break-all">' + base + 'kasiyer.html?market=' + marketId + '&kasa=' + i + '</code></div>';
+  }
+}
+function downloadQR() { var c = document.querySelector('#qr-container canvas'); if (!c) { alert('Önce QR sayfasını açın.'); return; } var a = document.createElement('a'); a.download = 'marketpas-qr.png'; a.href = c.toDataURL('image/png'); a.click(); }
+function printQR() { var c = document.querySelector('#qr-container canvas'); if (!c) return; var w = window.open(''); w.document.write('<html><body style="text-align:center;padding:40px;font-family:sans-serif"><h2>' + escapeHtml(marketData?.name || 'Market') + '</h2><p style="color:#666;margin:16px 0">Sıra almak için QR kodu okutun</p><img src="' + c.toDataURL() + '" style="width:250px"><p style="margin-top:20px;font-size:13px;color:#666">MarketPas</p></body></html>'); w.document.close(); setTimeout(function() { w.print(); }, 500); }
+
+// ─── Navigasyon ──────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var sec = document.getElementById('section-' + name); var nav = document.getElementById('nav-' + name);
+  if (sec) sec.classList.add('active'); if (nav) nav.classList.add('active');
+  if (name === 'qr' && marketId) setTimeout(buildQR, 100);
+  if (name === 'settings' && marketData) {
+    document.getElementById('settings-name').value = marketData.name || '';
+    document.getElementById('settings-logo').value = marketData.logoUrl || '';
+    document.getElementById('settings-thanks').value = marketData.thanksMessage || '';
+    document.getElementById('settings-pin').value = '';
+  }
+}
+
+function handleLogout() {
+  if (!confirm('Çıkış?')) return;
+  localStorage.removeItem('mp_market_id');
+  localStorage.removeItem('mp_market_email');
+  window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', init);

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketPas — Süper Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="superadmin.css">
+</head>
+<body>
+
+  <!-- Giriş -->
+  <div id="sa-login">
+    <div class="sa-login-box">
+      <div class="sa-logo">MARKET·PAS</div>
+      <div class="sa-login-sub">Süper Admin Girişi</div>
+      <div class="fg"><label>Kullanıcı Adı</label><input type="text" id="sa-user" autocomplete="off"></div>
+      <div class="fg"><label>Şifre</label><input type="password" id="sa-pass" onkeydown="if(event.key==='Enter') saLogin()"></div>
+      <div class="sa-error" id="sa-login-error"></div>
+      <button class="btn-sa" onclick="saLogin()">Giriş</button>
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <div id="sa-panel" style="display:none">
+    <div class="sa-header">
+      <div class="sa-header-logo">MARKET·PAS <span>ADMIN</span></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="sa-market-count" id="sa-count">— market</span>
+        <button class="btn-sa-sm" onclick="saLogout()">Çıkış</button>
+      </div>
+    </div>
+
+    <!-- Filtre -->
+    <div class="sa-filter-bar">
+      <button class="sa-filter active" data-filter="all" onclick="saFilter('all')">Tümü</button>
+      <button class="sa-filter" data-filter="pending" onclick="saFilter('pending')">Onay Bekleyen</button>
+      <button class="sa-filter" data-filter="active" onclick="saFilter('active')">Aktif</button>
+      <button class="sa-filter" data-filter="expired" onclick="saFilter('expired')">Süresi Dolmuş</button>
+      <button class="sa-filter" data-filter="suspended" onclick="saFilter('suspended')">Askıda</button>
+    </div>
+
+    <!-- Market Listesi -->
+    <div class="sa-list" id="sa-list"></div>
+
+    <!-- Lisans Modal -->
+    <div class="sa-modal-overlay" id="sa-modal" style="display:none" onclick="if(event.target===this) closeModal()">
+      <div class="sa-modal">
+        <div class="sa-modal-title" id="modal-title">Lisans Tanımla</div>
+        <div class="sa-modal-sub" id="modal-sub"></div>
+        <input type="hidden" id="modal-market-id">
+        <div class="sa-license-options">
+          <button class="license-btn" onclick="setLicense(15)">15 Gün<small>Deneme</small></button>
+          <button class="license-btn" onclick="setLicense(30)">30 Gün</button>
+          <button class="license-btn" onclick="setLicense(90)">90 Gün</button>
+          <button class="license-btn" onclick="setLicense(180)">180 Gün</button>
+          <button class="license-btn" onclick="setLicense(360)">360 Gün</button>
+        </div>
+        <button class="btn-sa-close" onclick="closeModal()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="superadmin.js"></script>
+</body>
+</html>
