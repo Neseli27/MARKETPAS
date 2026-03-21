@@ -15,59 +15,47 @@
 <body>
   <div id="loading">
     <div class="spinner"></div>
-    <p style="color:#8b949e;font-size:13px;">Yükleniyor...</p>
+    <p style="color:#8b949e;font-size:12px;">Yükleniyor...</p>
   </div>
 
   <div class="app-layout">
-    <div class="top-section">
+
+    <!-- ═══ ÜST BÖLÜM — Sıra/Kod Alanı ═══ -->
+    <!-- Başlangıçta gizli, QR okutunca açılır -->
+    <div class="top-section hidden" id="top-section">
       <div class="market-header">
         <img id="market-logo" src="" alt="">
         <div id="market-name">MarketPas</div>
-        <div class="welcome-text" id="welcome-text">Hoş geldiniz 👋</div>
       </div>
 
       <div class="screens-wrap">
-
-        <!-- ── Hazır ── -->
+        <!-- Hazır -->
         <div id="screen-ready" class="screen active">
-          <!-- Yoğunluk Barı -->
           <div class="congestion-bar" id="congestion-bar">
             <div class="cg-header">
               <span class="cg-dot" id="cg-dot"></span>
               <span class="cg-label" id="cg-label">Yükleniyor...</span>
             </div>
-            <div class="cg-track">
-              <div class="cg-fill" id="cg-fill" style="width:0%"></div>
-            </div>
+            <div class="cg-track"><div class="cg-fill" id="cg-fill" style="width:0%"></div></div>
             <div class="cg-info" id="cg-info"></div>
           </div>
-
-          <p class="instruction">
-            Alışverişiniz <strong>bitmek üzereyken</strong><br>
-            aşağıdaki düğmeye basarak sıranızı alın.
-          </p>
-          <button class="btn-main" id="btn-queue" onclick="handleQueueButton()">
-            SIRA NUMARASI AL
-          </button>
+          <button class="btn-main" id="btn-queue" onclick="handleQueueButton()">SIRA NUMARASI AL</button>
         </div>
 
-        <!-- ── Kuyrukta ── -->
+        <!-- Kuyrukta -->
         <div id="screen-queued" class="screen">
           <div class="pulse-ring">⏳</div>
           <div class="info-card">
             <div class="title">Sıraya Alındınız</div>
-            <div class="sub" id="queue-wait-info">Birazdan kasaya yönlendirileceksiniz.<br>Bu ekranı kapatmayın.</div>
+            <div class="sub">Kasaya çağrılınca bildirim alacaksınız.</div>
           </div>
-          <!-- Tahmini süre -->
           <div class="wait-estimate" id="wait-estimate" style="display:none">
-            <span>⏱</span>
-            <span>Tahmini bekleme: </span>
-            <strong id="wait-time-display">—</strong>
+            <span>⏱</span><span>Tahmini: </span><strong id="wait-time-display">—</strong>
           </div>
           <button class="btn-secondary" onclick="handleCancel()">İptal Et</button>
         </div>
 
-        <!-- ── Çağrıldı ── -->
+        <!-- Çağrıldı -->
         <div id="screen-called" class="screen">
           <div class="code-box">
             <div class="code-label">Kasaya Gidiniz — Kodunuz</div>
@@ -75,57 +63,58 @@
             <div class="kasa-badge" id="called-kasa">Kasa —</div>
           </div>
           <div class="countdown-row">
-            <span>⏱ Süre:</span>
-            <span id="countdown">2:00</span>
+            <span>⏱</span><span id="countdown">2:00</span>
+            <button class="btn-ertele" onclick="handleErtele()" style="margin-left:auto">⏸ Ertele</button>
           </div>
-          <button class="btn-ertele" onclick="handleErtele()">⏸ Ertele — Biraz daha vaktim var</button>
         </div>
 
-        <!-- ── Kasaya geldi — önceki müşteri bitsin bekliyor ── -->
+        <!-- Kasaya geldi — bekliyor -->
         <div id="screen-arrived" class="screen">
           <div class="info-card" style="border-color:rgba(245,158,11,.3)">
-            <div style="font-size:40px;margin-bottom:12px">🕐</div>
-            <div class="title">Birazdan Kasa İşlemleriniz<br>Başlayacak</div>
-            <div class="sub" style="margin-top:8px;color:var(--warn)">Lütfen kasadan ayrılmayınız.</div>
+            <div class="title">🕐 Birazdan Kasa İşlemleriniz Başlayacak</div>
+            <div class="sub" style="color:var(--warn)">Kasadan ayrılmayınız.</div>
           </div>
         </div>
 
-        <!-- ── Ödeme Başlıyor — aktif müşteri ── -->
+        <!-- Ödeme başlıyor -->
         <div id="screen-active" class="screen">
           <div class="info-card" style="border-color:rgba(16,229,176,.3)">
-            <div style="font-size:40px;margin-bottom:12px">💳</div>
-            <div class="title">Ödeme İşlemleriniz<br>Başlamak Üzere</div>
-            <div class="sub" style="margin-top:8px;color:var(--accent)">Lütfen kasadan ayrılmayınız.</div>
+            <div class="title">💳 Ödeme İşlemleriniz Başlamak Üzere</div>
+            <div class="sub" style="color:var(--accent)">Kasadan ayrılmayınız.</div>
           </div>
         </div>
 
-        <!-- ── Teşekkür ── -->
+        <!-- Teşekkür -->
         <div id="screen-thanks" class="screen">
-          <div class="check-icon" style="font-size:40px;width:80px;height:80px">🛍️</div>
           <div class="info-card" style="border-color:rgba(16,229,176,.3)">
-            <div class="title" id="thanks-title">Teşekkürler!</div>
+            <div class="title" id="thanks-title">🛍️ Teşekkürler!</div>
             <div class="sub" id="thanks-sub">İyi günler dileriz.</div>
           </div>
         </div>
 
-        <!-- ── Timeout ── -->
+        <!-- Timeout -->
         <div id="screen-timeout" class="screen">
-          <div class="warn-icon">⚠️</div>
           <div class="info-card" style="border-color:rgba(245,158,11,.3)">
-            <div class="title">Süreniz Doldu</div>
-            <div class="sub">Kasaya zamanında ulaşamadınız.<br>Hazır olduğunuzda tekrar alabilirsiniz.</div>
+            <div class="title">⚠️ Süreniz Doldu</div>
+            <div class="sub">Kasaya zamanında ulaşamadınız.</div>
           </div>
           <button class="btn-retry" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button>
         </div>
-
       </div>
     </div>
 
-    <!-- ─── ALT BÖLÜM — DUYURULAR ─── -->
+    <!-- ═══ ALT BÖLÜM — Reklamlar / Kampanyalar ═══ -->
+    <!-- Vitrin modunda %100, sıra modunda %70 -->
     <div class="bottom-section empty" id="ann-section">
+      <!-- Vitrin header — sadece vitrin modunda görünür -->
+      <div class="vitrin-header" id="vitrin-header">
+        <img id="vitrin-logo" src="" alt="" class="vitrin-logo">
+        <div id="vitrin-name" class="vitrin-name"></div>
+      </div>
       <div class="ann-slider" id="ann-slider"></div>
       <div class="ann-dots" id="ann-dots"></div>
     </div>
+
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

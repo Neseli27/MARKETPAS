@@ -1,24 +1,15 @@
 {
   "name": "MarketPas",
   "short_name": "MarketPas",
-  "description": "Market sıra takip sistemi",
+  "description": "Dijital market sıra sistemi — kampanyalar ve sıra takibi",
   "start_url": "/musteri.html",
   "display": "standalone",
   "background_color": "#0d1117",
   "theme_color": "#10e5b0",
   "orientation": "portrait",
+  "categories": ["shopping", "utilities"],
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
