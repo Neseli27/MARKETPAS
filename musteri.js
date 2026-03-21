@@ -403,9 +403,75 @@ async function handleRetryQueue() {
   } catch (e) { btn.disabled = false; }
 }
 
-// ─── QR Kod Okut (Vitrin modundan) ───────────────────
-function promptQRScan() {
-  // Tıklanınca bir şey yapma — yazı zaten bilgilendirici
+// ─── Kamera ile QR Kod Okuma ─────────────────────────
+function handleQRCapture(input) {
+  var file = input.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Canvas'a çiz ve pixel verisini al
+      var canvas = document.createElement('canvas');
+      var maxDim = 800;
+      var w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        var ratio = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+      }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var imageData = ctx.getImageData(0, 0, w, h);
+
+      // jsQR ile QR kodu çöz
+      var code = null;
+      if (typeof jsQR !== 'undefined') {
+        code = jsQR(imageData.data, w, h);
+      }
+
+      if (code && code.data) {
+        // URL'den market parametresini çıkar
+        try {
+          var url = new URL(code.data);
+          var qMarket = url.searchParams.get('market');
+          if (qMarket) {
+            // QR okundu — sıra moduna geç
+            marketId = qMarket;
+            localStorage.setItem('mp_last_market', marketId);
+            sessionId = localStorage.getItem('mp_s_' + marketId);
+            if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
+            isQueueMode = true;
+            history.replaceState({}, '', '?market=' + marketId);
+            enterQueueMode();
+            loadCongestion();
+            checkExistingQueue();
+            requestNotificationPermission();
+            if (!statsInterval) statsInterval = setInterval(loadCongestion, 15000);
+          } else {
+            showQRError();
+          }
+        } catch(err) {
+          showQRError();
+        }
+      } else {
+        showQRError();
+      }
+      input.value = '';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showQRError() {
+  // Kısa süre hata göster — toast tarzı
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1f2937;color:#f87171;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;border:1px solid rgba(248,113,113,.3);box-shadow:0 4px 16px rgba(0,0,0,.3)';
+  toast.textContent = 'QR kod okunamadı. Lütfen tekrar deneyin.';
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 3000);
 }
 
 // ─── Yardımcılar ─────────────────────────────────────

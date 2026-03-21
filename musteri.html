@@ -106,19 +106,15 @@
     <!-- ═══ ALT BÖLÜM — Reklamlar / Kampanyalar ═══ -->
     <!-- Vitrin modunda %100, sıra modunda %70 -->
     <div class="bottom-section empty" id="ann-section">
-      <!-- Vitrin header — sadece vitrin modunda görünür -->
+      <!-- Vitrin header — market adı + kamera ikonu -->
       <div class="vitrin-header" id="vitrin-header">
         <div class="vitrin-top">
           <img id="vitrin-logo" src="" alt="" class="vitrin-logo">
           <div id="vitrin-name" class="vitrin-name"></div>
-        </div>
-        <div class="qr-scan-banner" onclick="promptQRScan()">
-          <div class="qr-scan-icon">📷</div>
-          <div class="qr-scan-text">
-            <div class="qr-scan-title">Sıra Almak İçin Kare Kod Okutun</div>
-            <div class="qr-scan-sub">Marketteki QR kodu telefonunuzla tarayın</div>
-          </div>
-          <div class="qr-scan-arrow">›</div>
+          <button class="qr-cam-btn" onclick="document.getElementById('qr-cam-input').click()" title="Kare Kod Okut">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
+          <input type="file" id="qr-cam-input" accept="image/*" capture="environment" onchange="handleQRCapture(this)" style="display:none">
         </div>
       </div>
       <div class="ann-slider" id="ann-slider"></div>
@@ -127,6 +123,7 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
