@@ -141,6 +141,10 @@ function startLiveListeners() {
 function renderRegisters(registers) {
   var grid = document.getElementById('registers-grid');
   grid.innerHTML = '';
+
+  // marketData'yı güncel kasa sayısıyla güncelle
+  if (marketData) marketData.kasaSayisi = registers.length;
+
   registers.forEach(function(r) {
     var sc = 'idle', st = 'BOŞTA';
     if (r.activeQueueId && r.waitingQueueId) { sc = 'full'; st = 'DOLU'; }
@@ -158,7 +162,6 @@ function renderRegisters(registers) {
     lbl.appendChild(inp); lbl.appendChild(sl); td.appendChild(lbl);
     var sp = document.createElement('span'); sp.textContent = r.active ? 'Açık' : 'Kapalı'; td.appendChild(sp);
 
-    // Sil butonu
     var del = document.createElement('button');
     del.className = 'btn btn-sm'; del.style.cssText = 'background:#FEE2E2;color:#DC2626;margin-left:8px;padding:4px 10px;font-size:11px;';
     del.textContent = 'Sil';
@@ -168,6 +171,12 @@ function renderRegisters(registers) {
     card.appendChild(td);
     grid.appendChild(card);
   });
+
+  // QR sayfası açıksa kasiyer linklerini de güncelle
+  var qrSection = document.getElementById('section-qr');
+  if (qrSection && qrSection.classList.contains('active')) {
+    buildKasiyerLinks(getBaseUrl());
+  }
 }
 
 async function toggleKasa(regId, active) { await db.collection('registers').doc(regId).update({ active: active }); }
@@ -280,10 +289,116 @@ function renderAnnouncements(list) {
     c.innerHTML += '<div class="ann-card ' + (a.active ? 'ann-active' : 'ann-inactive') + '"><div class="ann-info"><div class="ann-title-text">' + escapeHtml(a.title) + '</div><div class="ann-content-text">' + escapeHtml(a.content || '') + '</div></div><div class="ann-actions"><button class="btn-sm ' + (a.active ? 'btn-warn' : 'btn-success') + '" onclick="toggleAnn(\'' + a.id + '\',' + !a.active + ')">' + (a.active ? 'Pasif' : 'Aktif') + '</button><button class="btn-sm btn-edit" onclick="editAnn(\'' + a.id + '\')">Düzenle</button><button class="btn-sm btn-del" onclick="deleteAnn(\'' + a.id + '\')">Sil</button></div></div>';
   });
 }
-function showAnnForm(id) { editingAnnId = id || null; document.getElementById('ann-form').style.display = 'block'; document.getElementById('ann-form-title').textContent = id ? 'Düzenle' : 'Yeni Duyuru'; if (!id) { document.getElementById('form-ann-title').value = ''; document.getElementById('form-ann-content').value = ''; document.getElementById('form-ann-img').value = ''; document.getElementById('form-ann-order').value = '1'; } }
-async function editAnn(id) { var d = (await db.collection('announcements').doc(id).get()).data(); showAnnForm(id); document.getElementById('form-ann-title').value = d.title; document.getElementById('form-ann-content').value = d.content || ''; document.getElementById('form-ann-img').value = d.imageUrl || ''; document.getElementById('form-ann-order').value = d.order || 1; }
-async function saveAnn() { var t = document.getElementById('form-ann-title').value.trim(); var c = document.getElementById('form-ann-content').value.trim(); var img = document.getElementById('form-ann-img').value.trim(); var o = parseInt(document.getElementById('form-ann-order').value) || 1; if (!t) { alert('Başlık zorunlu.'); return; } var data = { marketId: marketId, title: t, content: c, imageUrl: img, order: o, active: true }; if (editingAnnId) await db.collection('announcements').doc(editingAnnId).update(data); else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('announcements').add(data); } cancelAnnForm(); }
-function cancelAnnForm() { document.getElementById('ann-form').style.display = 'none'; editingAnnId = null; }
+// ─── Upload Handling ─────────────────────────────────
+var uploadedImageData = null; // base64 data URL
+
+function handleFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 2MB.'); input.value = ''; return; }
+  if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
+
+  // Sıkıştır ve önizle
+  compressImage(file, 1200, 0.8, function(dataUrl) {
+    uploadedImageData = dataUrl;
+    document.getElementById('upload-preview-img').src = dataUrl;
+    document.getElementById('upload-preview').style.display = 'block';
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('form-ann-img').value = ''; // URL alanını temizle
+  });
+}
+
+function removeUpload() {
+  uploadedImageData = null;
+  document.getElementById('upload-preview').style.display = 'none';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('form-ann-file').value = '';
+}
+
+function compressImage(file, maxWidth, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── Duyuru CRUD ─────────────────────────────────────
+function showAnnForm(id) {
+  editingAnnId = id || null;
+  uploadedImageData = null;
+  document.getElementById('ann-form').style.display = 'block';
+  document.getElementById('ann-form-title').textContent = id ? 'Duyuru Düzenle' : 'Yeni Duyuru';
+  document.getElementById('upload-preview').style.display = 'none';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('form-ann-file').value = '';
+  if (!id) {
+    document.getElementById('form-ann-title').value = '';
+    document.getElementById('form-ann-content').value = '';
+    document.getElementById('form-ann-img').value = '';
+    document.getElementById('form-ann-order').value = '1';
+  }
+}
+
+async function editAnn(id) {
+  var d = (await db.collection('announcements').doc(id).get()).data();
+  showAnnForm(id);
+  document.getElementById('form-ann-title').value = d.title;
+  document.getElementById('form-ann-content').value = d.content || '';
+  document.getElementById('form-ann-img').value = d.imageUrl || '';
+  document.getElementById('form-ann-order').value = d.order || 1;
+  // Mevcut görseli önizlemede göster
+  if (d.imageUrl) {
+    document.getElementById('upload-preview-img').src = d.imageUrl;
+    document.getElementById('upload-preview').style.display = 'block';
+    document.getElementById('upload-placeholder').style.display = 'none';
+  }
+}
+
+async function saveAnn() {
+  var t = document.getElementById('form-ann-title').value.trim();
+  var c = document.getElementById('form-ann-content').value.trim();
+  var urlImg = document.getElementById('form-ann-img').value.trim();
+  var o = parseInt(document.getElementById('form-ann-order').value) || 1;
+  if (!t) { alert('Başlık zorunludur.'); return; }
+
+  var btn = document.getElementById('btn-save-ann');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+
+  // Görsel: upload varsa onu kullan, yoksa URL'yi kullan
+  var imageUrl = uploadedImageData || urlImg;
+
+  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl, order: o, active: true };
+
+  try {
+    if (editingAnnId) {
+      await db.collection('announcements').doc(editingAnnId).update(data);
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('announcements').add(data);
+    }
+    cancelAnnForm();
+  } catch(e) {
+    alert('Kayıt hatası: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Kaydet';
+}
+
+function cancelAnnForm() {
+  document.getElementById('ann-form').style.display = 'none';
+  editingAnnId = null;
+  uploadedImageData = null;
+}
 async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
 async function deleteAnn(id) { if (confirm('Duyuru silinsin mi?')) await db.collection('announcements').doc(id).delete(); }
 
@@ -311,9 +426,19 @@ function buildQR() {
   document.getElementById('qr-url-display').textContent = url;
   var c = document.getElementById('qr-container'); c.innerHTML = '';
   qrInstance = new QRCode(c, { text: url, width: 200, height: 200, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
-  var kc = document.getElementById('kasiyer-links'); if (!kc || !marketData) return; kc.innerHTML = '';
-  for (var i = 1; i <= (marketData.kasaSayisi || 1); i++) {
-    kc.innerHTML += '<div class="url-row" style="margin-bottom:10px"><label>Kasa ' + i + ':</label><code style="font-size:12px;word-break:break-all">' + base + 'kasiyer.html?market=' + marketId + '&kasa=' + i + '</code></div>';
+  buildKasiyerLinks(base);
+}
+
+function buildKasiyerLinks(base) {
+  var kc = document.getElementById('kasiyer-links');
+  if (!kc || !marketData) return;
+  kc.innerHTML = '';
+  var count = marketData.kasaSayisi || 0;
+  for (var i = 1; i <= count; i++) {
+    kc.innerHTML += '<div class="url-row" style="margin-bottom:10px"><label>Kasa ' + i + ':</label><code style="font-size:12px;word-break:break-all">' + (base || getBaseUrl()) + 'kasiyer.html?market=' + marketId + '&kasa=' + i + '</code></div>';
+  }
+  if (count === 0) {
+    kc.innerHTML = '<p style="color:var(--text2);font-size:13px">Henüz kasa eklenmemiş. Dashboard\'dan kasa ekleyin.</p>';
   }
 }
 function downloadQR() { var c = document.querySelector('#qr-container canvas'); if (!c) { alert('Önce QR sayfasını açın.'); return; } var a = document.createElement('a'); a.download = 'marketpas-qr.png'; a.href = c.toDataURL('image/png'); a.click(); }
