@@ -182,8 +182,37 @@ main{flex:1;margin-left:260px;min-height:100vh}
 .upload-remove{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:white;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5}
 .upload-remove:hover{background:#DC2626}
 
-/* ═══ RESPONSIVE ═══ */
+/* ═══ RAPOR KARTLARI — Neon meyve renkleri ═══ */
+.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.report-card{
+  background:var(--card);border-radius:16px;padding:20px;
+  text-align:center;transition:all .2s;position:relative;overflow:hidden;
+}
+.report-card:hover{transform:translateY(-3px)}
+.rc-icon{font-size:24px;margin-bottom:8px}
+.rc-value{font-size:28px;font-weight:800;line-height:1;margin-bottom:6px}
+.rc-label{font-size:13px;font-weight:700;margin-bottom:2px}
+.rc-sub{font-size:11px;color:var(--text3)}
+
+.rc-teal{border:2px solid #2DD4BF;box-shadow:0 0 14px rgba(45,212,191,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-teal .rc-value{color:#0D9488} .rc-teal .rc-label{color:#0F766E}
+.rc-green{border:2px solid #4ADE80;box-shadow:0 0 14px rgba(74,222,128,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-green .rc-value{color:#16A34A} .rc-green .rc-label{color:#15803D}
+.rc-blue{border:2px solid #60A5FA;box-shadow:0 0 14px rgba(96,165,250,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-blue .rc-value{color:#2563EB} .rc-blue .rc-label{color:#1D4ED8}
+.rc-orange{border:2px solid #FB923C;box-shadow:0 0 14px rgba(251,146,60,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-orange .rc-value{color:#EA580C} .rc-orange .rc-label{color:#C2410C}
+.rc-purple{border:2px solid #A78BFA;box-shadow:0 0 14px rgba(167,139,250,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-purple .rc-value{color:#7C3AED} .rc-purple .rc-label{color:#6D28D9}
+.rc-pink{border:2px solid #F472B6;box-shadow:0 0 14px rgba(244,114,182,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-pink .rc-value{color:#DB2777} .rc-pink .rc-label{color:#BE185D}
+.rc-yellow{border:2px solid #FBBF24;box-shadow:0 0 14px rgba(251,191,36,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-yellow .rc-value{color:#D97706} .rc-yellow .rc-label{color:#B45309}
+.rc-red{border:2px solid #F87171;box-shadow:0 0 14px rgba(248,113,113,.12),0 4px 14px rgba(0,0,0,.03)}
+.rc-red .rc-value{color:#DC2626} .rc-red .rc-label{color:#B91C1C}
+
 @media(max-width:768px){
+  .report-grid{grid-template-columns:repeat(2,1fr)}
   .sidebar{width:100%;min-height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:12px}
   .sidebar-market-name{padding:8px 12px 4px;font-size:20px}
   .sidebar-market-sub{padding:0 12px 8px}

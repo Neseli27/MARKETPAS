@@ -38,6 +38,7 @@
     <!-- Navigasyon -->
     <nav>
       <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span>📊</span><span>Dashboard</span></div>
+      <div class="nav-item" id="nav-report" onclick="showSection('report')"><span>📈</span><span>Günlük Rapor</span></div>
       <div class="nav-item" id="nav-qr" onclick="showSection('qr')"><span>📱</span><span>QR Kodlar</span></div>
       <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>Duyurular</span></div>
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
@@ -90,6 +91,86 @@
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Her kasanın bugünkü ortalama işlem süresi</p>
         <div id="perf-grid"></div>
         <div id="perf-empty" style="display:none;text-align:center;padding:24px;color:var(--text2);font-size:14px">Henüz yeterli veri yok.</div>
+      </div>
+    </div>
+
+    <!-- ═══ GÜNLÜK RAPOR ═══ -->
+    <div id="section-report" class="section">
+      <div class="section-title">📈 Günlük Rapor</div>
+      <div class="section-sub">Bugünün detaylı müşteri ve kasa istatistikleri</div>
+
+      <!-- Ana metrikler -->
+      <div class="report-grid" id="report-grid">
+        <div class="report-card rc-teal">
+          <div class="rc-icon">👥</div>
+          <div class="rc-value" id="rp-current">0</div>
+          <div class="rc-label">Anlık Müşteri</div>
+          <div class="rc-sub">Şu an markette</div>
+        </div>
+        <div class="report-card rc-green">
+          <div class="rc-icon">🚪</div>
+          <div class="rc-value" id="rp-left">0</div>
+          <div class="rc-label">Ayrılan Müşteri</div>
+          <div class="rc-sub">Ödeme yapıp çıkan</div>
+        </div>
+        <div class="report-card rc-blue">
+          <div class="rc-icon">📊</div>
+          <div class="rc-value" id="rp-total">0</div>
+          <div class="rc-label">Toplam Müşteri</div>
+          <div class="rc-sub">Bugün gelen</div>
+        </div>
+        <div class="report-card rc-orange">
+          <div class="rc-icon">⏱️</div>
+          <div class="rc-value" id="rp-avg-stay">—</div>
+          <div class="rc-label">Ort. Kalış Süresi</div>
+          <div class="rc-sub">Tüm müşteriler</div>
+        </div>
+        <div class="report-card rc-purple">
+          <div class="rc-icon">🐢</div>
+          <div class="rc-value" id="rp-longest">—</div>
+          <div class="rc-label">En Uzun Kalış</div>
+          <div class="rc-sub" id="rp-longest-sub">—</div>
+        </div>
+        <div class="report-card rc-pink">
+          <div class="rc-icon">⚡</div>
+          <div class="rc-value" id="rp-shortest">—</div>
+          <div class="rc-label">En Kısa Kalış</div>
+          <div class="rc-sub" id="rp-shortest-sub">—</div>
+        </div>
+        <div class="report-card rc-yellow">
+          <div class="rc-icon">🔥</div>
+          <div class="rc-value" id="rp-peak-hour">—</div>
+          <div class="rc-label">En Yoğun Saat</div>
+          <div class="rc-sub" id="rp-peak-sub">—</div>
+        </div>
+        <div class="report-card rc-red">
+          <div class="rc-icon">⚠️</div>
+          <div class="rc-value" id="rp-timeout-rate">%0</div>
+          <div class="rc-label">Timeout Oranı</div>
+          <div class="rc-sub">Kasaya gelemeyenler</div>
+        </div>
+      </div>
+
+      <!-- Saat Bazlı Grafik -->
+      <div class="card" style="margin-top:4px">
+        <h3>🕐 Saatlik Müşteri Dağılımı</h3>
+        <div style="position:relative;height:300px">
+          <canvas id="hourly-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Kasa Bazlı Dağılım -->
+      <div class="card">
+        <h3>🖥️ Kasa Bazlı Performans</h3>
+        <div style="position:relative;height:260px">
+          <canvas id="kasa-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Rapor yenile butonu -->
+      <div style="text-align:center;padding:8px 0">
+        <button class="btn" onclick="loadReport()" style="font-size:13px">🔄 Raporu Yenile</button>
+        <span style="font-size:12px;color:var(--text3);margin-left:8px" id="report-updated">—</span>
       </div>
     </div>
 
@@ -163,6 +244,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>

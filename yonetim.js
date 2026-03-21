@@ -451,6 +451,7 @@ function showSection(name) {
   var sec = document.getElementById('section-' + name); var nav = document.getElementById('nav-' + name);
   if (sec) sec.classList.add('active'); if (nav) nav.classList.add('active');
   if (name === 'qr' && marketId) setTimeout(buildQR, 100);
+  if (name === 'report' && marketId) setTimeout(loadReport, 100);
   if (name === 'settings' && marketData) {
     document.getElementById('settings-name').value = marketData.name || '';
     document.getElementById('settings-logo').value = marketData.logoUrl || '';
@@ -464,6 +465,311 @@ function handleLogout() {
   localStorage.removeItem('mp_market_id');
   localStorage.removeItem('mp_market_email');
   window.location.href = '/';
+}
+
+// ═══════════════════════════════════════════════════════
+// GÜNLÜK RAPOR
+// ═══════════════════════════════════════════════════════
+
+var hourlyChartInstance = null;
+var kasaChartInstance = null;
+
+async function loadReport() {
+  try {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var todayTs = firebase.firestore.Timestamp.fromDate(today);
+
+    // Bugünkü tüm kuyruk kayıtları
+    var allSnap = await db.collection('queue')
+      .where('marketId', '==', marketId)
+      .where('createdAt', '>=', todayTs)
+      .get();
+
+    var allRecords = [];
+    allSnap.forEach(function(doc) { allRecords.push(Object.assign({ id: doc.id }, doc.data())); });
+
+    // Durumlara göre ayır
+    var activeStatuses = ['waiting','priority','priority_ready','called','arrived','active'];
+    var doneRecords = allRecords.filter(function(r) { return r.status === 'done'; });
+    var timeoutRecords = allRecords.filter(function(r) { return r.status === 'timeout'; });
+    var currentInMarket = allRecords.filter(function(r) { return activeStatuses.indexOf(r.status) > -1; });
+
+    // ─── 1. Anlık Müşteri ───
+    document.getElementById('rp-current').textContent = currentInMarket.length;
+
+    // ─── 2. Ayrılan Müşteri ───
+    document.getElementById('rp-left').textContent = doneRecords.length;
+
+    // ─── 3. Toplam Müşteri ───
+    document.getElementById('rp-total').textContent = allRecords.length;
+
+    // ─── 4-6. Kalış Süreleri ───
+    var stayTimes = [];
+    doneRecords.forEach(function(r) {
+      if (r.createdAt && r.completedAt) {
+        var start = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+        var end = r.completedAt.toDate ? r.completedAt.toDate() : new Date(r.completedAt);
+        var diff = end.getTime() - start.getTime();
+        if (diff > 0 && diff < 4 * 60 * 60 * 1000) stayTimes.push(diff); // max 4 saat mantıklı
+      }
+    });
+
+    if (stayTimes.length > 0) {
+      var totalStay = stayTimes.reduce(function(a,b) { return a + b; }, 0);
+      var avgStay = totalStay / stayTimes.length;
+      var longest = Math.max.apply(null, stayTimes);
+      var shortest = Math.min.apply(null, stayTimes);
+
+      document.getElementById('rp-avg-stay').textContent = formatDuration(avgStay);
+      document.getElementById('rp-longest').textContent = formatDuration(longest);
+      document.getElementById('rp-longest-sub').textContent = 'QR okutma → ödeme arası';
+      document.getElementById('rp-shortest').textContent = formatDuration(shortest);
+      document.getElementById('rp-shortest-sub').textContent = 'QR okutma → ödeme arası';
+    } else {
+      document.getElementById('rp-avg-stay').textContent = '—';
+      document.getElementById('rp-longest').textContent = '—';
+      document.getElementById('rp-longest-sub').textContent = 'Henüz veri yok';
+      document.getElementById('rp-shortest').textContent = '—';
+      document.getElementById('rp-shortest-sub').textContent = 'Henüz veri yok';
+    }
+
+    // ─── 7. En Yoğun Saat ───
+    var hourCounts = {};
+    allRecords.forEach(function(r) {
+      if (r.createdAt) {
+        var d = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+        var h = d.getHours();
+        hourCounts[h] = (hourCounts[h] || 0) + 1;
+      }
+    });
+
+    var peakHour = null; var peakCount = 0;
+    for (var h in hourCounts) {
+      if (hourCounts[h] > peakCount) { peakCount = hourCounts[h]; peakHour = parseInt(h); }
+    }
+
+    if (peakHour !== null) {
+      document.getElementById('rp-peak-hour').textContent = padHour(peakHour) + ' - ' + padHour(peakHour + 1);
+      document.getElementById('rp-peak-sub').textContent = peakCount + ' müşteri';
+    } else {
+      document.getElementById('rp-peak-hour').textContent = '—';
+      document.getElementById('rp-peak-sub').textContent = 'Henüz veri yok';
+    }
+
+    // ─── 8. Timeout Oranı ───
+    var totalProcessed = doneRecords.length + timeoutRecords.length;
+    var timeoutRate = totalProcessed > 0 ? Math.round((timeoutRecords.length / totalProcessed) * 100) : 0;
+    document.getElementById('rp-timeout-rate').textContent = '%' + timeoutRate;
+
+    // ─── 9. Saat Bazlı Grafik ───
+    renderHourlyChart(hourCounts);
+
+    // ─── 10. Kasa Bazlı Dağılım ───
+    await renderKasaChart(doneRecords);
+
+    // Güncelleme zamanı
+    document.getElementById('report-updated').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+
+  } catch(e) { console.error('Rapor yükleme hatası:', e); }
+}
+
+// ─── Süre Formatlama (dk sn) ─────────────────────────
+function formatDuration(ms) {
+  if (!ms || ms <= 0) return '—';
+  var totalSec = Math.round(ms / 1000);
+  var min = Math.floor(totalSec / 60);
+  var sec = totalSec % 60;
+  if (min >= 60) {
+    var hr = Math.floor(min / 60);
+    min = min % 60;
+    return hr + ' sa ' + min + ' dk';
+  }
+  return min + ' dk ' + sec + ' sn';
+}
+
+function padHour(h) {
+  h = h % 24;
+  return (h < 10 ? '0' : '') + h + ':00';
+}
+
+// ─── Saat Bazlı Çubuk Grafik ────────────────────────
+function renderHourlyChart(hourCounts) {
+  var ctx = document.getElementById('hourly-chart');
+  if (!ctx) return;
+
+  // 07:00 - 23:00 arası saatler
+  var labels = [];
+  var data = [];
+  var bgColors = [];
+  var borderColors = [];
+
+  // Neon renk paleti (saate göre döner)
+  var neonColors = [
+    { bg: 'rgba(45,212,191,.2)', border: '#2DD4BF' },   // teal
+    { bg: 'rgba(74,222,128,.2)', border: '#4ADE80' },    // green
+    { bg: 'rgba(96,165,250,.2)', border: '#60A5FA' },    // blue
+    { bg: 'rgba(251,146,60,.2)', border: '#FB923C' },    // orange
+    { bg: 'rgba(167,139,250,.2)', border: '#A78BFA' },   // purple
+    { bg: 'rgba(244,114,182,.2)', border: '#F472B6' },   // pink
+    { bg: 'rgba(251,191,36,.2)', border: '#FBBF24' },    // yellow
+    { bg: 'rgba(248,113,113,.2)', border: '#F87171' }    // red
+  ];
+
+  for (var h = 7; h <= 23; h++) {
+    labels.push(padHour(h));
+    data.push(hourCounts[h] || 0);
+    var ci = (h - 7) % neonColors.length;
+    bgColors.push(neonColors[ci].bg);
+    borderColors.push(neonColors[ci].border);
+  }
+
+  if (hourlyChartInstance) hourlyChartInstance.destroy();
+
+  hourlyChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Müşteri Sayısı',
+        data: data,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleFont: { family: 'Outfit', weight: '600' },
+          bodyFont: { family: 'Outfit' },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.y + ' müşteri'; }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { family: 'Outfit', size: 12 }, color: '#94A3B8' },
+          grid: { color: 'rgba(0,0,0,.04)' }
+        },
+        x: {
+          ticks: { font: { family: 'Outfit', size: 11 }, color: '#94A3B8' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ─── Kasa Bazlı Grafik ──────────────────────────────
+async function renderKasaChart(doneRecords) {
+  var ctx = document.getElementById('kasa-chart');
+  if (!ctx) return;
+
+  var kasaData = {};
+  doneRecords.forEach(function(r) {
+    var kNo = r.kasaNo;
+    if (!kNo) return;
+    if (!kasaData[kNo]) kasaData[kNo] = { count: 0, totalTime: 0 };
+    kasaData[kNo].count++;
+    if (r.arrivedAt && r.completedAt) {
+      var a = r.arrivedAt.toDate ? r.arrivedAt.toDate() : new Date(r.arrivedAt);
+      var c = r.completedAt.toDate ? r.completedAt.toDate() : new Date(r.completedAt);
+      var pt = c.getTime() - a.getTime();
+      if (pt > 0 && pt < 1800000) kasaData[kNo].totalTime += pt;
+    }
+  });
+
+  var keys = Object.keys(kasaData).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+
+  var labels = keys.map(function(k) { return 'Kasa ' + k; });
+  var counts = keys.map(function(k) { return kasaData[k].count; });
+  var avgTimes = keys.map(function(k) {
+    return kasaData[k].count > 0 ? Math.round(kasaData[k].totalTime / kasaData[k].count / 60000 * 10) / 10 : 0;
+  });
+
+  var neonBg = ['rgba(74,222,128,.2)','rgba(96,165,250,.2)','rgba(251,146,60,.2)','rgba(167,139,250,.2)','rgba(244,114,182,.2)','rgba(45,212,191,.2)','rgba(251,191,36,.2)','rgba(248,113,113,.2)'];
+  var neonBorder = ['#4ADE80','#60A5FA','#FB923C','#A78BFA','#F472B6','#2DD4BF','#FBBF24','#F87171'];
+
+  if (kasaChartInstance) kasaChartInstance.destroy();
+
+  kasaChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Müşteri Sayısı',
+          data: counts,
+          backgroundColor: keys.map(function(_,i) { return neonBg[i % neonBg.length]; }),
+          borderColor: keys.map(function(_,i) { return neonBorder[i % neonBorder.length]; }),
+          borderWidth: 2, borderRadius: 8, borderSkipped: false,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Ort. İşlem (dk)',
+          data: avgTimes,
+          type: 'line',
+          borderColor: '#A78BFA',
+          backgroundColor: 'rgba(167,139,250,.1)',
+          borderWidth: 3,
+          pointBackgroundColor: '#7C3AED',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'Outfit', size: 12 }, padding: 16, usePointStyle: true, pointStyleWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleFont: { family: 'Outfit', weight: '600' },
+          bodyFont: { family: 'Outfit' },
+          padding: 12, cornerRadius: 8
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          position: 'left',
+          title: { display: true, text: 'Müşteri', font: { family: 'Outfit', size: 12 }, color: '#94A3B8' },
+          ticks: { stepSize: 1, font: { family: 'Outfit', size: 12 }, color: '#94A3B8' },
+          grid: { color: 'rgba(0,0,0,.04)' }
+        },
+        y1: {
+          beginAtZero: true,
+          position: 'right',
+          title: { display: true, text: 'Ort. dk', font: { family: 'Outfit', size: 12 }, color: '#A78BFA' },
+          ticks: { font: { family: 'Outfit', size: 12 }, color: '#A78BFA' },
+          grid: { display: false }
+        },
+        x: {
+          ticks: { font: { family: 'Outfit', size: 12 }, color: '#94A3B8' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
