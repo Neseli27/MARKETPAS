@@ -46,24 +46,26 @@ function notifyCustomer(code, kasaNo) {
 // ─── Başlangıç ────────────────────────────────────────
 function init() {
   var params = new URLSearchParams(window.location.search);
-  marketId = params.get('market');
+  var urlMarket = params.get('market');
 
   // Kayıtlı market ID (PWA için)
-  if (!marketId) {
+  if (!urlMarket) {
     marketId = localStorage.getItem('mp_last_market');
+  } else {
+    marketId = urlMarket;
   }
 
   if (!marketId) {
-    showError('Geçersiz QR kod. Lütfen marketteki QR kodu okutun.');
+    showError('Lütfen marketteki QR kodu telefonunuzla okutun.');
     return;
   }
 
   // Market ID'yi kaydet (PWA sonraki açılışlar için)
   localStorage.setItem('mp_last_market', marketId);
 
-  // URL'de market parametresi varsa → sıra modu (QR okutmuş)
-  // Yoksa → vitrin modu (PWA'dan açmış)
-  isQueueMode = params.has('market');
+  // URL'de market parametresi varsa → QR okutmuş → sıra modu
+  // Yoksa → PWA'dan açmış → vitrin modu
+  isQueueMode = !!urlMarket;
 
   sessionId = localStorage.getItem('mp_s_' + marketId);
   if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
@@ -266,7 +268,12 @@ async function checkExistingQueue() {
 function startQueueListener() {
   if (queueListener) queueListener();
   queueListener = db.collection('queue').doc(sessionId).onSnapshot(function(doc) {
-    if (!doc.exists) { showScreen('ready'); return; }
+    if (!doc.exists) {
+      // Sıra kaydı yok — vitrin moduna dön
+      if (!isQueueMode) { enterVitrinMode(); }
+      else { showScreen('ready'); }
+      return;
+    }
     myQueueData = doc.data();
     var status = myQueueData.status;
 
@@ -304,10 +311,14 @@ function startQueueListener() {
         document.getElementById('thanks-title').textContent = '🛍️ Teşekkürler!';
         document.getElementById('thanks-sub').textContent = market?.thanksMessage || 'Alışverişiniz için teşekkür ederiz. İyi günler!';
         showScreen('thanks');
-        // 5sn sonra vitrin moduna dön
+        // 5sn sonra vitrin moduna dön ve URL'yi temizle
         setTimeout(function() {
           newSession();
           enterVitrinMode();
+          // URL'den ?market= parametresini kaldır (sonraki açılışta vitrin modu olsun)
+          if (window.location.search) {
+            history.replaceState({}, '', window.location.pathname);
+          }
         }, 5000);
         break;
       case 'cancelled':
@@ -369,7 +380,8 @@ async function handleCancel() {
   try { await db.collection('queue').doc(sessionId).update({ status: 'cancelled' }); } catch(e) {}
   if (queueListener) queueListener();
   newSession();
-  enterVitrinMode(); // Vitrin moduna dön
+  enterVitrinMode();
+  if (window.location.search) history.replaceState({}, '', window.location.pathname);
 }
 
 async function handleErtele() {
@@ -389,6 +401,12 @@ async function handleRetryQueue() {
     await db.collection('queue').doc(sessionId).update({ status: 'priority', calledAt: null, code: null, registerId: null, kasaNo: null });
     notifiedForThisCall = false; startQueueListener(); await tryAssignToOpenRegister();
   } catch (e) { btn.disabled = false; }
+}
+
+// ─── QR Kod Okut (Vitrin modundan) ───────────────────
+function promptQRScan() {
+  // Kullanıcıya bilgi ver — telefon kamerasını açamıyoruz ama yönlendirebiliyoruz
+  alert('Marketteki QR kodu telefonunuzun kamerasıyla okutun.\n\nQR kodu okuttuğunuzda sıra alma ekranı otomatik açılacaktır.');
 }
 
 // ─── Yardımcılar ─────────────────────────────────────

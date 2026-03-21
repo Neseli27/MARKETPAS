@@ -146,18 +146,38 @@ html, body { height:100%; overflow:hidden; font-family:'Outfit',sans-serif; back
 /* Vitrin header — sadece vitrin modunda görünür */
 .vitrin-header {
   position:absolute; top:0; left:0; right:0; z-index:10;
-  display:none; /* JS ile gösterilir */
-  align-items:center; gap:12px;
-  padding:16px 20px;
-  background:linear-gradient(180deg, rgba(13,17,23,.9) 0%, rgba(13,17,23,.4) 70%, transparent 100%);
+  display:none;
+  flex-direction:column;
+  background:linear-gradient(180deg, rgba(13,17,23,.95) 0%, rgba(13,17,23,.7) 80%, transparent 100%);
+  padding:0;
 }
 .vitrin-header.visible { display:flex; }
-.vitrin-logo { max-height:32px; max-width:120px; object-fit:contain; display:none; }
-.vitrin-logo.has-img { display:block; }
-.vitrin-name {
-  font-family:'Bebas Neue',sans-serif;
-  font-size:22px; letter-spacing:2px; color:var(--text);
+
+.vitrin-top {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 16px 8px;
 }
+.vitrin-logo { max-height:28px; max-width:100px; object-fit:contain; display:none; }
+.vitrin-logo.has-img { display:block; }
+.vitrin-name { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--text); }
+
+/* QR Kod Okut banner */
+.qr-scan-banner {
+  display:flex; align-items:center; gap:12px;
+  margin:0 12px 12px;
+  padding:12px 16px;
+  background:rgba(16,229,176,.08);
+  border:1px solid rgba(16,229,176,.2);
+  border-radius:12px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.qr-scan-banner:active { background:rgba(16,229,176,.15); transform:scale(.98); }
+.qr-scan-icon { font-size:24px; flex-shrink:0; }
+.qr-scan-text { flex:1; }
+.qr-scan-title { font-size:13px; font-weight:700; color:var(--accent); }
+.qr-scan-sub { font-size:11px; color:var(--text2); margin-top:1px; }
+.qr-scan-arrow { font-size:24px; color:var(--accent); font-weight:300; }
 
 /* Slider */
 .ann-slider { width:100%; height:100%; position:relative; }

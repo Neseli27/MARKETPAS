@@ -108,8 +108,18 @@
     <div class="bottom-section empty" id="ann-section">
       <!-- Vitrin header — sadece vitrin modunda görünür -->
       <div class="vitrin-header" id="vitrin-header">
-        <img id="vitrin-logo" src="" alt="" class="vitrin-logo">
-        <div id="vitrin-name" class="vitrin-name"></div>
+        <div class="vitrin-top">
+          <img id="vitrin-logo" src="" alt="" class="vitrin-logo">
+          <div id="vitrin-name" class="vitrin-name"></div>
+        </div>
+        <div class="qr-scan-banner" onclick="promptQRScan()">
+          <div class="qr-scan-icon">📷</div>
+          <div class="qr-scan-text">
+            <div class="qr-scan-title">Sıra Almak İçin Kare Kod Okutun</div>
+            <div class="qr-scan-sub">Marketteki QR kodu telefonunuzla tarayın</div>
+          </div>
+          <div class="qr-scan-arrow">›</div>
+        </div>
       </div>
       <div class="ann-slider" id="ann-slider"></div>
       <div class="ann-dots" id="ann-dots"></div>

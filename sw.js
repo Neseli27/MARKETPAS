@@ -1,4 +1,4 @@
-var CACHE = 'marketpas-v3.1';
+var CACHE = 'marketpas-v3.2';
 var ASSETS = ['/musteri.html','/musteri.css','/musteri.js','/firebase-config.js','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install', function(e) {
