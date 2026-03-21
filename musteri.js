@@ -405,8 +405,7 @@ async function handleRetryQueue() {
 
 // ─── QR Kod Okut (Vitrin modundan) ───────────────────
 function promptQRScan() {
-  // Kullanıcıya bilgi ver — telefon kamerasını açamıyoruz ama yönlendirebiliyoruz
-  alert('Marketteki QR kodu telefonunuzun kamerasıyla okutun.\n\nQR kodu okuttuğunuzda sıra alma ekranı otomatik açılacaktır.');
+  // Tıklanınca bir şey yapma — yazı zaten bilgilendirici
 }
 
 // ─── Yardımcılar ─────────────────────────────────────
