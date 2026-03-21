@@ -84,10 +84,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 /* ═══ KART ETİKETLERİ ═══ */
 .card-section-label{
   font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-  padding:4px 12px;border-radius:6px;display:inline-block;
+  padding:4px 12px;border-radius:6px;display:inline-block;margin-bottom:8px;
 }
-.card-section-label:first-of-type{color:var(--blue);background:var(--blue-bg)}
-.card-section-label:nth-of-type(2){color:var(--warn);background:var(--warn-light)}
+.label-active{color:var(--blue);background:var(--blue-bg);border-left:3px solid var(--blue)}
+.label-waiting{color:var(--warn);background:var(--warn-light);border-left:3px solid var(--warn)}
 
 /* ═══ MÜŞTERİ KARTLARI ═══ */
 .customer-card{
@@ -100,7 +100,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 }
 
 /* Boş */
-.customer-card.empty{opacity:.5}
+.customer-card.empty{opacity:.7;border-style:dashed}
 .customer-card.empty::before{background:#CBD5E1}
 
 /* Aktif — ödeme yapılıyor */
