@@ -111,10 +111,24 @@
         <div class="vitrin-top">
           <img id="vitrin-logo" src="" alt="" class="vitrin-logo">
           <div id="vitrin-name" class="vitrin-name"></div>
-          <button class="qr-cam-btn" onclick="document.getElementById('qr-cam-input').click()" title="Kare Kod Okut">
+          <button class="qr-cam-btn" onclick="openQRScanner()" title="Kare Kod Okut">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </button>
-          <input type="file" id="qr-cam-input" accept="image/*" capture="environment" onchange="handleQRCapture(this)" style="display:none">
+        </div>
+      </div>
+
+      <!-- QR Scanner Modal -->
+      <div class="qr-scanner-overlay" id="qr-scanner" style="display:none">
+        <div class="qr-scanner-box">
+          <div class="qr-scanner-header">
+            <span>📷 Kare Kod Tarayıcı</span>
+            <button class="qr-scanner-close" onclick="closeQRScanner()">✕</button>
+          </div>
+          <div class="qr-scanner-video-wrap">
+            <video id="qr-video" playsinline autoplay></video>
+            <div class="qr-scanner-frame"></div>
+          </div>
+          <div class="qr-scanner-status" id="qr-status">Kamerayı QR koda doğrultun...</div>
         </div>
       </div>
       <div class="ann-slider" id="ann-slider"></div>

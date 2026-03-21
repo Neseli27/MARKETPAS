@@ -403,75 +403,95 @@ async function handleRetryQueue() {
   } catch (e) { btn.disabled = false; }
 }
 
-// ─── Kamera ile QR Kod Okuma ─────────────────────────
-function handleQRCapture(input) {
-  var file = input.files[0];
-  if (!file) return;
+// ─── Canlı Kamera QR Tarayıcı ────────────────────────
+var qrStream = null;
+var qrScanInterval = null;
 
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var img = new Image();
-    img.onload = function() {
-      // Canvas'a çiz ve pixel verisini al
-      var canvas = document.createElement('canvas');
-      var maxDim = 800;
-      var w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        var ratio = Math.min(maxDim / w, maxDim / h);
-        w = Math.round(w * ratio); h = Math.round(h * ratio);
-      }
-      canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      var imageData = ctx.getImageData(0, 0, w, h);
+function openQRScanner() {
+  var overlay = document.getElementById('qr-scanner');
+  var video = document.getElementById('qr-video');
+  var status = document.getElementById('qr-status');
+  overlay.style.display = 'flex';
+  status.textContent = 'Kamera açılıyor...';
+  status.style.color = '#8b949e';
 
-      // jsQR ile QR kodu çöz
-      var code = null;
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 640 } }
+  }).then(function(stream) {
+    qrStream = stream;
+    video.srcObject = stream;
+    video.play();
+    status.textContent = 'Kamerayı QR koda doğrultun...';
+
+    // Her 200ms'de bir frame'i tara
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    qrScanInterval = setInterval(function() {
+      if (video.readyState < 2) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
       if (typeof jsQR !== 'undefined') {
-        code = jsQR(imageData.data, w, h);
-      }
-
-      if (code && code.data) {
-        // URL'den market parametresini çıkar
-        try {
-          var url = new URL(code.data);
-          var qMarket = url.searchParams.get('market');
-          if (qMarket) {
-            // QR okundu — sıra moduna geç
-            marketId = qMarket;
-            localStorage.setItem('mp_last_market', marketId);
-            sessionId = localStorage.getItem('mp_s_' + marketId);
-            if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
-            isQueueMode = true;
-            history.replaceState({}, '', '?market=' + marketId);
-            enterQueueMode();
-            loadCongestion();
-            checkExistingQueue();
-            requestNotificationPermission();
-            if (!statsInterval) statsInterval = setInterval(loadCongestion, 15000);
-          } else {
-            showQRError();
-          }
-        } catch(err) {
-          showQRError();
+        var code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: 'dontInvert' });
+        if (code && code.data) {
+          // QR bulundu!
+          processQRResult(code.data, status);
         }
-      } else {
-        showQRError();
       }
-      input.value = '';
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    }, 200);
+
+  }).catch(function(err) {
+    console.error('Kamera hatası:', err);
+    status.textContent = 'Kamera açılamadı. Tarayıcı izin vermiyor olabilir.';
+    status.style.color = '#f87171';
+  });
 }
 
-function showQRError() {
-  // Kısa süre hata göster — toast tarzı
-  var toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1f2937;color:#f87171;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;border:1px solid rgba(248,113,113,.3);box-shadow:0 4px 16px rgba(0,0,0,.3)';
-  toast.textContent = 'QR kod okunamadı. Lütfen tekrar deneyin.';
-  document.body.appendChild(toast);
-  setTimeout(function() { toast.remove(); }, 3000);
+function closeQRScanner() {
+  if (qrScanInterval) { clearInterval(qrScanInterval); qrScanInterval = null; }
+  if (qrStream) { qrStream.getTracks().forEach(function(t) { t.stop(); }); qrStream = null; }
+  var video = document.getElementById('qr-video');
+  if (video) video.srcObject = null;
+  document.getElementById('qr-scanner').style.display = 'none';
+}
+
+function processQRResult(data, statusEl) {
+  try {
+    var url = new URL(data);
+    var qMarket = url.searchParams.get('market');
+    if (qMarket) {
+      // Başarılı!
+      statusEl.textContent = '✓ QR kod okundu!';
+      statusEl.style.color = '#10e5b0';
+      if (navigator.vibrate) navigator.vibrate(100);
+
+      // Scanner'ı kapat ve sıra moduna geç
+      setTimeout(function() {
+        closeQRScanner();
+        marketId = qMarket;
+        localStorage.setItem('mp_last_market', marketId);
+        sessionId = localStorage.getItem('mp_s_' + marketId);
+        if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
+        isQueueMode = true;
+        history.replaceState({}, '', '?market=' + marketId);
+
+        // Market değiştiyse yeniden yükle
+        loadMarket();
+      }, 500);
+      return;
+    }
+  } catch(e) {}
+
+  // Geçersiz QR
+  statusEl.textContent = 'Bu bir MarketPas QR kodu değil. Doğru kodu okutun.';
+  statusEl.style.color = '#fbbf24';
+  setTimeout(function() {
+    statusEl.textContent = 'Kamerayı QR koda doğrultun...';
+    statusEl.style.color = '#8b949e';
+  }, 2000);
 }
 
 // ─── Yardımcılar ─────────────────────────────────────
