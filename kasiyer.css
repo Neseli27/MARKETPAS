@@ -7,7 +7,7 @@
   --warn:#d97706; --warn-bg:#FFFBEB; --warn-light:#FEF3C7;
   --danger:#dc2626; --danger-bg:#fef2f2;
   --blue:#2563eb; --blue-bg:#EFF6FF; --blue-light:#DBEAFE;
-  --purple:#7C3AED; --purple-bg:#F5F3FF;
+  --purple:#7C3AED;
   --radius:14px;
 }
 
@@ -15,111 +15,95 @@
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
 /* ═══ LOGIN ═══ */
-#login-screen {
-  position:fixed;inset:0;
-  background:linear-gradient(135deg, #F0F2F5 0%, #E2E8F0 100%);
-  display:flex;align-items:center;justify-content:center;padding:24px;z-index:100;
-}
-.login-box {
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:20px;padding:36px 32px;width:100%;max-width:380px;
-  box-shadow:0 8px 40px rgba(0,0,0,.08);
-}
-.login-logo {
-  font-family:'Bebas Neue',sans-serif;font-size:32px;
-  letter-spacing:3px;
-  background:linear-gradient(135deg, var(--accent), #047857);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  margin-bottom:4px;
-}
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#F0F2F5,#E2E8F0);display:flex;align-items:center;justify-content:center;padding:24px;z-index:100}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;background:linear-gradient(135deg,var(--accent),#047857);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
 .login-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
 .form-group{margin-bottom:16px}
 .form-group label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
-.form-group input{
-  width:100%;padding:12px 14px;border:1px solid var(--border);
-  border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;
-  background:var(--bg3);color:var(--text);outline:none;transition:all .2s;
-}
+.form-group input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;background:var(--bg3);color:var(--text);outline:none;transition:all .2s}
 .form-group input:focus{border-color:var(--accent);background:var(--bg2);box-shadow:0 0 0 3px rgba(5,150,105,.1)}
-.btn-login{
-  width:100%;padding:14px;
-  background:linear-gradient(135deg, var(--accent), #047857);
-  color:white;border:none;border-radius:10px;font-family:'Outfit',sans-serif;
-  font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px;
-  box-shadow:0 4px 14px rgba(5,150,105,.25);
-}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#047857);color:white;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px;box-shadow:0 4px 14px rgba(5,150,105,.25)}
 .btn-login:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(5,150,105,.3)}
 .btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
 /* ═══ HEADER ═══ */
 #main-screen{display:none;flex-direction:column;flex:1;min-height:100vh}
-.kasiyer-header{
-  background:var(--bg2);border-bottom:2px solid var(--border);
-  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 2px 8px rgba(0,0,0,.04);
-}
-.header-kasa{
-  font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;
-  background:linear-gradient(135deg, var(--text), #334155);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
+.kasiyer-header{background:var(--bg2);border-bottom:2px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.header-kasa{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
 .header-market{font-size:13px;color:var(--accent);margin-top:2px;font-weight:600}
 .online-badge{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);font-weight:500}
 .online-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:blink 2s ease infinite;box-shadow:0 0 6px rgba(5,150,105,.4)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .btn-logout{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:16px;transition:all .2s}
 .btn-logout:hover{background:var(--danger-bg);border-color:var(--danger)}
-
-/* Kuyruk badge */
-.queue-badge{
-  display:flex;align-items:center;gap:6px;
-  background:var(--blue-bg);border:1px solid var(--blue-light);
-  border-radius:100px;padding:6px 14px;
-  font-size:13px;font-weight:600;color:var(--blue);
-}
+.queue-badge{display:flex;align-items:center;gap:6px;background:var(--blue-bg);border:1px solid var(--blue-light);border-radius:100px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue)}
 
 /* ═══ İÇERİK ═══ */
 .main-content{flex:1;padding:24px;max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 
-/* ═══ KART ETİKETLERİ ═══ */
-.card-section-label{
-  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-  padding:4px 12px;border-radius:6px;display:inline-block;margin-bottom:8px;
-}
-.label-active{color:var(--blue);background:var(--blue-bg);border-left:3px solid var(--blue)}
-.label-waiting{color:var(--warn);background:var(--warn-light);border-left:3px solid var(--warn)}
+/* ═══ KART ETİKETLERİ — sade, renk sol kenarda ═══ */
+.card-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:0 0 6px 2px;display:block}
+.label-active{color:#059669}
+.label-waiting{color:#d97706}
 
-/* ═══ MÜŞTERİ KARTLARI ═══ */
+/* ═══ MÜŞTERİ KARTLARI — neon bordür + kabarık gölge ═══ */
 .customer-card{
-  background:var(--bg2);border:2px solid var(--border);
-  border-radius:var(--radius);padding:22px 24px;
-  transition:all .3s;position:relative;overflow:hidden;
-}
-.customer-card::before{
-  content:'';position:absolute;top:0;left:0;bottom:0;width:4px;
+  background:var(--bg2);border-radius:var(--radius);padding:22px 24px;transition:all .3s;
 }
 
-/* Boş */
-.customer-card.empty{opacity:.7;border-style:dashed}
-.customer-card.empty::before{background:#CBD5E1}
+/* Boş — aktif slot (yeşil neon çerçeve) */
+.customer-card.active-card.empty{
+  border:2px solid #86EFAC;
+  box-shadow:0 0 12px rgba(34,197,94,.12), 0 4px 16px rgba(0,0,0,.03);
+  opacity:.65;
+}
 
-/* Aktif — ödeme yapılıyor */
-.customer-card.occupied{border-color:var(--blue);background:var(--blue-bg);box-shadow:0 2px 12px rgba(37,99,235,.08)}
-.customer-card.occupied::before{background:var(--blue)}
-.customer-card.occupied .card-badge{color:var(--blue)}
+/* Boş — bekleme slot (turuncu neon çerçeve) */
+.customer-card.waiting-card.empty{
+  border:2px solid #FCD34D;
+  box-shadow:0 0 12px rgba(252,211,77,.15), 0 4px 16px rgba(0,0,0,.03);
+  opacity:.65;
+}
 
-/* Çağrıldı — geliyor */
-.customer-card.calling{border-color:var(--warn);background:var(--warn-bg);animation:pulse-border 2s ease infinite;box-shadow:0 2px 12px rgba(217,119,6,.08)}
-.customer-card.calling::before{background:var(--warn)}
-.customer-card.calling .card-badge{color:var(--warn)}
-@keyframes pulse-border{0%,100%{border-color:var(--warn)}50%{border-color:rgba(217,119,6,.3)}}
+/* Dolu — aktif ödeme yapılıyor (YEŞİL NEON kabarık) */
+.customer-card.active-card.occupied{
+  border:2px solid #22C55E;
+  background:linear-gradient(135deg, #F0FDF4, #ECFDF5);
+  box-shadow:
+    0 0 16px rgba(34,197,94,.2),
+    0 0 32px rgba(34,197,94,.08),
+    0 6px 20px rgba(0,0,0,.06);
+}
+.customer-card.active-card.occupied .card-badge{color:#059669}
+.customer-card.active-card.occupied .card-code{color:#15803D}
 
-/* Geldi — kasada */
-.customer-card.arrived{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 2px 12px rgba(5,150,105,.08)}
-.customer-card.arrived::before{background:var(--accent)}
-.customer-card.arrived .card-badge{color:var(--accent)}
+/* Çağrıldı — geliyor (TURUNCU NEON pulse) */
+.customer-card.waiting-card.calling{
+  border:2px solid #F59E0B;
+  background:linear-gradient(135deg, #FFFBEB, #FEF3C7);
+  animation:neon-pulse-orange 2s ease infinite;
+}
+.customer-card.waiting-card.calling .card-badge{color:#B45309}
+.customer-card.waiting-card.calling .card-code{color:#92400E}
+@keyframes neon-pulse-orange{
+  0%,100%{box-shadow:0 0 16px rgba(245,158,11,.2), 0 0 32px rgba(245,158,11,.06), 0 6px 20px rgba(0,0,0,.06)}
+  50%{box-shadow:0 0 24px rgba(245,158,11,.35), 0 0 48px rgba(245,158,11,.12), 0 6px 20px rgba(0,0,0,.06)}
+}
 
-/* Kart içerikleri */
+/* Geldi — kasada (YEŞİL NEON kabarık) */
+.customer-card.waiting-card.arrived{
+  border:2px solid #22C55E;
+  background:linear-gradient(135deg, #F0FDF4, #DCFCE7);
+  box-shadow:
+    0 0 16px rgba(34,197,94,.2),
+    0 0 32px rgba(34,197,94,.08),
+    0 6px 20px rgba(0,0,0,.06);
+}
+.customer-card.waiting-card.arrived .card-badge{color:#059669}
+.customer-card.waiting-card.arrived .card-code{color:#15803D}
+
+/* ═══ KART İÇERİKLERİ ═══ */
 .card-badge{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:12px}
 .card-code{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:5px;line-height:1;margin-bottom:14px;color:var(--text)}
 .card-timer{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--warn);margin-bottom:14px}
@@ -128,7 +112,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .card-empty-text{font-size:14px;color:var(--text2)}
 .card-arrived-text{font-size:15px;font-weight:600;color:var(--accent)}
 
-/* ═══ KASİYER BUTONLARI ═══ */
+/* ═══ BUTONLAR ═══ */
 .btn-geldi{
   width:100%;padding:16px;
   background:linear-gradient(135deg, var(--accent), #047857);
@@ -149,7 +133,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 }
 .btn-islem-tamam:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(37,99,235,.3)}
 
-/* ═══ ÇAĞIR BUTONU ═══ */
 .btn-cagir{
   width:100%;padding:18px;
   background:linear-gradient(135deg, var(--purple), #6D28D9);
@@ -163,13 +146,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ═══ OTOMATİK/MANUEL ═══ */
 .mode-bar{margin-top:12px;display:flex;flex-direction:column;gap:12px}
-.mode-toggle-wrap{
-  display:flex;align-items:center;gap:12px;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:10px;padding:12px 16px;
-}
+.mode-toggle-wrap{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
 .mode-label{font-size:14px;font-weight:600;color:var(--text2)}
-
 .mode-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
 .mode-switch input{opacity:0;width:0;height:0}
 .mode-slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:.3s}
