@@ -237,21 +237,38 @@
         <div class="form-row"><label>Açıklama (opsiyonel)</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
         <div class="form-row">
           <label>Banner Görseli (1080×1920px · 9:16 dikey · JPG/PNG)</label>
-          <div class="upload-area" id="upload-area">
-            <div class="upload-preview" id="upload-preview" style="display:none">
-              <img id="upload-preview-img" src="" alt="">
-              <button type="button" class="upload-remove" onclick="removeUpload()">✕</button>
-              <div class="upload-size" id="upload-size"></div>
+          <div class="phone-mockup-wrap">
+            <div class="phone-mockup">
+              <div class="phone-notch"></div>
+              <div class="phone-top-area">
+                <div class="phone-top-label">▲ Sıra bilgisi alanı (%30)</div>
+              </div>
+              <div class="phone-banner-area" id="upload-area" style="position:relative">
+                <div class="upload-preview" id="upload-preview" style="display:none">
+                  <img id="upload-preview-img" src="" alt="">
+                  <button type="button" class="upload-remove" onclick="removeUpload()">✕</button>
+                  <div class="upload-size" id="upload-size"></div>
+                </div>
+                <div class="upload-placeholder" id="upload-placeholder" onclick="document.getElementById('form-ann-file').click()" style="cursor:pointer">
+                  <div style="font-size:28px;margin-bottom:6px">📸</div>
+                  <div style="font-size:13px;font-weight:600;color:#f0f6fc">Görsel Yükle</div>
+                  <div style="font-size:11px;color:#8b949e;margin-top:4px">Tıkla · JPG, PNG</div>
+                  <div style="font-size:10px;color:#6b7280;margin-top:4px">Otomatik sıkıştırılır</div>
+                </div>
+                <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="display:none">
+              </div>
+              <div class="phone-bottom-bar"></div>
             </div>
-            <div class="upload-placeholder" id="upload-placeholder">
-              <div style="font-size:32px;margin-bottom:8px">📸</div>
-              <div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Her boyut</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır — dosya boyutu sınırı yok</div>
+            <div class="phone-mockup-info">
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">📱 Müşteri Telefonu Önizleme</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.6">
+                Üst %30 = Sıra bilgisi alanı<br>
+                Alt %70 = <strong>Banner alanı</strong> (burası)<br>
+                Banner ekranın büyük bölümünü kaplar
+              </div>
             </div>
-            <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
             <span style="font-size:12px;color:var(--text3)">veya</span>
             <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
           </div>
