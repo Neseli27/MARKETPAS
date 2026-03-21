@@ -326,7 +326,7 @@ function handleFileSelect(input) {
   if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
 
   var origSizeMB = (file.size / 1024 / 1024).toFixed(1);
-  document.getElementById('upload-placeholder').innerHTML = '<div style="padding:20px;text-align:center;color:var(--accent)"><div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Görsel sıkıştırılıyor... (' + origSizeMB + ' MB)</div>';
+  document.getElementById('upload-placeholder').innerHTML = '<div style="padding:16px;text-align:center;color:#10e5b0"><div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border:3px solid #374151;border-top-color:#10e5b0;border-radius:50%;animation:spin .8s linear infinite"></div><div style="font-size:12px">Sıkıştırılıyor... (' + origSizeMB + ' MB)</div></div>';
 
   // Dosya boyutuna göre sıkıştırma agresifliğini ayarla
   var steps = [
@@ -351,12 +351,14 @@ function handleFileSelect(input) {
   tryCompress(0);
 }
 
+var defaultPlaceholderHTML = '<div style="font-size:28px;margin-bottom:6px">📸</div><div style="font-size:13px;font-weight:600;color:#f0f6fc">Görsel Yükle</div><div style="font-size:11px;color:#8b949e;margin-top:4px">Tıkla veya sürükle bırak</div><div style="font-size:10px;color:#6b7280;margin-top:4px">JPG, PNG · Otomatik sıkıştırılır</div>';
+
 function finishUpload(dataUrl, sizeKB) {
   uploadedImageData = dataUrl;
   document.getElementById('upload-preview-img').src = dataUrl;
   document.getElementById('upload-preview').style.display = 'block';
   document.getElementById('upload-placeholder').style.display = 'none';
-  document.getElementById('upload-placeholder').innerHTML = '<div style="font-size:32px;margin-bottom:8px">📸</div><div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Her boyut</div><div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır</div>';
+  document.getElementById('upload-placeholder').innerHTML = defaultPlaceholderHTML;
   var sizeEl = document.getElementById('upload-size');
   if (sizeEl) sizeEl.textContent = sizeKB + ' KB';
   document.getElementById('form-ann-img').value = '';
@@ -366,6 +368,7 @@ function removeUpload() {
   uploadedImageData = null;
   document.getElementById('upload-preview').style.display = 'none';
   document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('upload-placeholder').innerHTML = defaultPlaceholderHTML;
   document.getElementById('form-ann-file').value = '';
 }
 

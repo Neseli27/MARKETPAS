@@ -203,6 +203,18 @@ function loadAnnouncements() {
     .onSnapshot(function(snap) {
       announcements = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
       renderAnnouncements();
+    }, function(error) {
+      console.warn('Duyuru sorgusu hata (index eksik olabilir), fallback deneniyor:', error.message);
+      // Fallback — index yoksa sadece marketId ile çek, client tarafında filtrele
+      db.collection('announcements')
+        .where('marketId', '==', marketId)
+        .onSnapshot(function(snap) {
+          announcements = snap.docs
+            .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
+            .filter(function(a) { return a.active === true; })
+            .sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+          renderAnnouncements();
+        });
     });
 }
 
