@@ -323,25 +323,32 @@ var uploadedImageData = null;
 function handleFileSelect(input) {
   var file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 5MB.'); input.value = ''; return; }
   if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
 
-  document.getElementById('upload-placeholder').innerHTML = '<div style="padding:20px;text-align:center;color:var(--accent)"><div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Görsel işleniyor...</div>';
+  var origSizeMB = (file.size / 1024 / 1024).toFixed(1);
+  document.getElementById('upload-placeholder').innerHTML = '<div style="padding:20px;text-align:center;color:var(--accent)"><div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Görsel sıkıştırılıyor... (' + origSizeMB + ' MB)</div>';
 
-  // Adım 1: 800px ve %45 kaliteyle sıkıştır
-  compressImage(file, 800, 0.45, function(dataUrl) {
-    var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+  // Dosya boyutuna göre sıkıştırma agresifliğini ayarla
+  var steps = [
+    { maxW: 800, q: 0.45 },
+    { maxW: 600, q: 0.30 },
+    { maxW: 500, q: 0.20 },
+    { maxW: 400, q: 0.15 }
+  ];
 
-    // 700KB'dan büyükse daha da sıkıştır
-    if (sizeKB > 700) {
-      compressImage(file, 600, 0.3, function(smallUrl) {
-        sizeKB = Math.round(smallUrl.length * 0.75 / 1024);
-        finishUpload(smallUrl, sizeKB);
-      });
-    } else {
-      finishUpload(dataUrl, sizeKB);
-    }
-  });
+  function tryCompress(stepIndex) {
+    var s = steps[stepIndex];
+    compressImage(file, s.maxW, s.q, function(dataUrl) {
+      var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+      if (sizeKB > 700 && stepIndex < steps.length - 1) {
+        tryCompress(stepIndex + 1);
+      } else {
+        finishUpload(dataUrl, sizeKB);
+      }
+    });
+  }
+
+  tryCompress(0);
 }
 
 function finishUpload(dataUrl, sizeKB) {
@@ -349,7 +356,7 @@ function finishUpload(dataUrl, sizeKB) {
   document.getElementById('upload-preview-img').src = dataUrl;
   document.getElementById('upload-preview').style.display = 'block';
   document.getElementById('upload-placeholder').style.display = 'none';
-  document.getElementById('upload-placeholder').innerHTML = '<div style="font-size:32px;margin-bottom:8px">📸</div><div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Max 5MB</div><div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır</div>';
+  document.getElementById('upload-placeholder').innerHTML = '<div style="font-size:32px;margin-bottom:8px">📸</div><div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Tıkla veya sürükle bırak · JPG, PNG · Her boyut</div><div style="font-size:11px;color:var(--text3);margin-top:6px">Sistem otomatik sıkıştırır</div>';
   var sizeEl = document.getElementById('upload-size');
   if (sizeEl) sizeEl.textContent = sizeKB + ' KB';
   document.getElementById('form-ann-img').value = '';
