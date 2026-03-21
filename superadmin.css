@@ -120,6 +120,69 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .license-btn:hover{border-color:var(--green);background:var(--green-light)}
 .btn-sa-close{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer}
 
+/* ── Fiyatlandırma Paneli ── */
+.pricing-panel {
+  padding: 0 24px 8px;
+}
+.pricing-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.pricing-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.pricing-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+.pricing-inputs {
+  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.pricing-input-group { flex: 1; min-width: 160px; }
+.pricing-input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.pricing-input-group small { display: block; font-size: 11px; color: var(--text3); margin-top: 4px; }
+.pricing-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border); border-radius: 10px; padding: 0 12px;
+  background: #F8FAFC;
+}
+.pricing-input-wrap input {
+  flex: 1; padding: 12px 0; border: none; background: transparent;
+  font-family: 'Outfit',sans-serif; font-size: 20px; font-weight: 700;
+  color: var(--text); outline: none; width: 80px;
+}
+.pricing-input-wrap span { font-size: 14px; font-weight: 600; color: var(--text2); }
+.pricing-arrow { font-size: 24px; color: var(--text3); padding-bottom: 20px; }
+
+.pricing-preview {
+  background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+}
+.pricing-preview-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
+.pricing-preview-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+}
+.pricing-tier {
+  text-align: center; padding: 12px 8px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.pricing-tier-range { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 4px; }
+.pricing-tier-price { font-size: 20px; font-weight: 800; color: var(--green); }
+.pricing-tier-daily { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* ── Market kartında fiyat şeridi ── */
+.sa-card-price-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 24px;
+  background: #FAFBFD; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--text2);
+}
+.price-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 12px; border-radius: 100px;
+  font-size: 12px; font-weight: 700;
+  background: #EFF6FF; color: var(--blue);
+}
+.price-tag.custom { background: #FFF7ED; color: var(--orange); }
+.price-daily { font-weight: 700; color: var(--text); }
+.price-monthly { font-size: 12px; color: var(--text3); }
+
 @media(max-width:768px){
   .sa-stats{grid-template-columns:repeat(2,1fr)}
   .sa-card-top{flex-direction:column}

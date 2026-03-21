@@ -156,5 +156,28 @@ function formatWaitTime(ms) {
   if (m < 1) return '< 1 dk'; if (m === 1) return '~1 dk'; return '~' + m + ' dk';
 }
 
+// ─── Fiyatlandırma Hesaplama ─────────────────────────
+// Kasa sayısına göre birim fiyat hesapla (min-max arası kademeli)
+// Kasa arttıkça birim fiyat max'tan min'e doğru düşer
+function calculateUnitPrice(kasaSayisi, minPrice, maxPrice) {
+  if (!kasaSayisi || kasaSayisi <= 0) return maxPrice;
+  if (minPrice >= maxPrice) return minPrice;
+  // Kademe eşikleri: 1-2 → max, 3-5 → %75, 6-10 → %50, 11-20 → %25, 20+ → min
+  var ratio;
+  if (kasaSayisi <= 2) ratio = 1;
+  else if (kasaSayisi <= 5) ratio = 0.75;
+  else if (kasaSayisi <= 10) ratio = 0.45;
+  else if (kasaSayisi <= 20) ratio = 0.2;
+  else ratio = 0;
+  var price = minPrice + (maxPrice - minPrice) * ratio;
+  return Math.round(price);
+}
+
+// Market için geçerli birim fiyat: özel fiyat varsa onu, yoksa otomatik hesapla
+function getEffectiveUnitPrice(market, minPrice, maxPrice) {
+  if (market.customPrice && market.customPrice > 0) return market.customPrice;
+  return calculateUnitPrice(market.kasaSayisi || 0, minPrice, maxPrice);
+}
+
 // ─── Türkiye Şehirleri ───────────────────────────────
 var TURKEY_CITIES = ["Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya","Ardahan","Artvin","Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkâri","Hatay","Iğdır","Isparta","İstanbul","İzmir","Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kilis","Kırıkkale","Kırklareli","Kırşehir","Kocaeli","Konya","Kütahya","Malatya","Manisa","Mardin","Mersin","Muğla","Muş","Nevşehir","Niğde","Ordu","Osmaniye","Rize","Sakarya","Samsun","Şanlıurfa","Siirt","Sinop","Sivas","Şırnak","Tekirdağ","Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak"];

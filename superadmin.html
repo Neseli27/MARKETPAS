@@ -28,13 +28,44 @@
         <span class="sa-market-count" id="sa-count">— market</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn-sa-sm" style="background:#F0FDF4;color:#16A34A;border-color:rgba(22,163,74,.2)" onclick="togglePricingPanel()">💰 Fiyatlandırma</button>
         <span style="font-size:12px;color:#94A3B8;letter-spacing:2px;font-weight:600;">MARKET·PAS</span>
         <button class="btn-sa-sm" onclick="saLogout()">Çıkış</button>
       </div>
     </div>
 
+    <!-- Fiyatlandırma Ayarları (gizli panel) -->
+    <div class="pricing-panel" id="pricing-panel" style="display:none">
+      <div class="pricing-card">
+        <div class="pricing-title">💰 Fiyatlandırma Ayarları</div>
+        <div class="pricing-sub">Kasa başı günlük birim fiyat aralığı belirleyin. Sistem kasa sayısına göre otomatik kademe hesaplar.</div>
+        <div class="pricing-inputs">
+          <div class="pricing-input-group">
+            <label>Min Birim Fiyat (TL/kasa/gün)</label>
+            <div class="pricing-input-wrap">
+              <input type="number" id="price-min" min="1" placeholder="20">
+              <span>TL</span>
+            </div>
+            <small>20+ kasa için geçerli (en düşük)</small>
+          </div>
+          <div class="pricing-arrow">→</div>
+          <div class="pricing-input-group">
+            <label>Max Birim Fiyat (TL/kasa/gün)</label>
+            <div class="pricing-input-wrap">
+              <input type="number" id="price-max" min="1" placeholder="50">
+              <span>TL</span>
+            </div>
+            <small>1-2 kasa için geçerli (en yüksek)</small>
+          </div>
+          <button class="btn-sa" style="width:auto;padding:12px 28px" onclick="savePricing()">Kaydet</button>
+        </div>
+        <!-- Kademe önizleme -->
+        <div class="pricing-preview" id="pricing-preview"></div>
+      </div>
+    </div>
+
     <!-- İstatistikler -->
-    <div class="sa-stats" id="sa-stats">
+    <div class="sa-stats">
       <div class="sa-stat"><div class="sa-stat-num" id="stat-total">—</div><div class="sa-stat-label">Toplam Market</div></div>
       <div class="sa-stat"><div class="sa-stat-num green" id="stat-active">—</div><div class="sa-stat-label">Aktif</div></div>
       <div class="sa-stat"><div class="sa-stat-num orange" id="stat-pending">—</div><div class="sa-stat-label">Onay Bekleyen</div></div>
@@ -67,6 +98,25 @@
           <button class="license-btn" onclick="setLicense(360)">360 Gün</button>
         </div>
         <button class="btn-sa-close" onclick="closeModal()">Kapat</button>
+      </div>
+    </div>
+
+    <!-- Özel Fiyat Modal -->
+    <div class="sa-modal-overlay" id="price-modal" style="display:none" onclick="if(event.target===this) closePriceModal()">
+      <div class="sa-modal">
+        <div class="sa-modal-title">Birim Fiyat Tanımla</div>
+        <div class="sa-modal-sub" id="price-modal-sub"></div>
+        <input type="hidden" id="price-modal-market-id">
+        <div class="fg" style="margin-bottom:16px">
+          <label>Özel Birim Fiyat (TL/kasa/gün)</label>
+          <input type="number" id="price-modal-value" min="0" placeholder="Boş = otomatik hesaplansın">
+          <small style="display:block;margin-top:6px;color:#94A3B8;font-size:12px">0 veya boş bırakırsanız sistem otomatik hesaplar</small>
+        </div>
+        <div id="price-modal-preview" style="font-size:13px;color:#64748B;margin-bottom:16px;padding:12px;background:#F8FAFC;border-radius:8px"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-sa" style="flex:1" onclick="saveCustomPrice()">Kaydet</button>
+          <button class="btn-sa-close" style="flex:1" onclick="closePriceModal()">İptal</button>
+        </div>
       </div>
     </div>
   </div>
