@@ -221,6 +221,34 @@ main{flex:1;margin-left:260px;min-height:100vh}
 .ann-no-img{font-size:11px;color:var(--text3);font-weight:500}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ═══ PWA İKON AYARI ═══ */
+.pwa-icon-area{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.pwa-icon-preview{
+  width:96px;height:96px;flex-shrink:0;
+  border:2px dashed var(--border);border-radius:20px;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+}
+.pwa-icon-preview img{width:100%;height:100%;object-fit:cover;border-radius:18px}
+.pwa-icon-empty{text-align:center}
+.pwa-icon-controls{flex:1;min-width:200px}
+.pwa-icon-info{font-size:13px;color:var(--text2);line-height:1.5}
+.pwa-phone-sim{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.pwa-phone-sim-title{font-size:12px;color:var(--text3);font-weight:600;margin-bottom:12px}
+.pwa-phone-homescreen{
+  display:inline-flex;background:linear-gradient(135deg,#1a1a2e,#16213e);
+  border-radius:16px;padding:20px 28px;
+}
+.pwa-app-icon{text-align:center;width:64px}
+.pwa-app-icon-img{
+  width:56px;height:56px;border-radius:14px;
+  background:linear-gradient(135deg,#22C55E,#16A34A);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.pwa-app-icon-img img{width:100%;height:100%;object-fit:cover;border-radius:14px}
+.pwa-app-icon-name{font-size:10px;color:#e2e8f0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* ═══ RAPOR KARTLARI — Neon meyve renkleri ═══ */
 .report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .report-card{

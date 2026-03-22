@@ -571,7 +571,80 @@ function showSection(name) {
     document.getElementById('settings-logo').value = marketData.logoUrl || '';
     document.getElementById('settings-thanks').value = marketData.thanksMessage || '';
     document.getElementById('settings-pin').value = '';
+    loadPwaIconPreview();
   }
+}
+
+// ─── PWA İkon Yönetimi ───────────────────────────────
+function loadPwaIconPreview() {
+  var iconUrl = marketData.pwaIconUrl || '';
+  var imgEl = document.getElementById('pwa-icon-img');
+  var emptyEl = document.getElementById('pwa-icon-empty');
+  var infoEl = document.getElementById('pwa-icon-info');
+  var removeBtn = document.getElementById('btn-remove-icon');
+  var simIcon = document.getElementById('pwa-sim-icon');
+  var simName = document.getElementById('pwa-sim-name');
+
+  if (simName) simName.textContent = (marketData.name || 'Market').substring(0, 10);
+
+  if (iconUrl) {
+    if (imgEl) { imgEl.src = iconUrl; imgEl.style.display = 'block'; }
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (infoEl) infoEl.textContent = 'Özel ikon tanımlı. Müşteriler bu ikonu görecek.';
+    if (removeBtn) removeBtn.style.display = 'inline-block';
+    if (simIcon) simIcon.innerHTML = '<img src="' + iconUrl + '" alt="">';
+  } else {
+    if (imgEl) imgEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (infoEl) infoEl.textContent = 'Henüz özel ikon tanımlanmamış. Varsayılan MarketPas ikonu kullanılıyor.';
+    if (removeBtn) removeBtn.style.display = 'none';
+    if (simIcon) simIcon.innerHTML = '<div style="font-size:20px">🛒</div>';
+  }
+}
+
+function handlePwaIconUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (!file.type.match(/image\/(png|jpeg|webp)/)) { alert('PNG, JPG veya WebP yükleyin.'); input.value = ''; return; }
+
+  // 192x192'ye sıkıştır
+  compressImage(file, 192, 0.85, function(dataUrl) {
+    var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+    if (sizeKB > 200) {
+      compressImage(file, 192, 0.5, function(smallUrl) { savePwaIcon(smallUrl); });
+    } else {
+      savePwaIcon(dataUrl);
+    }
+  });
+  input.value = '';
+}
+
+async function savePwaIcon(dataUrl) {
+  try {
+    await db.collection('markets').doc(marketId).update({ pwaIconUrl: dataUrl });
+    marketData.pwaIconUrl = dataUrl;
+    loadPwaIconPreview();
+  } catch(e) { alert('İkon kayıt hatası: ' + e.message); }
+}
+
+async function savePwaIconUrl() {
+  var url = document.getElementById('pwa-icon-url').value.trim();
+  if (!url) { alert('URL girin.'); return; }
+  try {
+    await db.collection('markets').doc(marketId).update({ pwaIconUrl: url });
+    marketData.pwaIconUrl = url;
+    loadPwaIconPreview();
+    document.getElementById('pwa-icon-url').value = '';
+  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+}
+
+async function removePwaIcon() {
+  if (!confirm('Özel ikon kaldırılsın mı? Varsayılan ikon kullanılacak.')) return;
+  try {
+    await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
+    marketData.pwaIconUrl = '';
+    loadPwaIconPreview();
+  } catch(e) { alert('Hata: ' + e.message); }
 }
 
 function handleLogout() {

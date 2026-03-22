@@ -118,6 +118,49 @@ function applyMarketBranding() {
     var vImg = document.getElementById('vitrin-logo');
     vImg.src = market.logoUrl; vImg.classList.add('has-img');
   }
+
+  // Dinamik PWA manifest — her market kendi adı ve ikonu ile
+  applyPWABranding();
+}
+
+function applyPWABranding() {
+  var iconUrl = market.pwaIconUrl || market.logoUrl || '/icon-192.png';
+  var marketName = market.name || 'MarketPas';
+
+  // Favicon ve Apple touch icon güncelle
+  var favEl = document.getElementById('pwa-icon');
+  var appleEl = document.getElementById('pwa-apple-icon');
+  if (favEl && iconUrl) favEl.href = iconUrl;
+  if (appleEl && iconUrl) appleEl.href = iconUrl;
+
+  // Dinamik manifest oluştur
+  var manifest = {
+    name: marketName,
+    short_name: marketName.length > 12 ? marketName.substring(0, 12) : marketName,
+    description: marketName + ' — Dijital sıra ve kampanyalar',
+    start_url: '/musteri.html',
+    display: 'standalone',
+    background_color: '#0d1117',
+    theme_color: market.themeColor || '#10e5b0',
+    orientation: 'portrait',
+    categories: ['shopping', 'utilities'],
+    icons: [
+      { src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+
+  // Eski manifest linkini kaldır
+  var oldManifest = document.querySelector('link[rel="manifest"]');
+  if (oldManifest) oldManifest.remove();
+
+  // Blob URL olarak manifest ekle
+  var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  var manifestUrl = URL.createObjectURL(blob);
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestUrl;
+  document.head.appendChild(link);
 }
 
 // ═══════════════════════════════════════════════════════

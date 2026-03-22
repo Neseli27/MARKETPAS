@@ -285,6 +285,7 @@
     <!-- Ayarlar -->
     <div id="section-settings" class="section">
       <div class="section-title">Ayarlar</div>
+
       <div class="card settings-form">
         <h3>Market Bilgileri</h3>
         <div class="form-row"><label>Market Adı</label><input type="text" id="settings-name"></div>
@@ -292,6 +293,54 @@
         <div class="form-row"><label>Yeni Kasiyer PIN</label><input type="text" id="settings-pin" placeholder="Boş bırakırsanız değişmez"></div>
         <div class="form-row"><label>Teşekkür Mesajı</label><input type="text" id="settings-thanks"></div>
         <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px">Kaydet</button>
+      </div>
+
+      <!-- PWA İkon Ayarı -->
+      <div class="card">
+        <h3>📱 Uygulama İkonu (PWA)</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+          Müşteriler uygulamayı telefonlarına eklediğinde bu ikon görünür.<br>
+          Kare format, minimum 192×192 piksel, PNG önerilir.
+        </p>
+
+        <div class="pwa-icon-area">
+          <div class="pwa-icon-preview" id="pwa-icon-preview">
+            <img id="pwa-icon-img" src="" alt="" style="display:none">
+            <div class="pwa-icon-empty" id="pwa-icon-empty">
+              <div style="font-size:24px">📱</div>
+              <div style="font-size:11px;color:var(--text3)">İkon yok</div>
+            </div>
+          </div>
+
+          <div class="pwa-icon-controls">
+            <div class="pwa-icon-info" id="pwa-icon-info">Henüz özel ikon tanımlanmamış. Varsayılan MarketPas ikonu kullanılıyor.</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-accent btn-sm" onclick="document.getElementById('pwa-icon-file').click()">📸 İkon Yükle</button>
+              <button class="btn btn-sm" onclick="removePwaIcon()" id="btn-remove-icon" style="display:none">🗑 Kaldır</button>
+            </div>
+            <input type="file" id="pwa-icon-file" accept="image/png,image/jpeg,image/webp" onchange="handlePwaIconUpload(this)" style="display:none">
+            <div style="margin-top:10px">
+              <div style="font-size:11px;color:var(--text3)">veya</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <input type="url" id="pwa-icon-url" placeholder="İkon URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="savePwaIconUrl()">Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telefon simülasyonu -->
+        <div class="pwa-phone-sim">
+          <div class="pwa-phone-sim-title">Ana ekranda böyle görünecek:</div>
+          <div class="pwa-phone-homescreen">
+            <div class="pwa-app-icon">
+              <div class="pwa-app-icon-img" id="pwa-sim-icon">
+                <div style="font-size:20px">🛒</div>
+              </div>
+              <div class="pwa-app-icon-name" id="pwa-sim-name">Market</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
