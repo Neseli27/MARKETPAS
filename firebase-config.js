@@ -3,13 +3,12 @@
 // =====================================================
 
 var firebaseConfig = {
-  apiKey: "AIzaSyCqUSoowo2EbKKhG0SBcIzBYddwYOzHKRo",
-  authDomain: "egitim-yonetim-platformu.firebaseapp.com",
-  projectId: "egitim-yonetim-platformu",
-  storageBucket: "egitim-yonetim-platformu.firebasestorage.app",
-  messagingSenderId: "548967060709",
-  appId: "1:548967060709:web:d95bbd360347021634700c",
-  measurementId: "G-89D843J9RF"
+  apiKey:            "BURAYA_API_KEY",
+  authDomain:        "BURAYA_PROJECT_ID.firebaseapp.com",
+  projectId:         "BURAYA_PROJECT_ID",
+  storageBucket:     "BURAYA_PROJECT_ID.appspot.com",
+  messagingSenderId: "BURAYA_SENDER_ID",
+  appId:             "BURAYA_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
@@ -80,28 +79,43 @@ function getLicenseRemainingDays(licenseExpiry) {
 // ─── Sıradaki Müşteriyi Kasaya Ata ───────────────────
 async function assignNextToRegister(marketId, registerId, kasaNo) {
   try {
-    // Lisans kontrolü — süresi bittiyse kod üretme
+    // Lisans kontrolü
     var licensed = await checkLicense(marketId);
-    if (!licensed) { console.warn('Lisans süresi dolmuş — kod üretilemez'); return; }
+    if (!licensed) { console.warn('MarketPas: Lisans süresi dolmuş veya tanımsız — kod üretilemez'); return; }
 
     var regCheck = await db.collection('registers').doc(registerId).get();
-    if (!regCheck.exists || !regCheck.data().active) return;
-    if (regCheck.data().waitingQueueId) return;
+    if (!regCheck.exists || !regCheck.data().active) { console.warn('MarketPas: Kasa bulunamadı veya pasif:', registerId); return; }
+    if (regCheck.data().waitingQueueId) { console.log('MarketPas: Kasa zaten dolu:', registerId); return; }
 
+    // Öncelikli müşteri ara (priority_ready > priority > waiting)
     var candidateId = null;
-    var pSnap = await db.collection('queue')
+
+    // 1. priority_ready (Hazırım demiş)
+    var prSnap = await db.collection('queue')
       .where('marketId', '==', marketId)
-      .where('status', 'in', ['priority', 'priority_ready'])
+      .where('status', '==', 'priority_ready')
       .orderBy('createdAt', 'asc').limit(1).get();
-    if (!pSnap.empty) { candidateId = pSnap.docs[0].id; }
-    else {
+    if (!prSnap.empty) { candidateId = prSnap.docs[0].id; }
+
+    // 2. priority (öncelikli)
+    if (!candidateId) {
+      var pSnap = await db.collection('queue')
+        .where('marketId', '==', marketId)
+        .where('status', '==', 'priority')
+        .orderBy('createdAt', 'asc').limit(1).get();
+      if (!pSnap.empty) { candidateId = pSnap.docs[0].id; }
+    }
+
+    // 3. waiting (normal sıra)
+    if (!candidateId) {
       var wSnap = await db.collection('queue')
         .where('marketId', '==', marketId)
         .where('status', '==', 'waiting')
         .orderBy('queueNumber', 'asc').limit(1).get();
       if (!wSnap.empty) candidateId = wSnap.docs[0].id;
     }
-    if (!candidateId) return;
+
+    if (!candidateId) { console.log('MarketPas: Sırada bekleyen müşteri yok'); return; }
 
     var code = generateCode();
     var regRef = db.collection('registers').doc(registerId);
@@ -118,7 +132,8 @@ async function assignNextToRegister(marketId, registerId, kasaNo) {
       tx.update(qRef, { status: 'called', code: code, registerId: registerId, kasaNo: kasaNo, calledAt: now });
       tx.update(regRef, { waitingQueueId: candidateId, waitingCode: code, calledAt: now });
     });
-  } catch (e) { console.error('assignNext hatası:', e); }
+    console.log('MarketPas: Kod üretildi:', code, '→ Kasa', kasaNo);
+  } catch (e) { console.error('MarketPas assignNext HATA:', e); }
 }
 
 // ─── Market İstatistikleri ────────────────────────────

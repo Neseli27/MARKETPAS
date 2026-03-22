@@ -232,12 +232,26 @@ function startCountdown(calledAt){clearInterval(countdownInterval);var total=120
 
 async function handleQueueButton(){var btn=document.getElementById('btn-queue');btn.disabled=true;btn.textContent='Sıraya alınıyor...';
   try{var num=await getNextQueueNumber(marketId);
+    console.log('MarketPas: Sıra no alındı:', num);
     await db.collection('queue').doc(sessionId).set({marketId:marketId,sessionId:sessionId,queueNumber:num,status:'waiting',code:null,registerId:null,kasaNo:null,createdAt:firebase.firestore.FieldValue.serverTimestamp(),calledAt:null,arrivedAt:null,completedAt:null});
-    notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister();await loadCongestion();
-  }catch(e){btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Bir hata oluştu. Tekrar deneyin.')}}
+    console.log('MarketPas: Kuyruk kaydı oluşturuldu, sessionId:', sessionId);
+    notifiedForThisCall=false;startQueueListener();
+    await tryAssignToOpenRegister();
+    await loadCongestion();
+  }catch(e){console.error('MarketPas: Sıra alma hatası:', e);btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Bir hata oluştu: '+e.message)}}
 
-async function tryAssignToOpenRegister(){try{var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
-  for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}}catch(e){}}
+async function tryAssignToOpenRegister(){try{
+    console.log('MarketPas: Boş kasa aranıyor...');
+    var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
+    console.log('MarketPas: Aktif kasa sayısı:', snap.size);
+    var assigned=false;
+    for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();
+      console.log('MarketPas: Kasa', d.kasaNo, '- waitingQueueId:', d.waitingQueueId||'BOŞ', '- activeQueueId:', d.activeQueueId||'BOŞ');
+      if(!d.waitingQueueId){
+        console.log('MarketPas: Kasa', d.kasaNo, 'boş — atama yapılıyor');
+        await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);assigned=true;break}}
+    if(!assigned)console.log('MarketPas: Tüm kasalar dolu');
+  }catch(e){console.error('MarketPas: tryAssign hatası:', e)}}
 
 async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
