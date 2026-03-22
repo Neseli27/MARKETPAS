@@ -70,6 +70,8 @@ async function handleAuth() {
 
 function startPanel() {
   document.getElementById('panel-market-name').textContent = marketData.name;
+  var mobTitle = document.getElementById('mob-title');
+  if (mobTitle) mobTitle.textContent = marketData.name;
   showSection('reports');
   startLiveListeners();
   startMarketListener(); // Market verisini canlı dinle (lisans değişiklikleri vs.)
@@ -86,6 +88,7 @@ function startMarketListener() {
     if (!doc.exists) return;
     marketData = doc.data();
     document.getElementById('panel-market-name').textContent = marketData.name;
+    var mt = document.getElementById('mob-title'); if (mt) mt.textContent = marketData.name;
     updateSidebarLicense();
     checkLicenseWarning();
   });
@@ -600,8 +603,12 @@ function printQR() { var c = document.querySelector('#qr-container canvas'); if 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  // Mobil bottom nav
+  document.querySelectorAll('.mnav-item').forEach(function(n) { n.classList.remove('active'); });
   var sec = document.getElementById('section-' + name); var nav = document.getElementById('nav-' + name);
+  var mnav = document.getElementById('mnav-' + name);
   if (sec) sec.classList.add('active'); if (nav) nav.classList.add('active');
+  if (mnav) mnav.classList.add('active');
   if (name === 'qr' && marketId) setTimeout(buildQR, 100);
   if (name === 'reports' && marketId) setTimeout(loadReport, 100);
   if (name === 'settings' && marketData) {
@@ -612,6 +619,26 @@ function showSection(name) {
     loadPwaIconPreview();
     loadWelcomeImagePreview();
   }
+  // Mobil sidebar açıksa kapat
+  closeMobileSidebar();
+}
+
+// ─── Mobil Sidebar ───────────────────────────────────
+function toggleMobileSidebar() {
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('sidebar-overlay');
+  if (sb.classList.contains('open')) {
+    closeMobileSidebar();
+  } else {
+    sb.classList.add('open');
+    ov.classList.add('show');
+  }
+}
+function closeMobileSidebar() {
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('sidebar-overlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('show');
 }
 
 // ─── PWA İkon Yönetimi ───────────────────────────────
@@ -1059,4 +1086,5 @@ async function renderKasaChart(doneRecords) {
   });
 }
 
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 document.addEventListener('DOMContentLoaded', init);

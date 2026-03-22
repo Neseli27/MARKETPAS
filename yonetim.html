@@ -2,8 +2,14 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0B1120">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MarketPas — Yönetim</title>
+  <link rel="manifest" href="/manifest-yonetim.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="yonetim.css">
 </head>
@@ -23,8 +29,18 @@
     </div>
   </div>
 
+  <!-- Mobil Üst Bar (sadece mobilde görünür) -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <button class="mob-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+    <div class="mob-title" id="mob-title">—</div>
+    <button class="mob-logout-btn" onclick="handleLogout()">⬅</button>
+  </div>
+
+  <!-- Sidebar Overlay (mobil) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <!-- Market adı — büyük, neon yeşil -->
     <div class="sidebar-market-name" id="panel-market-name">—</div>
     <div class="sidebar-market-sub">YÖNETİM PANELİ</div>
@@ -349,6 +365,14 @@
       </div>
     </div>
   </main>
+
+  <!-- Mobil Alt Navigasyon (sadece mobilde görünür) -->
+  <div class="mobile-nav" id="mobile-nav">
+    <button class="mnav-item" id="mnav-reports" onclick="showSection('reports')"><span class="mnav-icon">📊</span><span class="mnav-label">Raporlar</span></button>
+    <button class="mnav-item" id="mnav-qr" onclick="showSection('qr')"><span class="mnav-icon">📱</span><span class="mnav-label">QR</span></button>
+    <button class="mnav-item" id="mnav-announcements" onclick="showSection('announcements')"><span class="mnav-icon">📢</span><span class="mnav-label">İçerikler</span></button>
+    <button class="mnav-item" id="mnav-settings" onclick="showSection('settings')"><span class="mnav-icon">⚙️</span><span class="mnav-label">Ayarlar</span></button>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
