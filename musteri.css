@@ -39,37 +39,34 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .hdr-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;color:var(--text);line-height:1}
 .hdr-sub{font-size:13px;color:var(--text2);font-weight:500;margin-top:2px;letter-spacing:.5px}
 
-/* ═══ AKSİYON BUTONLARI ═══ */
-.actions{padding:16px 16px 8px;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+/* ═══ AKSİYON BUTONLARI — yan yana kompakt ═══ */
+.actions{padding:12px 16px 8px;display:flex;gap:10px;flex-shrink:0}
 
 .act-btn{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 16px;border-radius:var(--r);
+  flex:1;display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-radius:var(--r);
   border:none;cursor:pointer;text-align:left;
   font-family:'DM Sans',sans-serif;
-  transition:all .2s;width:100%;
+  transition:all .2s;
 }
-.act-btn:active:not(:disabled){transform:scale(.98)}
+.act-btn:active:not(:disabled){transform:scale(.97)}
 .act-btn:disabled{opacity:.4;cursor:default}
 
 /* QR butonu — yeşil gradient */
 .qr-act{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
 .qr-act .act-icon{background:rgba(255,255,255,.18);color:#fff}
-.qr-act .act-arrow{color:rgba(255,255,255,.6)}
 .qr-act.passive{background:var(--bg3);color:var(--text2)}
 .qr-act.passive .act-icon{background:rgba(255,255,255,.06);color:var(--text3)}
 
 /* Sıra butonu — koyu kart */
 .queue-act{background:var(--card);border:1px solid var(--border);color:var(--text)}
 .queue-act .act-icon{background:var(--accentBg);color:var(--accent)}
-.queue-act .act-arrow{color:var(--text3)}
 .queue-act:disabled{border-color:transparent}
 
-.act-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.act-title{font-size:15px;font-weight:700}
-.act-sub{font-size:12px;opacity:.7;margin-top:1px}
-.act-text{flex:1}
-.act-arrow{font-size:22px;font-weight:300;flex-shrink:0}
+.act-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-title{font-size:13px;font-weight:700}
+.act-sub{font-size:10px;opacity:.7;margin-top:1px}
+.act-text{flex:1;min-width:0}
 
 /* ═══ SIRA PANELİ ═══ */
 .q-panel{
