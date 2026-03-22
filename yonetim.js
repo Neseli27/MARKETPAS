@@ -6,8 +6,10 @@ var marketId = null;
 var marketData = null;
 var registersListener = null;
 var queueListener = null;
+var currentListener = null;
 var editingAnnId = null;
 var congestionInterval = null;
+var reportInterval = null;
 
 // ─── Başlangıç ────────────────────────────────────────
 function init() {
@@ -131,10 +133,24 @@ function checkLicenseWarning() {
 function startLiveListeners() {
   if (registersListener) registersListener();
   if (queueListener) queueListener();
+  if (currentListener) currentListener();
+
+  // Kasa durumları — canlı
   registersListener = db.collection('registers').where('marketId', '==', marketId).orderBy('kasaNo', 'asc')
     .onSnapshot(function(snap) { renderRegisters(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); })); });
+
+  // Sıra bekleyenler — canlı (sadece waiting + priority)
   queueListener = db.collection('queue').where('marketId', '==', marketId).where('status', 'in', ['waiting', 'priority'])
     .onSnapshot(function(snap) { document.getElementById('queue-count').textContent = snap.size; });
+
+  // Anlık müşteri — canlı (tüm aktif durumlar)
+  currentListener = db.collection('queue').where('marketId', '==', marketId)
+    .where('status', 'in', ['waiting', 'priority', 'priority_ready', 'called', 'arrived', 'active'])
+    .onSnapshot(function(snap) {
+      var el = document.getElementById('stat-current');
+      if (el) el.textContent = snap.size;
+    });
+
   loadStats();
 }
 
@@ -220,6 +236,13 @@ async function loadCongestionStats() {
     else { al.style.display = 'none'; }
 
     await loadKasaPerformance();
+    await loadStats(); // Dashboard istatistiklerini de güncelle
+
+    // Rapor sayfası açıksa onu da güncelle
+    var reportSection = document.getElementById('section-report');
+    if (reportSection && reportSection.classList.contains('active')) {
+      await loadReport();
+    }
   } catch(e) {}
 }
 
@@ -269,11 +292,9 @@ async function loadStats() {
     var today = new Date(); today.setHours(0,0,0,0);
     var ts = firebase.firestore.Timestamp.fromDate(today);
     var t1 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').where('createdAt', '>=', ts).get();
-    var t2 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').get();
     var t3 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'timeout').where('createdAt', '>=', ts).get();
-    document.getElementById('stat-today').textContent = t1.size;
-    document.getElementById('stat-total').textContent = t2.size;
-    document.getElementById('stat-timeout').textContent = t3.size;
+    var el1 = document.getElementById('stat-today'); if (el1) el1.textContent = t1.size;
+    var el3 = document.getElementById('stat-timeout'); if (el3) el3.textContent = t3.size;
   } catch(e) {}
 }
 
