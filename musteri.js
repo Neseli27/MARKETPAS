@@ -179,12 +179,38 @@ function showWelcomeSplash(callback) {
 
 function enterQueueMode() {
   isQueueMode = true;
-  document.getElementById('top-section').classList.remove('hidden');
+  document.getElementById('queue-panel').classList.remove('hidden');
+  // Bilet ikonu pulse animasyonu kaldır
+  document.getElementById('ticket-btn').classList.remove('active-pulse');
 }
 
 function enterVitrinMode() {
   isQueueMode = false;
-  document.getElementById('top-section').classList.add('hidden');
+  document.getElementById('queue-panel').classList.add('hidden');
+  // Bilet ikonuna pulse animasyonu ekle — dikkat çeksin
+  document.getElementById('ticket-btn').classList.add('active-pulse');
+}
+
+// Bilet ikonuna tıklayınca panel aç/kapa
+function toggleQueuePanel() {
+  var panel = document.getElementById('queue-panel');
+  if (panel.classList.contains('hidden')) {
+    // Panel kapalı — aç ve sıra moduna geç
+    enterQueueMode();
+    if (!statsInterval) {
+      loadCongestion();
+      statsInterval = setInterval(loadCongestion, 15000);
+    }
+    checkExistingQueue();
+    requestNotificationPermission();
+  } else {
+    // Aktif sıra varsa kapatma
+    if (myQueueData && ['waiting','priority','priority_ready','called','arrived','active'].indexOf(myQueueData.status) > -1) {
+      // Sıra aktif — kapatma
+      return;
+    }
+    enterVitrinMode();
+  }
 }
 
 async function checkExistingQueueSilent() {

@@ -30,21 +30,25 @@
   </div>
 
   <div class="app-layout">
-    <!-- ═══ HEADER — sabit üst bar ═══ -->
+    <!-- ═══ HEADER ═══ -->
     <div class="app-header" id="app-header">
-      <div class="header-left"></div>
+      <div class="header-left">
+        <button class="ticket-btn" id="ticket-btn" onclick="toggleQueuePanel()" title="Kasa Sırası Al">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><line x1="9" y1="6" x2="9" y2="18" stroke-dasharray="2 2"/></svg>
+        </button>
+      </div>
       <div class="header-center">
         <div class="header-market-name" id="header-market-name">MarketPas</div>
       </div>
       <div class="header-right">
         <button class="qr-btn" onclick="openQRScanner()" title="Kare Kod Okut">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- ═══ ÜST BÖLÜM — Sıra/Kod Alanı ═══ -->
-    <div class="top-section hidden" id="top-section">
+    <!-- ═══ SIRA PANELİ (gizli, bilet ikonuna basınca açılır) ═══ -->
+    <div class="queue-panel hidden" id="queue-panel">
       <div class="screens-wrap">
         <div id="screen-ready" class="screen active">
           <div class="congestion-bar" id="congestion-bar">
