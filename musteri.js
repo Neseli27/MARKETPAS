@@ -1,8 +1,5 @@
 // =====================================================
-// MarketPas v3 — Müşteri Sayfası (Çift Mod)
-// =====================================================
-// VİTRİN MODU: Tam ekran reklam/kampanya (PWA açılışı)
-// SIRA MODU:   Üst %30 sıra + alt %70 reklam (QR okutunca)
+// MarketPas v3.5 — Müşteri Sayfası
 // =====================================================
 
 var marketId = null;
@@ -17,7 +14,9 @@ var announcements = [];
 var annIndex = 0;
 var notifiedForThisCall = false;
 var currentStats = null;
-var isQueueMode = false; // true = sıra modu, false = vitrin modu
+var isQueueMode = false;
+var welcomeShown = false;
+var WELCOME_DURATION = 12000; // 12 saniye
 
 // ─── Bildirim ─────────────────────────────────────────
 async function requestNotificationPermission() {
@@ -47,29 +46,13 @@ function notifyCustomer(code, kasaNo) {
 function init() {
   var params = new URLSearchParams(window.location.search);
   var urlMarket = params.get('market');
-
-  // Kayıtlı market ID (PWA için)
-  if (!urlMarket) {
-    marketId = localStorage.getItem('mp_last_market');
-  } else {
-    marketId = urlMarket;
-  }
-
-  if (!marketId) {
-    showError('Lütfen marketteki QR kodu telefonunuzla okutun.');
-    return;
-  }
-
-  // Market ID'yi kaydet (PWA sonraki açılışlar için)
+  if (!urlMarket) { marketId = localStorage.getItem('mp_last_market'); }
+  else { marketId = urlMarket; }
+  if (!marketId) { showError('Lütfen marketteki QR kodu telefonunuzla okutun.'); return; }
   localStorage.setItem('mp_last_market', marketId);
-
-  // URL'de market parametresi varsa → QR okutmuş → sıra modu
-  // Yoksa → PWA'dan açmış → vitrin modu
   isQueueMode = !!urlMarket;
-
   sessionId = localStorage.getItem('mp_s_' + marketId);
   if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
-
   loadMarket();
 }
 
@@ -83,16 +66,16 @@ async function loadMarket() {
     loadAnnouncements();
 
     if (isQueueMode) {
-      // Sıra modu — üst bölümü aç
-      enterQueueMode();
-      loadCongestion();
-      checkExistingQueue();
-      requestNotificationPermission();
-      statsInterval = setInterval(loadCongestion, 15000);
+      // QR okutmuş — karşılama ekranı göster, sonra sıra moduna geç
+      showWelcomeSplash(function() {
+        enterQueueMode();
+        loadCongestion();
+        checkExistingQueue();
+        requestNotificationPermission();
+        statsInterval = setInterval(loadCongestion, 15000);
+      });
     } else {
-      // Vitrin modu — sadece reklamlar
-      enterVitrinMode();
-      // Eski aktif sıra var mı kontrol et
+      // Vitrin modu — direkt reklamlar
       checkExistingQueueSilent();
     }
   } catch (e) {
@@ -103,64 +86,91 @@ async function loadMarket() {
 }
 
 function applyMarketBranding() {
-  document.getElementById('market-name').textContent = market.name;
+  document.getElementById('header-market-name').textContent = market.name;
   document.title = market.name;
-
-  // Üst bölüm logosu
-  if (market.logoUrl) {
-    var img = document.getElementById('market-logo');
-    img.src = market.logoUrl; img.style.display = 'block';
-  }
-
-  // Vitrin header
-  document.getElementById('vitrin-name').textContent = market.name;
-  if (market.logoUrl) {
-    var vImg = document.getElementById('vitrin-logo');
-    vImg.src = market.logoUrl; vImg.classList.add('has-img');
-  }
-
-  // Dinamik PWA manifest — her market kendi adı ve ikonu ile
   applyPWABranding();
 }
 
 function applyPWABranding() {
   var iconUrl = market.pwaIconUrl || market.logoUrl || '/icon-192.png';
   var marketName = market.name || 'MarketPas';
-
-  // Favicon ve Apple touch icon güncelle
   var favEl = document.getElementById('pwa-icon');
   var appleEl = document.getElementById('pwa-apple-icon');
   if (favEl && iconUrl) favEl.href = iconUrl;
   if (appleEl && iconUrl) appleEl.href = iconUrl;
-
-  // Dinamik manifest oluştur
   var manifest = {
-    name: marketName,
-    short_name: marketName.length > 12 ? marketName.substring(0, 12) : marketName,
+    name: marketName, short_name: marketName.length > 12 ? marketName.substring(0, 12) : marketName,
     description: marketName + ' — Dijital sıra ve kampanyalar',
-    start_url: '/musteri.html',
-    display: 'standalone',
-    background_color: '#0d1117',
-    theme_color: market.themeColor || '#10e5b0',
-    orientation: 'portrait',
-    categories: ['shopping', 'utilities'],
-    icons: [
-      { src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
+    start_url: '/musteri.html', display: 'standalone',
+    background_color: '#0d1117', theme_color: '#10e5b0', orientation: 'portrait',
+    icons: [{ src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
   };
-
-  // Eski manifest linkini kaldır
-  var oldManifest = document.querySelector('link[rel="manifest"]');
-  if (oldManifest) oldManifest.remove();
-
-  // Blob URL olarak manifest ekle
+  var oldM = document.querySelector('link[rel="manifest"]');
+  if (oldM) oldM.remove();
   var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  var manifestUrl = URL.createObjectURL(blob);
-  var link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = manifestUrl;
+  var link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
   document.head.appendChild(link);
+}
+
+// ═══════════════════════════════════════════════════════
+// KARŞILAMA EKRANI
+// ═══════════════════════════════════════════════════════
+
+function showWelcomeSplash(callback) {
+  // Daha önce gösterilmişse veya aktif sıra varsa atla
+  var splashKey = 'mp_welcome_' + marketId;
+  var lastSplash = localStorage.getItem(splashKey);
+  if (lastSplash && (Date.now() - parseInt(lastSplash)) < 10 * 60 * 1000) {
+    // Son 10 dakika içinde gösterilmiş — tekrar gösterme
+    if (callback) callback();
+    return;
+  }
+
+  var splash = document.getElementById('welcome-splash');
+  var bg = document.getElementById('welcome-bg');
+  var nameEl = document.getElementById('welcome-market-name');
+  var progressEl = document.getElementById('welcome-progress');
+
+  nameEl.textContent = market.name;
+
+  // Karşılama görseli (market yönetiminden belirlenen)
+  if (market.welcomeImageUrl) {
+    bg.style.backgroundImage = 'url(' + market.welcomeImageUrl + ')';
+    bg.style.backgroundSize = 'cover';
+    bg.style.backgroundPosition = 'center';
+  }
+
+  splash.style.display = 'flex';
+  localStorage.setItem(splashKey, Date.now().toString());
+
+  // İlerleme çubuğu animasyonu
+  var elapsed = 0;
+  var progressInterval = setInterval(function() {
+    elapsed += 100;
+    var pct = Math.min(100, (elapsed / WELCOME_DURATION) * 100);
+    progressEl.style.width = pct + '%';
+    if (elapsed >= WELCOME_DURATION) {
+      clearInterval(progressInterval);
+      // Splash'ı kapat
+      splash.style.opacity = '0';
+      splash.style.transition = 'opacity .5s ease';
+      setTimeout(function() {
+        splash.style.display = 'none';
+        splash.style.opacity = '1';
+        splash.style.transition = '';
+        if (callback) callback();
+      }, 500);
+    }
+  }, 100);
+
+  // Ekrana dokunursa erken geç
+  splash.onclick = function() {
+    clearInterval(progressInterval);
+    splash.style.display = 'none';
+    splash.onclick = null;
+    if (callback) callback();
+  };
 }
 
 // ═══════════════════════════════════════════════════════
@@ -169,28 +179,20 @@ function applyPWABranding() {
 
 function enterQueueMode() {
   isQueueMode = true;
-  var top = document.getElementById('top-section');
-  top.classList.remove('hidden');
-  // Vitrin header'ı gizle
-  document.getElementById('vitrin-header').classList.remove('visible');
+  document.getElementById('top-section').classList.remove('hidden');
 }
 
 function enterVitrinMode() {
   isQueueMode = false;
-  var top = document.getElementById('top-section');
-  top.classList.add('hidden');
-  // Vitrin header'ı göster
-  document.getElementById('vitrin-header').classList.add('visible');
+  document.getElementById('top-section').classList.add('hidden');
 }
 
-// Vitrin modunda sessizce eski sıra kontrolü
 async function checkExistingQueueSilent() {
   try {
     var doc = await db.collection('queue').doc(sessionId).get();
     if (doc.exists) {
       var status = doc.data().status;
       if (['waiting', 'priority', 'priority_ready', 'called', 'arrived', 'active'].includes(status)) {
-        // Aktif sıra var — sıra moduna geç
         enterQueueMode();
         loadCongestion();
         statsInterval = setInterval(loadCongestion, 15000);
@@ -224,8 +226,7 @@ function renderCongestion(stats) {
   if (level === 'sakin') label.textContent = '🟢 Sakin';
   else if (level === 'normal') label.textContent = '🟡 Normal';
   else label.textContent = '🔴 Yoğun (%' + stats.congestionPercent + ')';
-  var parts = [];
-  parts.push(stats.activeCasas + ' kasa');
+  var parts = [stats.activeCasas + ' kasa'];
   if (stats.waitingCount > 0) parts.push(stats.waitingCount + ' sırada');
   info.textContent = parts.join(' · ');
 }
@@ -249,13 +250,9 @@ function loadAnnouncements() {
       announcements = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
       renderAnnouncements();
     }, function(error) {
-      console.warn('Duyuru sorgusu hata (index eksik olabilir), fallback deneniyor:', error.message);
-      // Fallback — index yoksa sadece marketId ile çek, client tarafında filtrele
-      db.collection('announcements')
-        .where('marketId', '==', marketId)
+      db.collection('announcements').where('marketId', '==', marketId)
         .onSnapshot(function(snap) {
-          announcements = snap.docs
-            .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
+          announcements = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); })
             .filter(function(a) { return a.active === true; })
             .sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
           renderAnnouncements();
@@ -270,7 +267,6 @@ function renderAnnouncements() {
   if (!announcements.length) { section.classList.add('empty'); return; }
   section.classList.remove('empty');
   slider.innerHTML = ''; dotsEl.innerHTML = '';
-
   announcements.forEach(function(a, i) {
     var slide = document.createElement('div');
     slide.className = 'ann-slide' + (a.imageUrl ? '' : ' no-img') + (i === 0 ? ' active' : '');
@@ -282,7 +278,6 @@ function renderAnnouncements() {
     slide.appendChild(textDiv); slider.appendChild(slide);
     var dot = document.createElement('div'); dot.className = 'ann-dot' + (i === 0 ? ' active' : ''); dotsEl.appendChild(dot);
   });
-
   annIndex = 0; clearInterval(announcementInterval);
   if (announcements.length > 1) {
     announcementInterval = setInterval(function() {
@@ -293,7 +288,7 @@ function renderAnnouncements() {
   }
 }
 
-// ─── Mevcut sıra kontrolü ────────────────────────────
+// ─── Sıra kontrolü ───────────────────────────────────
 async function checkExistingQueue() {
   try {
     var doc = await db.collection('queue').doc(sessionId).get();
@@ -312,18 +307,12 @@ function startQueueListener() {
   if (queueListener) queueListener();
   queueListener = db.collection('queue').doc(sessionId).onSnapshot(function(doc) {
     if (!doc.exists) {
-      // Sıra kaydı yok — vitrin moduna dön
-      if (!isQueueMode) { enterVitrinMode(); }
-      else { showScreen('ready'); }
+      if (!isQueueMode) enterVitrinMode(); else showScreen('ready');
       return;
     }
     myQueueData = doc.data();
     var status = myQueueData.status;
-
-    // Sıra modu açık değilse aç
-    if (!isQueueMode && status !== 'done' && status !== 'cancelled') {
-      enterQueueMode();
-    }
+    if (!isQueueMode && status !== 'done' && status !== 'cancelled') enterQueueMode();
 
     switch (status) {
       case 'waiting': case 'priority': case 'priority_ready':
@@ -339,41 +328,33 @@ function startQueueListener() {
         break;
       case 'arrived':
         clearInterval(countdownInterval); notifiedForThisCall = false;
-        showScreen('arrived');
-        break;
+        showScreen('arrived'); break;
       case 'active':
         clearInterval(countdownInterval); notifiedForThisCall = false;
-        showScreen('active');
-        break;
+        showScreen('active'); break;
       case 'timeout':
         clearInterval(countdownInterval); notifiedForThisCall = false;
-        showScreen('timeout');
-        break;
+        showScreen('timeout'); break;
       case 'done':
         clearInterval(countdownInterval); notifiedForThisCall = false;
         document.getElementById('thanks-title').textContent = '🛍️ Teşekkürler!';
         document.getElementById('thanks-sub').textContent = market?.thanksMessage || 'Alışverişiniz için teşekkür ederiz. İyi günler!';
         showScreen('thanks');
-        // 5sn sonra vitrin moduna dön ve URL'yi temizle
         setTimeout(function() {
-          newSession();
-          enterVitrinMode();
-          // URL'den ?market= parametresini kaldır (sonraki açılışta vitrin modu olsun)
-          if (window.location.search) {
-            history.replaceState({}, '', window.location.pathname);
-          }
+          newSession(); enterVitrinMode();
+          if (window.location.search) history.replaceState({}, '', window.location.pathname);
         }, 5000);
         break;
       case 'cancelled':
         clearInterval(countdownInterval); notifiedForThisCall = false;
-        newSession(); showScreen('ready');
+        newSession(); enterVitrinMode();
+        if (window.location.search) history.replaceState({}, '', window.location.pathname);
         break;
       default: showScreen('ready');
     }
   });
 }
 
-// ─── Geri sayım ──────────────────────────────────────
 function startCountdown(calledAt) {
   clearInterval(countdownInterval);
   var totalMs = 2 * 60 * 1000;
@@ -402,10 +383,7 @@ async function handleQueueButton() {
     startQueueListener();
     await tryAssignToOpenRegister();
     await loadCongestion();
-  } catch (e) {
-    btn.disabled = false; btn.textContent = 'SIRA NUMARASI AL';
-    alert('Bir hata oluştu. Tekrar deneyin.');
-  }
+  } catch (e) { btn.disabled = false; btn.textContent = 'KASA SIRASI AL'; alert('Bir hata oluştu. Tekrar deneyin.'); }
 }
 
 async function tryAssignToOpenRegister() {
@@ -422,8 +400,7 @@ async function handleCancel() {
   if (!confirm('Sıranızı iptal etmek istiyor musunuz?')) return;
   try { await db.collection('queue').doc(sessionId).update({ status: 'cancelled' }); } catch(e) {}
   if (queueListener) queueListener();
-  newSession();
-  enterVitrinMode();
+  newSession(); enterVitrinMode();
   if (window.location.search) history.replaceState({}, '', window.location.pathname);
 }
 
@@ -455,41 +432,26 @@ function openQRScanner() {
   var video = document.getElementById('qr-video');
   var status = document.getElementById('qr-status');
   overlay.style.display = 'flex';
-  status.textContent = 'Kamera açılıyor...';
-  status.style.color = '#8b949e';
-
+  status.textContent = 'Kamera açılıyor...'; status.style.color = '#8b949e';
   navigator.mediaDevices.getUserMedia({
     video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 640 } }
   }).then(function(stream) {
-    qrStream = stream;
-    video.srcObject = stream;
-    video.play();
+    qrStream = stream; video.srcObject = stream; video.play();
     status.textContent = 'Kamerayı QR koda doğrultun...';
-
-    // Her 200ms'de bir frame'i tara
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-
     qrScanInterval = setInterval(function() {
       if (video.readyState < 2) return;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
       var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
       if (typeof jsQR !== 'undefined') {
         var code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: 'dontInvert' });
-        if (code && code.data) {
-          // QR bulundu!
-          processQRResult(code.data, status);
-        }
+        if (code && code.data) processQRResult(code.data, status);
       }
     }, 200);
-
   }).catch(function(err) {
-    console.error('Kamera hatası:', err);
-    status.textContent = 'Kamera açılamadı. Tarayıcı izin vermiyor olabilir.';
-    status.style.color = '#f87171';
+    status.textContent = 'Kamera açılamadı. Tarayıcı izin vermiyor olabilir.'; status.style.color = '#f87171';
   });
 }
 
@@ -506,12 +468,8 @@ function processQRResult(data, statusEl) {
     var url = new URL(data);
     var qMarket = url.searchParams.get('market');
     if (qMarket) {
-      // Başarılı!
-      statusEl.textContent = '✓ QR kod okundu!';
-      statusEl.style.color = '#10e5b0';
+      statusEl.textContent = '✓ QR kod okundu!'; statusEl.style.color = '#10e5b0';
       if (navigator.vibrate) navigator.vibrate(100);
-
-      // Scanner'ı kapat ve sıra moduna geç
       setTimeout(function() {
         closeQRScanner();
         marketId = qMarket;
@@ -520,21 +478,13 @@ function processQRResult(data, statusEl) {
         if (!sessionId) { sessionId = generateId(); localStorage.setItem('mp_s_' + marketId, sessionId); }
         isQueueMode = true;
         history.replaceState({}, '', '?market=' + marketId);
-
-        // Market değiştiyse yeniden yükle
         loadMarket();
       }, 500);
       return;
     }
   } catch(e) {}
-
-  // Geçersiz QR
-  statusEl.textContent = 'Bu bir MarketPas QR kodu değil. Doğru kodu okutun.';
-  statusEl.style.color = '#fbbf24';
-  setTimeout(function() {
-    statusEl.textContent = 'Kamerayı QR koda doğrultun...';
-    statusEl.style.color = '#8b949e';
-  }, 2000);
+  statusEl.textContent = 'Bu bir MarketPas QR kodu değil.'; statusEl.style.color = '#fbbf24';
+  setTimeout(function() { statusEl.textContent = 'Kamerayı QR koda doğrultun...'; statusEl.style.color = '#8b949e'; }, 2000);
 }
 
 // ─── Yardımcılar ─────────────────────────────────────
@@ -542,7 +492,7 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   var el = document.getElementById('screen-' + name);
   if (el) el.classList.add('active');
-  if (name === 'ready') { var btn = document.getElementById('btn-queue'); if (btn) { btn.disabled = false; btn.textContent = 'SIRA NUMARASI AL'; } }
+  if (name === 'ready') { var btn = document.getElementById('btn-queue'); if (btn) { btn.disabled = false; btn.textContent = 'KASA SIRASI AL'; } }
   if (name === 'timeout') { var btn2 = document.getElementById('btn-retry'); if (btn2) btn2.disabled = false; }
   var we = document.getElementById('wait-estimate');
   if (we) we.style.display = (name === 'queued' && currentStats && currentStats.estimatedWait > 0) ? 'flex' : 'none';
@@ -558,9 +508,5 @@ function newSession() {
   clearInterval(countdownInterval); notifiedForThisCall = false;
 }
 
-// ─── PWA Service Worker Kaydı ────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(function(e) {});
-}
-
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(e) {});
 document.addEventListener('DOMContentLoaded', init);

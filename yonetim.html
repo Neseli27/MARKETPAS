@@ -295,6 +295,39 @@
         <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px">Kaydet</button>
       </div>
 
+      <!-- Karşılama Görseli -->
+      <div class="card">
+        <h3>🎉 Karşılama Ekranı Görseli</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+          Müşteri QR kod okuttuğunda tam ekran karşılama görseli gösterilir. 12 saniye sonra otomatik kapanır.<br>
+          Dikey format, minimum 1080×1920 piksel önerilir.
+        </p>
+        <div class="pwa-icon-area">
+          <div class="pwa-icon-preview" id="welcome-img-preview" style="width:120px;height:200px;border-radius:16px">
+            <img id="welcome-img-thumb" src="" alt="" style="display:none;border-radius:14px">
+            <div class="pwa-icon-empty" id="welcome-img-empty">
+              <div style="font-size:24px">🎉</div>
+              <div style="font-size:10px;color:var(--text3)">Görsel yok</div>
+            </div>
+          </div>
+          <div class="pwa-icon-controls">
+            <div class="pwa-icon-info" id="welcome-img-info">Henüz karşılama görseli tanımlanmamış. Varsayılan koyu gradient kullanılıyor.</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-accent btn-sm" onclick="document.getElementById('welcome-img-file').click()">📸 Görsel Yükle</button>
+              <button class="btn btn-sm" onclick="removeWelcomeImage()" id="btn-remove-welcome" style="display:none">🗑 Kaldır</button>
+            </div>
+            <input type="file" id="welcome-img-file" accept="image/png,image/jpeg,image/webp" onchange="handleWelcomeImageUpload(this)" style="display:none">
+            <div style="margin-top:10px">
+              <div style="font-size:11px;color:var(--text3)">veya</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <input type="url" id="welcome-img-url" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="saveWelcomeImageUrl()">Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- PWA İkon Ayarı -->
       <div class="card">
         <h3>📱 Uygulama İkonu (PWA)</h3>

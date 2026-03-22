@@ -572,6 +572,7 @@ function showSection(name) {
     document.getElementById('settings-thanks').value = marketData.thanksMessage || '';
     document.getElementById('settings-pin').value = '';
     loadPwaIconPreview();
+    loadWelcomeImagePreview();
   }
 }
 
@@ -644,6 +645,70 @@ async function removePwaIcon() {
     await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
     marketData.pwaIconUrl = '';
     loadPwaIconPreview();
+  } catch(e) { alert('Hata: ' + e.message); }
+}
+
+// ─── Karşılama Görseli Yönetimi ──────────────────────
+function loadWelcomeImagePreview() {
+  var imgUrl = marketData.welcomeImageUrl || '';
+  var imgEl = document.getElementById('welcome-img-thumb');
+  var emptyEl = document.getElementById('welcome-img-empty');
+  var infoEl = document.getElementById('welcome-img-info');
+  var removeBtn = document.getElementById('btn-remove-welcome');
+
+  if (imgUrl) {
+    if (imgEl) { imgEl.src = imgUrl; imgEl.style.display = 'block'; }
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (infoEl) infoEl.textContent = 'Karşılama görseli tanımlı. QR okutulduğunda bu görsel gösterilecek.';
+    if (removeBtn) removeBtn.style.display = 'inline-block';
+  } else {
+    if (imgEl) imgEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (infoEl) infoEl.textContent = 'Henüz karşılama görseli tanımlanmamış. Varsayılan koyu gradient kullanılıyor.';
+    if (removeBtn) removeBtn.style.display = 'none';
+  }
+}
+
+function handleWelcomeImageUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (!file.type.match(/image\/(png|jpeg|webp)/)) { alert('PNG, JPG veya WebP yükleyin.'); input.value = ''; return; }
+  compressImage(file, 800, 0.5, function(dataUrl) {
+    var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+    if (sizeKB > 700) {
+      compressImage(file, 600, 0.35, function(smallUrl) { saveWelcomeImage(smallUrl); });
+    } else {
+      saveWelcomeImage(dataUrl);
+    }
+  });
+  input.value = '';
+}
+
+async function saveWelcomeImage(dataUrl) {
+  try {
+    await db.collection('markets').doc(marketId).update({ welcomeImageUrl: dataUrl });
+    marketData.welcomeImageUrl = dataUrl;
+    loadWelcomeImagePreview();
+  } catch(e) { alert('Görsel kayıt hatası: ' + e.message); }
+}
+
+async function saveWelcomeImageUrl() {
+  var url = document.getElementById('welcome-img-url').value.trim();
+  if (!url) { alert('URL girin.'); return; }
+  try {
+    await db.collection('markets').doc(marketId).update({ welcomeImageUrl: url });
+    marketData.welcomeImageUrl = url;
+    loadWelcomeImagePreview();
+    document.getElementById('welcome-img-url').value = '';
+  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+}
+
+async function removeWelcomeImage() {
+  if (!confirm('Karşılama görseli kaldırılsın mı?')) return;
+  try {
+    await db.collection('markets').doc(marketId).update({ welcomeImageUrl: '' });
+    marketData.welcomeImageUrl = '';
+    loadWelcomeImagePreview();
   } catch(e) { alert('Hata: ' + e.message); }
 }
 
