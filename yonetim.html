@@ -39,7 +39,7 @@
     <nav>
       <div class="nav-item" id="nav-reports" onclick="showSection('reports')"><span>📊</span><span>Raporlar</span></div>
       <div class="nav-item" id="nav-qr" onclick="showSection('qr')"><span>📱</span><span>QR Kodlar</span></div>
-      <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>Duyurular</span></div>
+      <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>İçerikler</span></div>
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
     </nav>
 
@@ -179,83 +179,66 @@
       <div class="card"><h3>🖥️ Kasiyer Linkleri</h3><div id="kasiyer-links"></div></div>
     </div>
 
-    <!-- Duyurular -->
+    <!-- İçerik Yönetimi (3 Kategori) -->
     <div id="section-announcements" class="section">
-      <div class="section-title">Duyurular & Bannerlar</div>
-      <div class="section-sub">Müşterilerin telefonunda gösterilecek kampanya bannerları</div>
+      <div class="section-title">İçerik Yönetimi</div>
+      <div class="section-sub">Müşterilerin telefonunda gösterilecek kampanya, indirim ve fırsat içerikleri</div>
 
-      <!-- Banner Ölçü Rehberi -->
-      <div class="banner-guide">
-        <div class="guide-title">📐 Banner Tasarım Rehberi</div>
-        <div class="guide-grid">
-          <div class="guide-item">
-            <div class="guide-icon">📱</div>
-            <div class="guide-label">Yön</div>
-            <div class="guide-value">DİKEY</div>
-          </div>
-          <div class="guide-item">
-            <div class="guide-icon">📏</div>
-            <div class="guide-label">İdeal Ölçü</div>
-            <div class="guide-value">1080 × 1920 px</div>
-          </div>
-          <div class="guide-item">
-            <div class="guide-icon">🔲</div>
-            <div class="guide-label">En-Boy Oranı</div>
-            <div class="guide-value">9:16 (dikey telefon)</div>
-          </div>
-          <div class="guide-item">
-            <div class="guide-icon">📦</div>
-            <div class="guide-label">Format</div>
-            <div class="guide-value">JPG veya PNG · Sınırsız</div>
+      <!-- Kategori Sekmeleri -->
+      <div class="cat-tabs">
+        <button class="cat-tab active" onclick="switchCategory('kampanya')" id="tab-kampanya">
+          <span class="cat-tab-icon">🏷️</span>
+          <span class="cat-tab-name">Kampanyalar</span>
+          <span class="cat-tab-count" id="count-kampanya">0</span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('surpriz')" id="tab-surpriz">
+          <span class="cat-tab-icon">🎁</span>
+          <span class="cat-tab-name">Sürpriz İndirimler</span>
+          <span class="cat-tab-count" id="count-surpriz">0</span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('gunun_firsati')" id="tab-gunun_firsati">
+          <span class="cat-tab-icon">⭐</span>
+          <span class="cat-tab-name">Günün Fırsatı</span>
+          <span class="cat-tab-count" id="count-gunun_firsati">0</span>
+        </button>
+      </div>
+
+      <!-- İçerik Listesi + Ekle Butonu -->
+      <div class="ann-list-header">
+        <span style="font-size:14px;font-weight:600" id="cat-list-title">Kampanyalar</span>
+        <button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Ekle</button>
+      </div>
+
+      <!-- Ekleme/Düzenleme Formu -->
+      <div id="ann-form">
+        <h3 id="ann-form-title">Yeni İçerik</h3>
+        <div id="ann-save-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:12px;border-radius:8px;margin-bottom:12px"></div>
+
+        <div class="form-row">
+          <label>Kategori</label>
+          <div class="cat-select" id="form-cat-select">
+            <label class="cat-opt active" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya" checked><span>🏷️ Kampanya</span></label>
+            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>🎁 Sürpriz İndirim</span></label>
+            <label class="cat-opt" id="opt-gunun_firsati"><input type="radio" name="ann-cat" value="gunun_firsati"><span>⭐ Günün Fırsatı</span></label>
           </div>
         </div>
-        <div class="guide-tip">💡 Banner müşterinin telefon ekranının alt %70'ini kaplar. Metin ve fiyat bilgilerini görselin ortasına ve altına yerleştirin. Üst kısım sıra bilgisi ile kaplanabilir.</div>
-      </div>
-
-      <div class="ann-list-header">
-        <span style="font-size:14px;font-weight:600">Banner Listesi</span>
-        <button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Banner</button>
-      </div>
-
-      <div id="ann-form">
-        <h3 id="ann-form-title">Yeni Banner</h3>
-        <div id="ann-save-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:12px;border-radius:8px;margin-bottom:12px"></div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>
-        <div class="form-row"><label>Açıklama (opsiyonel)</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
+        <div class="form-row"><label>Açıklama</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
         <div class="form-row">
-          <label>Banner Görseli (1080×1920px · 9:16 dikey · JPG/PNG)</label>
-          <div class="phone-mockup-wrap">
-            <div class="phone-mockup">
-              <div class="phone-notch"></div>
-              <div class="phone-top-area">
-                <div class="phone-top-label">▲ Sıra bilgisi alanı (%30)</div>
-              </div>
-              <div class="phone-banner-area" id="upload-area" style="position:relative">
-                <div class="upload-preview" id="upload-preview" style="display:none">
-                  <img id="upload-preview-img" src="" alt="">
-                  <button type="button" class="upload-remove" onclick="removeUpload()">✕</button>
-                  <div class="upload-size" id="upload-size"></div>
-                </div>
-                <div class="upload-placeholder" id="upload-placeholder" onclick="document.getElementById('form-ann-file').click()" style="cursor:pointer">
-                  <div style="font-size:28px;margin-bottom:6px">📸</div>
-                  <div style="font-size:13px;font-weight:600;color:#f0f6fc">Görsel Yükle</div>
-                  <div style="font-size:11px;color:#8b949e;margin-top:4px">Tıkla · JPG, PNG</div>
-                  <div style="font-size:10px;color:#6b7280;margin-top:4px">Otomatik sıkıştırılır</div>
-                </div>
-                <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="display:none">
-              </div>
-              <div class="phone-bottom-bar"></div>
+          <label>Görsel</label>
+          <div class="img-upload-row">
+            <div class="img-preview" id="upload-preview" style="display:none">
+              <img id="upload-preview-img" src="" alt="">
+              <button type="button" class="img-remove" onclick="removeUpload()">✕</button>
+              <div class="img-size" id="upload-size"></div>
             </div>
-            <div class="phone-mockup-info">
-              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">📱 Müşteri Telefonu Önizleme</div>
-              <div style="font-size:12px;color:var(--text2);line-height:1.6">
-                Üst %30 = Sıra bilgisi alanı<br>
-                Alt %70 = <strong>Banner alanı</strong> (burası)<br>
-                Banner ekranın büyük bölümünü kaplar
-              </div>
+            <div class="img-placeholder" id="upload-placeholder" onclick="document.getElementById('form-ann-file').click()">
+              <div style="font-size:24px">📸</div>
+              <div style="font-size:12px;color:var(--text2)">Görsel Yükle</div>
             </div>
+            <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="display:none">
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
             <span style="font-size:12px;color:var(--text3)">veya</span>
             <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
           </div>
@@ -266,6 +249,8 @@
           <button class="btn" onclick="cancelAnnForm()">İptal</button>
         </div>
       </div>
+
+      <!-- İçerik Listesi -->
       <div id="ann-list"></div>
     </div>
 
