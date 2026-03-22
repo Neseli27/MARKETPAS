@@ -75,7 +75,8 @@ async function loadMarket() {
         statsInterval = setInterval(loadCongestion, 15000);
       });
     } else {
-      // Vitrin modu — direkt reklamlar
+      // Vitrin modu — ikonları gizle, reklamlar göster
+      showHeaderIcons(false);
       checkExistingQueueSilent();
     }
   } catch (e) {
@@ -180,15 +181,23 @@ function showWelcomeSplash(callback) {
 function enterQueueMode() {
   isQueueMode = true;
   document.getElementById('queue-panel').classList.remove('hidden');
-  // Bilet ikonu pulse animasyonu kaldır
   document.getElementById('ticket-btn').classList.remove('active-pulse');
+  // İkonları göster — müşteri markette
+  showHeaderIcons(true);
 }
 
 function enterVitrinMode() {
   isQueueMode = false;
   document.getElementById('queue-panel').classList.add('hidden');
-  // Bilet ikonuna pulse animasyonu ekle — dikkat çeksin
-  document.getElementById('ticket-btn').classList.add('active-pulse');
+  // İkonları gizle — müşteri markette değil
+  showHeaderIcons(false);
+}
+
+function showHeaderIcons(visible) {
+  var ticketBtn = document.getElementById('ticket-btn');
+  var qrBtn = document.querySelector('.qr-btn');
+  if (ticketBtn) ticketBtn.style.display = visible ? 'flex' : 'none';
+  if (qrBtn) qrBtn.style.display = visible ? 'flex' : 'none';
 }
 
 // Bilet ikonuna tıklayınca panel aç/kapa

@@ -37,8 +37,7 @@
 
     <!-- Navigasyon -->
     <nav>
-      <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span>📊</span><span>Dashboard</span></div>
-      <div class="nav-item" id="nav-report" onclick="showSection('report')"><span>📈</span><span>Günlük Rapor</span></div>
+      <div class="nav-item" id="nav-reports" onclick="showSection('reports')"><span>📊</span><span>Raporlar</span></div>
       <div class="nav-item" id="nav-qr" onclick="showSection('qr')"><span>📱</span><span>QR Kodlar</span></div>
       <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>Duyurular</span></div>
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
@@ -53,11 +52,12 @@
 
   <!-- Main -->
   <main>
-    <!-- Dashboard -->
-    <div id="section-dashboard" class="section">
-      <div class="section-title">Dashboard</div>
-      <div class="section-sub">Canlı kasa ve sıra durumu</div>
+    <!-- ═══ RAPORLAR (birleşik) ═══ -->
+    <div id="section-reports" class="section">
+      <div class="section-title">Raporlar</div>
+      <div class="section-sub">Canlı istatistikler, kasa durumları ve günlük analiz</div>
 
+      <!-- Uyarılar -->
       <div class="alert-card" id="license-warning" style="display:none"></div>
       <div class="alert-card" id="congestion-alert" style="display:none">
         <div class="alert-icon">⚠️</div>
@@ -65,19 +65,21 @@
         <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
       </div>
 
+      <!-- Canlı İstatistikler -->
       <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="stat-current">0</div><div class="stat-label">Anlık Müşteri</div></div>
         <div class="stat-card"><div class="stat-num" id="queue-count">0</div><div class="stat-label">Sıra Bekleyen</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-avg-time">—</div><div class="stat-label">Ort. İşlem</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-congestion">—</div><div class="stat-label">Yoğunluk</div></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-active-kasas">—</div><div class="stat-label">Açık Kasa</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-est-wait">—</div><div class="stat-label">Tahm. Bekleme</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-today">—</div><div class="stat-label">Bugün Hizmet</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-timeout">—</div><div class="stat-label">Timeout</div></div>
       </div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="stat-avg-time">—</div><div class="stat-label">Ort. İşlem</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-congestion">—</div><div class="stat-label">Yoğunluk</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-active-kasas">—</div><div class="stat-label">Açık Kasa</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-est-wait">—</div><div class="stat-label">Tahm. Bekleme</div></div>
-      </div>
 
+      <!-- Kasa Durumları -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h3>Kasa Durumları</h3>
@@ -86,27 +88,9 @@
         <div id="registers-grid"></div>
       </div>
 
-      <div class="card">
-        <h3>Kasa Performans Raporu</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Her kasanın bugünkü ortalama işlem süresi</p>
-        <div id="perf-grid"></div>
-        <div id="perf-empty" style="display:none;text-align:center;padding:24px;color:var(--text2);font-size:14px">Henüz yeterli veri yok.</div>
-      </div>
-    </div>
-
-    <!-- ═══ GÜNLÜK RAPOR ═══ -->
-    <div id="section-report" class="section">
-      <div class="section-title">📈 Günlük Rapor</div>
-      <div class="section-sub">Bugünün detaylı müşteri ve kasa istatistikleri</div>
-
-      <!-- Ana metrikler -->
+      <!-- Günlük Detay Kartları -->
+      <div class="card"><h3 style="margin-bottom:14px">📈 Günlük Detay</h3>
       <div class="report-grid" id="report-grid">
-        <div class="report-card rc-teal">
-          <div class="rc-icon">👥</div>
-          <div class="rc-value" id="rp-current">0</div>
-          <div class="rc-label">Anlık Müşteri</div>
-          <div class="rc-sub">Şu an markette</div>
-        </div>
         <div class="report-card rc-green">
           <div class="rc-icon">🚪</div>
           <div class="rc-value" id="rp-left">0</div>
@@ -150,24 +134,27 @@
           <div class="rc-sub">Kasaya gelemeyenler</div>
         </div>
       </div>
-
-      <!-- Saat Bazlı Grafik -->
-      <div class="card" style="margin-top:4px">
-        <h3>🕐 Saatlik Müşteri Dağılımı</h3>
-        <div style="position:relative;height:300px">
-          <canvas id="hourly-chart"></canvas>
-        </div>
       </div>
 
-      <!-- Kasa Bazlı Dağılım -->
+      <!-- Grafikler -->
+      <div class="card">
+        <h3>🕐 Saatlik Müşteri Dağılımı</h3>
+        <div style="position:relative;height:300px"><canvas id="hourly-chart"></canvas></div>
+      </div>
       <div class="card">
         <h3>🖥️ Kasa Bazlı Performans</h3>
-        <div style="position:relative;height:260px">
-          <canvas id="kasa-chart"></canvas>
-        </div>
+        <div style="position:relative;height:260px"><canvas id="kasa-chart"></canvas></div>
       </div>
 
-      <!-- Rapor yenile butonu -->
+      <!-- Kasa Performans Detayı -->
+      <div class="card">
+        <h3>Kasa Performans Raporu</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Her kasanın bugünkü ortalama işlem süresi</p>
+        <div id="perf-grid"></div>
+        <div id="perf-empty" style="display:none;text-align:center;padding:24px;color:var(--text2);font-size:14px">Henüz yeterli veri yok.</div>
+      </div>
+
+      <!-- Yenile -->
       <div style="text-align:center;padding:8px 0">
         <button class="btn" onclick="loadReport()" style="font-size:13px">🔄 Raporu Yenile</button>
         <span style="font-size:12px;color:var(--text3);margin-left:8px" id="report-updated">—</span>

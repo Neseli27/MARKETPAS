@@ -70,7 +70,7 @@ async function handleAuth() {
 
 function startPanel() {
   document.getElementById('panel-market-name').textContent = marketData.name;
-  showSection('dashboard');
+  showSection('reports');
   startLiveListeners();
   startMarketListener(); // Market verisini canlı dinle (lisans değişiklikleri vs.)
   loadAnnouncements();
@@ -249,10 +249,10 @@ async function loadCongestionStats() {
     else { al.style.display = 'none'; }
 
     await loadKasaPerformance();
-    await loadStats(); // Dashboard istatistiklerini de güncelle
+    await loadStats();
 
-    // Rapor sayfası açıksa onu da güncelle
-    var reportSection = document.getElementById('section-report');
+    // Raporlar sayfası açıksa günlük detayları da güncelle
+    var reportSection = document.getElementById('section-reports');
     if (reportSection && reportSection.classList.contains('active')) {
       await loadReport();
     }
@@ -565,7 +565,7 @@ function showSection(name) {
   var sec = document.getElementById('section-' + name); var nav = document.getElementById('nav-' + name);
   if (sec) sec.classList.add('active'); if (nav) nav.classList.add('active');
   if (name === 'qr' && marketId) setTimeout(buildQR, 100);
-  if (name === 'report' && marketId) setTimeout(loadReport, 100);
+  if (name === 'reports' && marketId) setTimeout(loadReport, 100);
   if (name === 'settings' && marketData) {
     document.getElementById('settings-name').value = marketData.name || '';
     document.getElementById('settings-logo').value = marketData.logoUrl || '';
@@ -746,10 +746,7 @@ async function loadReport() {
     var timeoutRecords = allRecords.filter(function(r) { return r.status === 'timeout'; });
     var currentInMarket = allRecords.filter(function(r) { return activeStatuses.indexOf(r.status) > -1; });
 
-    // ─── 1. Anlık Müşteri ───
-    document.getElementById('rp-current').textContent = currentInMarket.length;
-
-    // ─── 2. Ayrılan Müşteri ───
+    // ─── 1. Ayrılan Müşteri ───
     document.getElementById('rp-left').textContent = doneRecords.length;
 
     // ─── 3. Toplam Müşteri ───
