@@ -233,6 +233,30 @@ async function handleAddKasa() {
   } catch(e) { alert('Hata: ' + e.message); }
 }
 
+// ─── Kasaları Sıfırla (stuck verileri temizle) ───────
+async function resetAllRegisters() {
+  if (!confirm('Tüm kasaların bekleyen/aktif müşteri verileri sıfırlanacak. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
+  try {
+    var snap = await db.collection('registers').where('marketId', '==', marketId).get();
+    var batch = db.batch();
+    var count = 0;
+    snap.forEach(function(doc) {
+      batch.update(doc.ref, {
+        activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null
+      });
+      count++;
+    });
+    // Bekleyen queue kayıtlarını da temizle
+    var qSnap = await db.collection('queue').where('marketId', '==', marketId)
+      .where('status', 'in', ['waiting', 'priority', 'priority_ready', 'called', 'arrived', 'active', 'paused']).get();
+    qSnap.forEach(function(doc) {
+      batch.update(doc.ref, { status: 'cancelled', code: null, registerId: null, kasaNo: null });
+    });
+    await batch.commit();
+    alert(count + ' kasa sıfırlandı, ' + qSnap.size + ' bekleyen sıra iptal edildi.');
+  } catch(e) { alert('Sıfırlama hatası: ' + e.message); }
+}
+
 // ─── Yoğunluk + Performans ──────────────────────────
 async function loadCongestionStats() {
   try {

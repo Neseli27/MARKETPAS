@@ -247,10 +247,23 @@ async function tryAssignToOpenRegister(){try{
     var assigned=false;
     for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();
       console.log('MarketPas: Kasa', d.kasaNo, '- waitingQueueId:', d.waitingQueueId||'BOŞ', '- activeQueueId:', d.activeQueueId||'BOŞ');
+
+      // Stuck kontrol — waitingQueueId varsa ama queue kaydı geçersizse temizle
+      if(d.waitingQueueId){
+        try{
+          var stuckDoc=await db.collection('queue').doc(d.waitingQueueId).get();
+          if(!stuckDoc.exists||['done','cancelled','timeout'].indexOf(stuckDoc.data().status)>-1){
+            console.log('MarketPas: Kasa', d.kasaNo, 'stuck tespit edildi, temizleniyor...');
+            await db.collection('registers').doc(snap.docs[i].id).update({waitingQueueId:null,waitingCode:null,calledAt:null});
+            d.waitingQueueId=null; // Yerel referansı da güncelle
+          }
+        }catch(e){}
+      }
+
       if(!d.waitingQueueId){
         console.log('MarketPas: Kasa', d.kasaNo, 'boş — atama yapılıyor');
         await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);assigned=true;break}}
-    if(!assigned)console.log('MarketPas: Tüm kasalar dolu');
+    if(!assigned)console.log('MarketPas: Tüm kasalar dolu veya sırada müşteri yok');
   }catch(e){console.error('MarketPas: tryAssign hatası:', e)}}
 
 async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){

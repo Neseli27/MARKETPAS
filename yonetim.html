@@ -99,7 +99,10 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h3>Kasa Durumları</h3>
-          <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="resetAllRegisters()" style="font-size:12px;color:var(--danger);border-color:var(--danger)">🔄 Sıfırla</button>
+            <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
+          </div>
         </div>
         <div id="registers-grid"></div>
       </div>
