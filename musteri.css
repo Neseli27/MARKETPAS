@@ -103,8 +103,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .code-lbl{font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;font-weight:700;margin-bottom:4px}
 .code-num{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;line-height:1}
 .kasa-badge{display:inline-block;background:var(--accent);color:#0a0f1a;font-weight:700;font-size:13px;padding:4px 16px;border-radius:20px;margin-top:6px}
-.cd-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);width:100%}
+.cd-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);width:100%;justify-content:center}
 #countdown{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--warn);min-width:44px}
+.cd-btns{display:flex;gap:8px;width:100%}
+.btn-ertele{flex:1;padding:10px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--warn);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-cancel-sm{padding:10px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pause-card{border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.04)}
 
 /* Yoğunluk */
 .cg-bar{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:8px}

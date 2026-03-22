@@ -82,7 +82,19 @@
             <div class="code-num" id="called-code">000-000</div>
             <div class="kasa-badge" id="called-kasa">Kasa —</div>
           </div>
-          <div class="cd-row"><span>⏱</span><span id="countdown">2:00</span><button class="btn-ertele" onclick="handleErtele()" style="margin-left:auto">⏸ Ertele</button></div>
+          <div class="cd-row"><span>⏱</span><span id="countdown">2:00</span></div>
+          <div class="cd-btns">
+            <button class="btn-ertele" onclick="handleErtele()">⏸ Henüz Hazır Değilim</button>
+            <button class="btn-cancel-sm" onclick="handleCancel()">✕ İptal</button>
+          </div>
+        </div>
+        <div id="screen-paused" class="scr">
+          <div class="info-card pause-card">
+            <div class="ic-title">⏸ Sıranız Bekletiliyor</div>
+            <div class="ic-sub">Hazır olduğunuzda butona basın.<br>Sıranız korunuyor, kod gelmeyecek.</div>
+          </div>
+          <button class="btn-main" onclick="handleReady()">HAZIRIM — SIRAMA DÖN</button>
+          <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
         </div>
         <div id="screen-arrived" class="scr"><div class="info-card warn"><div class="ic-title">🕐 Birazdan Kasa İşlemleriniz Başlayacak</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
         <div id="screen-active" class="scr"><div class="info-card accent"><div class="ic-title">💳 Ödeme İşlemleriniz Başlamak Üzere</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>

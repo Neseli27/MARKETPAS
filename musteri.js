@@ -78,7 +78,7 @@ function updateButtons(){
   if(!qrBtn||!siraBtn)return;
 
   var status=myQueueData?myQueueData.status:null;
-  var inQueue=status&&['waiting','priority','priority_ready','called','arrived','active'].indexOf(status)>-1;
+  var inQueue=status&&['waiting','priority','priority_ready','called','arrived','active','paused'].indexOf(status)>-1;
 
   // QR butonu: sadece markette değilken aktif
   qrBtn.disabled=isQueueMode;
@@ -121,7 +121,7 @@ function toggleQueuePanel(){
     checkExistingQueue();requestNotificationPermission();
   }else{
     var s=myQueueData?myQueueData.status:null;
-    var inQ=s&&['waiting','priority','priority_ready','called','arrived','active'].indexOf(s)>-1;
+    var inQ=s&&['waiting','priority','priority_ready','called','arrived','active','paused'].indexOf(s)>-1;
     if(!inQ)panel.classList.add('hidden');
   }
   updateButtons();
@@ -130,7 +130,7 @@ function toggleQueuePanel(){
 async function checkExistingQueueSilent(){
   try{var doc=await db.collection('queue').doc(sessionId).get();
     if(doc.exists){var s=doc.data().status;
-      if(['waiting','priority','priority_ready','called','arrived','active'].includes(s)){
+      if(['waiting','priority','priority_ready','called','arrived','active','paused'].includes(s)){
         enterQueueMode();document.getElementById('q-panel').classList.remove('hidden');
         loadCongestion();statsInterval=setInterval(loadCongestion,15000);
         requestNotificationPermission();startQueueListener();return}
@@ -195,7 +195,7 @@ function renderAnnouncements(){
 
 // ═══ SIRA İŞLEMLERİ ═════════════════════════════════
 async function checkExistingQueue(){try{var doc=await db.collection('queue').doc(sessionId).get();
-  if(doc.exists){var s=doc.data().status;if(['waiting','priority','priority_ready','called','arrived','active'].includes(s)){startQueueListener();return}}
+  if(doc.exists){var s=doc.data().status;if(['waiting','priority','priority_ready','called','arrived','active','paused'].includes(s)){startQueueListener();return}}
   newSession();showScreen('ready')}catch(e){showScreen('ready')}}
 
 function startQueueListener(){
@@ -212,6 +212,7 @@ function startQueueListener(){
         if(!notifiedForThisCall){notifyCustomer(myQueueData.code,myQueueData.kasaNo);notifiedForThisCall=true}break;
       case 'arrived':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('arrived');break;
       case 'active':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('active');break;
+      case 'paused':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('paused');break;
       case 'timeout':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('timeout');break;
       case 'done':clearInterval(countdownInterval);notifiedForThisCall=false;
         document.getElementById('thanks-title').textContent='🛍️ Teşekkürler!';
@@ -243,9 +244,13 @@ async function handleCancel(){if(!confirm('Sıranızı iptal etmek istiyor musun
   if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)}
 
 async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
-  await db.collection('queue').doc(sessionId).update({status:'priority',code:null,registerId:null,kasaNo:null,calledAt:null});
+  await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
   if(rid){await db.collection('registers').doc(rid).update({waitingQueueId:null,waitingCode:null,calledAt:null});
     var rDoc=await db.collection('registers').doc(rid).get();if(rDoc.exists)await assignNextToRegister(marketId,rid,rDoc.data().kasaNo)}}
+
+async function handleReady(){
+  try{await db.collection('queue').doc(sessionId).update({status:'priority',calledAt:null,code:null,registerId:null,kasaNo:null});
+    notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister()}catch(e){}}
 
 async function handleRetryQueue(){var btn=document.getElementById('btn-retry');btn.disabled=true;
   try{await db.collection('queue').doc(sessionId).update({status:'priority',calledAt:null,code:null,registerId:null,kasaNo:null});
