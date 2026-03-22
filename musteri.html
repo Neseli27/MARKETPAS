@@ -3,95 +3,113 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#0a0f1a">
   <title>MarketPas</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" id="pwa-icon">
   <link rel="apple-touch-icon" href="/icon-192.png" id="pwa-apple-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="musteri.css">
 </head>
 <body>
-  <div id="loading"><div class="spinner"></div><p style="color:#8b949e;font-size:12px">Yükleniyor...</p></div>
+  <div id="loading"><div class="ld-spinner"></div></div>
 
-  <!-- ═══ KARŞILAMA EKRANI (tam ekran splash) ═══ -->
-  <div class="welcome-splash" id="welcome-splash" style="display:none">
-    <div class="welcome-bg" id="welcome-bg"></div>
-    <div class="welcome-overlay">
-      <div class="welcome-content">
-        <div class="welcome-badge">HOŞ GELDİNİZ</div>
-        <div class="welcome-market" id="welcome-market-name"></div>
-      </div>
-      <div class="welcome-bottom">
-        <div class="welcome-hint">Alışverişiniz bitmek üzereyken<br><strong>kasa sıra numarası alınız</strong></div>
-        <div class="welcome-progress"><div class="welcome-progress-fill" id="welcome-progress"></div></div>
-      </div>
+  <!-- ═══ KARŞILAMA SPLASH ═══ -->
+  <div class="splash" id="splash" style="display:none">
+    <div class="splash-bg" id="splash-bg"></div>
+    <div class="splash-over">
+      <div class="splash-badge">HOŞ GELDİNİZ</div>
+      <div class="splash-name" id="splash-name"></div>
+      <div class="splash-hint">Alışverişiniz bitmek üzereyken<br><strong>kasa sıra numarası alınız</strong></div>
+      <div class="splash-bar"><div class="splash-fill" id="splash-fill"></div></div>
     </div>
   </div>
 
-  <div class="app-layout">
-    <!-- ═══ HEADER ═══ -->
-    <div class="app-header" id="app-header">
-      <div class="header-left">
-        <button class="ticket-btn" id="ticket-btn" onclick="toggleQueuePanel()" title="Kasa Sırası Al">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><line x1="9" y1="6" x2="9" y2="18" stroke-dasharray="2 2"/></svg>
-        </button>
-      </div>
-      <div class="header-center">
-        <div class="header-market-name" id="header-market-name">MarketPas</div>
-      </div>
-      <div class="header-right">
-        <button class="qr-btn" onclick="openQRScanner()" title="Kare Kod Okut">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
-        </button>
-      </div>
+  <!-- ═══ ANA UYGULAMA ═══ -->
+  <div class="app" id="app">
+
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="hdr-name" id="hdr-name">MarketPas</div>
+      <div class="hdr-sub">Hoş Geldiniz</div>
+    </header>
+
+    <!-- AKSİYON BUTONLARI -->
+    <div class="actions">
+      <button class="act-btn qr-act" id="btn-qr" onclick="openQRScanner()">
+        <div class="act-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
+        </div>
+        <div class="act-text">
+          <div class="act-title">QR Kodu Okut</div>
+          <div class="act-sub">Markete Giriş Yap</div>
+        </div>
+        <div class="act-arrow">›</div>
+      </button>
+
+      <button class="act-btn queue-act" id="btn-sira" onclick="toggleQueuePanel()" disabled>
+        <div class="act-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><line x1="9" y1="6" x2="9" y2="18" stroke-dasharray="2 2"/></svg>
+        </div>
+        <div class="act-text">
+          <div class="act-title">Kasa Sırası Al</div>
+          <div class="act-sub">Dijital sıra ile vakit kazan</div>
+        </div>
+        <div class="act-arrow">›</div>
+      </button>
     </div>
 
-    <!-- ═══ SIRA PANELİ (gizli, bilet ikonuna basınca açılır) ═══ -->
-    <div class="queue-panel hidden" id="queue-panel">
+    <!-- SIRA PANELİ (gizli, Kasa Sırası Al'a basınca açılır) -->
+    <div class="q-panel hidden" id="q-panel">
       <div class="screens-wrap">
-        <div id="screen-ready" class="screen active">
-          <div class="congestion-bar" id="congestion-bar">
-            <div class="cg-header"><span class="cg-dot" id="cg-dot"></span><span class="cg-label" id="cg-label">Yükleniyor...</span></div>
+        <div id="screen-ready" class="scr active">
+          <div class="cg-bar" id="cg-bar">
+            <div class="cg-top"><span class="cg-dot" id="cg-dot"></span><span class="cg-lbl" id="cg-lbl">Yükleniyor...</span></div>
             <div class="cg-track"><div class="cg-fill" id="cg-fill" style="width:0%"></div></div>
             <div class="cg-info" id="cg-info"></div>
           </div>
           <button class="btn-main" id="btn-queue" onclick="handleQueueButton()">KASA SIRASI AL</button>
         </div>
-        <div id="screen-queued" class="screen">
+        <div id="screen-queued" class="scr">
           <div class="pulse-ring">⏳</div>
-          <div class="info-card"><div class="title">Sıraya Alındınız</div><div class="sub">Kasaya çağrılınca bildirim alacaksınız.</div></div>
-          <div class="wait-estimate" id="wait-estimate" style="display:none"><span>⏱</span><span>Tahmini: </span><strong id="wait-time-display">—</strong></div>
-          <button class="btn-secondary" onclick="handleCancel()">İptal Et</button>
+          <div class="info-card"><div class="ic-title">Sıraya Alındınız</div><div class="ic-sub">Kasaya çağrılınca bildirim alacaksınız.</div></div>
+          <div class="wait-est" id="wait-est" style="display:none"><span>⏱</span><span>Tahmini: </span><strong id="wait-time">—</strong></div>
+          <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
         </div>
-        <div id="screen-called" class="screen">
+        <div id="screen-called" class="scr">
           <div class="code-box">
-            <div class="code-label">Kasaya Gidiniz — Kodunuz</div>
-            <div id="called-code">000-000</div>
+            <div class="code-lbl">Kasaya Gidiniz — Kodunuz</div>
+            <div class="code-num" id="called-code">000-000</div>
             <div class="kasa-badge" id="called-kasa">Kasa —</div>
           </div>
-          <div class="countdown-row"><span>⏱</span><span id="countdown">2:00</span><button class="btn-ertele" onclick="handleErtele()" style="margin-left:auto">⏸ Ertele</button></div>
+          <div class="cd-row"><span>⏱</span><span id="countdown">2:00</span><button class="btn-ertele" onclick="handleErtele()" style="margin-left:auto">⏸ Ertele</button></div>
         </div>
-        <div id="screen-arrived" class="screen"><div class="info-card" style="border-color:rgba(245,158,11,.3)"><div class="title">🕐 Birazdan Kasa İşlemleriniz Başlayacak</div><div class="sub" style="color:var(--warn)">Kasadan ayrılmayınız.</div></div></div>
-        <div id="screen-active" class="screen"><div class="info-card" style="border-color:rgba(16,229,176,.3)"><div class="title">💳 Ödeme İşlemleriniz Başlamak Üzere</div><div class="sub" style="color:var(--accent)">Kasadan ayrılmayınız.</div></div></div>
-        <div id="screen-thanks" class="screen"><div class="info-card" style="border-color:rgba(16,229,176,.3)"><div class="title" id="thanks-title">🛍️ Teşekkürler!</div><div class="sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
-        <div id="screen-timeout" class="screen"><div class="info-card" style="border-color:rgba(245,158,11,.3)"><div class="title">⚠️ Süreniz Doldu</div><div class="sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-retry" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
+        <div id="screen-arrived" class="scr"><div class="info-card warn"><div class="ic-title">🕐 Birazdan Kasa İşlemleriniz Başlayacak</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
+        <div id="screen-active" class="scr"><div class="info-card accent"><div class="ic-title">💳 Ödeme İşlemleriniz Başlamak Üzere</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
+        <div id="screen-thanks" class="scr"><div class="info-card accent"><div class="ic-title" id="thanks-title">🛍️ Teşekkürler!</div><div class="ic-sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
+        <div id="screen-timeout" class="scr"><div class="info-card warn"><div class="ic-title">⚠️ Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
       </div>
     </div>
 
-    <!-- ═══ ALT BÖLÜM — Reklamlar ═══ -->
-    <div class="bottom-section empty" id="ann-section">
+    <!-- KATEGORİ KARTLARI -->
+    <div class="cats" id="cats-section">
+      <div class="cats-scroll" id="cats-scroll"></div>
+    </div>
+
+    <!-- BANNER SLIDER -->
+    <div class="banners" id="ann-section">
       <div class="ann-slider" id="ann-slider"></div>
       <div class="ann-dots" id="ann-dots"></div>
     </div>
 
-    <!-- QR Scanner -->
-    <div class="qr-scanner-overlay" id="qr-scanner" style="display:none">
-      <div class="qr-scanner-box">
-        <div class="qr-scanner-header"><span>📷 Kare Kod Tarayıcı</span><button class="qr-scanner-close" onclick="closeQRScanner()">✕</button></div>
-        <div class="qr-scanner-video-wrap"><video id="qr-video" playsinline autoplay></video><div class="qr-scanner-frame"></div></div>
-        <div class="qr-scanner-status" id="qr-status">Kamerayı QR koda doğrultun...</div>
-      </div>
+  </div>
+
+  <!-- QR SCANNER -->
+  <div class="qr-overlay" id="qr-scanner" style="display:none">
+    <div class="qr-box">
+      <div class="qr-head"><span>QR Kodu Tara</span><button class="qr-close" onclick="closeQRScanner()">✕</button></div>
+      <div class="qr-vid-wrap"><video id="qr-video" playsinline autoplay></video><div class="qr-frame"></div></div>
+      <div class="qr-status" id="qr-status">Kamerayı QR koda doğrultun...</div>
     </div>
   </div>
 
