@@ -190,39 +190,37 @@ function enterVitrinMode() {
   updateIconStates();
 }
 
-// İkon durumlarını güncelle
+// İkon durumlarını güncelle — tam akış:
+// 1. Vitrin (markette değil): bilet PASİF, kamera AKTİF
+// 2. QR okuttu (markete girdi, sıra almadı): bilet AKTİF, kamera PASİF
+// 3. Sıra aldı / kod üretildi / kasada: bilet PASİF, kamera PASİF
+// 4. İşlem bitti (teşekkür sonrası): bilet PASİF, kamera AKTİF
 function updateIconStates() {
   var ticketBtn = document.getElementById('ticket-btn');
   var qrBtn = document.querySelector('.qr-btn');
+  if (!ticketBtn || !qrBtn) return;
+
+  var status = myQueueData ? myQueueData.status : null;
+  var inQueue = status && ['waiting','priority','priority_ready','called','arrived','active'].indexOf(status) > -1;
   var panel = document.getElementById('queue-panel');
   var panelOpen = panel && !panel.classList.contains('hidden');
 
-  // Aktif sıra durumları (kod üretilmiş veya işlem devam ediyor)
-  var lockedStates = ['called', 'arrived', 'active'];
-  var isLocked = myQueueData && lockedStates.indexOf(myQueueData.status) > -1;
+  // Bilet: sadece QR okutulmuş + henüz sıra alınmamışken aktif
+  var ticketActive = isQueueMode && !inQueue;
+  setButtonState(ticketBtn, ticketActive);
 
-  // Bilet ikonu: kod üretilmişse pasif, değilse aktif
-  if (ticketBtn) {
-    if (isLocked) {
-      ticketBtn.classList.add('btn-passive');
-      ticketBtn.disabled = true;
-    } else {
-      ticketBtn.classList.remove('btn-passive');
-      ticketBtn.disabled = false;
-    }
-    // Panel açıksa ikonu vurgula
-    ticketBtn.classList.toggle('btn-active', panelOpen && !isLocked);
-  }
+  // Kamera: sadece vitrin modunda (markette değil) veya işlem bittiyse aktif
+  var qrActive = !isQueueMode;
+  setButtonState(qrBtn, qrActive);
+}
 
-  // QR ikonu: QR okutulmuş ve marketteyse pasif
-  if (qrBtn) {
-    if (isQueueMode) {
-      qrBtn.classList.add('btn-passive');
-      qrBtn.disabled = true;
-    } else {
-      qrBtn.classList.remove('btn-passive');
-      qrBtn.disabled = false;
-    }
+function setButtonState(btn, active) {
+  if (active) {
+    btn.classList.remove('btn-passive');
+    btn.disabled = false;
+  } else {
+    btn.classList.add('btn-passive');
+    btn.disabled = true;
   }
 }
 
@@ -230,12 +228,9 @@ function updateIconStates() {
 function toggleQueuePanel() {
   var panel = document.getElementById('queue-panel');
 
-  // Kod üretilmişse veya işlem devam ediyorsa kapatma
-  var lockedStates = ['called', 'arrived', 'active'];
-  if (myQueueData && lockedStates.indexOf(myQueueData.status) > -1) return;
-
   if (panel.classList.contains('hidden')) {
-    enterQueueMode();
+    // Panel kapalı — aç
+    panel.classList.remove('hidden');
     if (!statsInterval) {
       loadCongestion();
       statsInterval = setInterval(loadCongestion, 15000);
@@ -243,15 +238,14 @@ function toggleQueuePanel() {
     checkExistingQueue();
     requestNotificationPermission();
   } else {
-    // Sırada bekliyorsa da kapatabilir (henüz kod yok)
-    var waitingStates = ['waiting', 'priority', 'priority_ready'];
-    if (myQueueData && waitingStates.indexOf(myQueueData.status) > -1) {
-      // Sırada — panel açık kalsın, kapatmasın
-      return;
+    // Panel açık — sırada değilse kapat
+    var status = myQueueData ? myQueueData.status : null;
+    var inQueue = status && ['waiting','priority','priority_ready','called','arrived','active'].indexOf(status) > -1;
+    if (!inQueue) {
+      panel.classList.add('hidden');
     }
-    panel.classList.add('hidden');
-    updateIconStates();
   }
+  updateIconStates();
 }
 
 async function checkExistingQueueSilent() {
