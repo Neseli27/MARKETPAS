@@ -118,6 +118,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .license-btn{padding:16px 8px;border:2px solid var(--border);border-radius:12px;background:var(--card);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
 .license-btn small{font-size:11px;font-weight:500;color:var(--text3)}
 .license-btn:hover{border-color:var(--green);background:var(--green-light)}
+.license-btn.daily-special{border-color:#FB923C;background:#FFF7ED}
+.license-btn.daily-special small{color:var(--orange);font-weight:700}
+.license-btn.daily-special:hover{border-color:var(--orange);background:#FFEDD5}
 .btn-sa-close{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer}
 
 /* ── Fiyatlandırma Paneli ── */

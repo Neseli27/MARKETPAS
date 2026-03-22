@@ -105,6 +105,12 @@ function renderPricingPreview() {
     '</div>';
   });
   html += '</div>';
+  // Günübirlik paketi bilgisi
+  html += '<div style="margin-top:12px;padding:10px 14px;background:#FFF7ED;border:1px solid #FB923C;border-radius:8px;display:flex;align-items:center;gap:12px">';
+  html += '<span style="font-size:18px">⚡</span>';
+  html += '<div><div style="font-size:13px;font-weight:700;color:#C2410C">Günübirlik Paket</div>';
+  html += '<div style="font-size:12px;color:#9A3412">Sabit 500 ₺ / gün — kasa sayısından bağımsız. Bayram, hafta sonu gibi özel günler için.</div></div>';
+  html += '</div>';
   container.innerHTML = html;
 }
 
@@ -196,8 +202,9 @@ function renderMarkets() {
     if (m.licenseExpiry) {
       var days = getLicenseRemainingDays(m.licenseExpiry);
       var expDate = (m.licenseExpiry.toDate ? m.licenseExpiry.toDate() : new Date(m.licenseExpiry)).toLocaleDateString('tr-TR');
+      var planName = m.licenseDays === 1 ? 'Günübirlik · 500 ₺' : (m.licenseDays || '—') + ' günlük plan';
       if (days > 0) {
-        licBar.innerHTML = '<span class="sa-license-pill active">✓ Aktif</span><span class="sa-license-days">' + days + ' gün kaldı</span><span class="sa-license-plan">' + (m.licenseDays || '—') + ' günlük plan</span><span class="sa-license-expiry">Bitiş: ' + expDate + '</span>';
+        licBar.innerHTML = '<span class="sa-license-pill active">✓ Aktif</span><span class="sa-license-days">' + days + ' gün kaldı</span><span class="sa-license-plan">' + planName + '</span><span class="sa-license-expiry">Bitiş: ' + expDate + '</span>';
       } else {
         licBar.innerHTML = '<span class="sa-license-pill expired">✗ Dolmuş</span><span class="sa-license-days" style="color:#DC2626">' + Math.abs(days) + ' gün önce doldu</span><span class="sa-license-expiry">Bitiş: ' + expDate + '</span>';
       }
@@ -284,11 +291,24 @@ function closeModal() { document.getElementById('sa-modal').style.display = 'non
 async function setLicense(days) {
   var mId = document.getElementById('modal-market-id').value;
   if (!mId) return;
+
+  var label = days === 1 ? 'Günübirlik (500 ₺)' : days + ' günlük';
+  if (!confirm(label + ' lisans tanımlanacak. Onaylıyor musunuz?')) return;
+
   try {
-    var expiry = new Date(); expiry.setDate(expiry.getDate() + days);
+    var expiry = new Date();
+    if (days === 1) {
+      // Günübirlik — bugün gece 23:59:59'a kadar
+      expiry.setHours(23, 59, 59, 999);
+    } else {
+      expiry.setDate(expiry.getDate() + days);
+      expiry.setHours(23, 59, 59, 999);
+    }
     await db.collection('markets').doc(mId).update({
       licenseExpiry: firebase.firestore.Timestamp.fromDate(expiry),
-      licenseDays: days, status: 'active'
+      licenseDays: days,
+      licenseType: days === 1 ? 'daily' : 'standard',
+      status: 'active'
     });
     closeModal();
   } catch(e) { alert('Hata: ' + e.message); }

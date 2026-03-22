@@ -72,11 +72,23 @@ function startPanel() {
   document.getElementById('panel-market-name').textContent = marketData.name;
   showSection('dashboard');
   startLiveListeners();
+  startMarketListener(); // Market verisini canlı dinle (lisans değişiklikleri vs.)
   loadAnnouncements();
   loadCongestionStats();
   congestionInterval = setInterval(loadCongestionStats, 10000);
   checkLicenseWarning();
   updateSidebarLicense();
+}
+
+// ─── Market Verisi Canlı Dinleyici ───────────────────
+function startMarketListener() {
+  db.collection('markets').doc(marketId).onSnapshot(function(doc) {
+    if (!doc.exists) return;
+    marketData = doc.data();
+    document.getElementById('panel-market-name').textContent = marketData.name;
+    updateSidebarLicense();
+    checkLicenseWarning();
+  });
 }
 
 // ─── Sidebar Lisans Durumu ───────────────────────────
@@ -92,16 +104,17 @@ function updateSidebarLicense() {
 
   var days = getLicenseRemainingDays(marketData.licenseExpiry);
   var expDate = (marketData.licenseExpiry.toDate ? marketData.licenseExpiry.toDate() : new Date(marketData.licenseExpiry)).toLocaleDateString('tr-TR');
+  var planName = marketData.licenseDays === 1 ? 'Günübirlik' : (marketData.licenseDays || '') + ' günlük plan';
 
   if (days <= 0) {
     el.className = 'sidebar-license expired';
     el.innerHTML = '<span>🚫</span><div><div>Lisans süresi dolmuş</div><div style="font-size:11px;opacity:.7;margin-top:2px">Bitiş: ' + expDate + '</div></div>';
   } else if (days <= 5) {
     el.className = 'sidebar-license warning';
-    el.innerHTML = '<span>⚠️</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + (marketData.licenseDays || '') + ' günlük plan · ' + expDate + '</div></div>';
+    el.innerHTML = '<span>⚠️</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + planName + ' · ' + expDate + '</div></div>';
   } else {
     el.className = 'sidebar-license active';
-    el.innerHTML = '<span>✓</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + (marketData.licenseDays || '') + ' günlük plan · ' + expDate + '</div></div>';
+    el.innerHTML = '<span>✓</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + planName + ' · ' + expDate + '</div></div>';
   }
 }
 
