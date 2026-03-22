@@ -188,6 +188,17 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 @keyframes scanPulse{0%,100%{border-color:rgba(16,229,176,.5)}50%{border-color:var(--accent)}}
 .qr-status{padding:14px 16px;font-size:13px;color:var(--text2);text-align:center}
 
+/* ═══ ONAY MODALI ═══ */
+.modal-overlay{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:24px;animation:modalFade .2s ease}
+@keyframes modalFade{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center}
+.modal-msg{font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px;line-height:1.5}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.modal-btn.cancel{background:var(--bg3);color:var(--text2)}
+.modal-btn.confirm{background:var(--danger);color:#fff}
+.modal-btn:active{transform:scale(.96)}
+
 /* Error */
 .error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;padding:32px;text-align:center;color:var(--text2)}
 @supports(padding:max(0px)){.app{padding-bottom:max(0px,env(safe-area-inset-bottom))}}

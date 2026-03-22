@@ -239,17 +239,29 @@ async function handleQueueButton(){var btn=document.getElementById('btn-queue');
 async function tryAssignToOpenRegister(){try{var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
   for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}}catch(e){}}
 
-async function handleCancel(){if(!confirm('Sıranızı iptal etmek istiyor musunuz?'))return;
+async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
-  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)}
+  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
+})}
+
+// ─── Özel Onay Modalı ────────────────────────────────
+function showConfirmModal(msg,onConfirm){
+  var existing=document.getElementById('confirm-modal');if(existing)existing.remove();
+  var overlay=document.createElement('div');overlay.id='confirm-modal';overlay.className='modal-overlay';
+  overlay.innerHTML='<div class="modal-box"><div class="modal-msg">'+msg+'</div><div class="modal-btns"><button class="modal-btn cancel" id="modal-cancel">Vazgeç</button><button class="modal-btn confirm" id="modal-confirm">Evet, İptal Et</button></div></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('modal-cancel').onclick=function(){overlay.remove()};
+  document.getElementById('modal-confirm').onclick=function(){overlay.remove();if(onConfirm)onConfirm()};
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
+}
 
 async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
   await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
-  if(rid){await db.collection('registers').doc(rid).update({waitingQueueId:null,waitingCode:null,calledAt:null});
-    var rDoc=await db.collection('registers').doc(rid).get();if(rDoc.exists)await assignNextToRegister(marketId,rid,rDoc.data().kasaNo)}}
+  if(rid){await db.collection('registers').doc(rid).update({waitingQueueId:null,waitingCode:null,calledAt:null})}
+  clearInterval(countdownInterval);notifiedForThisCall=false;}
 
 async function handleReady(){
-  try{await db.collection('queue').doc(sessionId).update({status:'priority',calledAt:null,code:null,registerId:null,kasaNo:null});
+  try{await db.collection('queue').doc(sessionId).update({status:'priority_ready',calledAt:null,code:null,registerId:null,kasaNo:null});
     notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister()}catch(e){}}
 
 async function handleRetryQueue(){var btn=document.getElementById('btn-retry');btn.disabled=true;
