@@ -75,8 +75,8 @@ async function loadMarket() {
         statsInterval = setInterval(loadCongestion, 15000);
       });
     } else {
-      // Vitrin modu — ikonları gizle, reklamlar göster
-      showHeaderIcons(false);
+      // Vitrin modu — reklamlar göster, ikonları güncelle
+      updateIconStates();
       checkExistingQueueSilent();
     }
   } catch (e) {
@@ -181,30 +181,60 @@ function showWelcomeSplash(callback) {
 function enterQueueMode() {
   isQueueMode = true;
   document.getElementById('queue-panel').classList.remove('hidden');
-  document.getElementById('ticket-btn').classList.remove('active-pulse');
-  // İkonları göster — müşteri markette
-  showHeaderIcons(true);
+  updateIconStates();
 }
 
 function enterVitrinMode() {
   isQueueMode = false;
   document.getElementById('queue-panel').classList.add('hidden');
-  // İkonları gizle — müşteri markette değil
-  showHeaderIcons(false);
+  updateIconStates();
 }
 
-function showHeaderIcons(visible) {
+// İkon durumlarını güncelle
+function updateIconStates() {
   var ticketBtn = document.getElementById('ticket-btn');
   var qrBtn = document.querySelector('.qr-btn');
-  if (ticketBtn) ticketBtn.style.display = visible ? 'flex' : 'none';
-  if (qrBtn) qrBtn.style.display = visible ? 'flex' : 'none';
+  var panel = document.getElementById('queue-panel');
+  var panelOpen = panel && !panel.classList.contains('hidden');
+
+  // Aktif sıra durumları (kod üretilmiş veya işlem devam ediyor)
+  var lockedStates = ['called', 'arrived', 'active'];
+  var isLocked = myQueueData && lockedStates.indexOf(myQueueData.status) > -1;
+
+  // Bilet ikonu: kod üretilmişse pasif, değilse aktif
+  if (ticketBtn) {
+    if (isLocked) {
+      ticketBtn.classList.add('btn-passive');
+      ticketBtn.disabled = true;
+    } else {
+      ticketBtn.classList.remove('btn-passive');
+      ticketBtn.disabled = false;
+    }
+    // Panel açıksa ikonu vurgula
+    ticketBtn.classList.toggle('btn-active', panelOpen && !isLocked);
+  }
+
+  // QR ikonu: QR okutulmuş ve marketteyse pasif
+  if (qrBtn) {
+    if (isQueueMode) {
+      qrBtn.classList.add('btn-passive');
+      qrBtn.disabled = true;
+    } else {
+      qrBtn.classList.remove('btn-passive');
+      qrBtn.disabled = false;
+    }
+  }
 }
 
 // Bilet ikonuna tıklayınca panel aç/kapa
 function toggleQueuePanel() {
   var panel = document.getElementById('queue-panel');
+
+  // Kod üretilmişse veya işlem devam ediyorsa kapatma
+  var lockedStates = ['called', 'arrived', 'active'];
+  if (myQueueData && lockedStates.indexOf(myQueueData.status) > -1) return;
+
   if (panel.classList.contains('hidden')) {
-    // Panel kapalı — aç ve sıra moduna geç
     enterQueueMode();
     if (!statsInterval) {
       loadCongestion();
@@ -213,12 +243,14 @@ function toggleQueuePanel() {
     checkExistingQueue();
     requestNotificationPermission();
   } else {
-    // Aktif sıra varsa kapatma
-    if (myQueueData && ['waiting','priority','priority_ready','called','arrived','active'].indexOf(myQueueData.status) > -1) {
-      // Sıra aktif — kapatma
+    // Sırada bekliyorsa da kapatabilir (henüz kod yok)
+    var waitingStates = ['waiting', 'priority', 'priority_ready'];
+    if (myQueueData && waitingStates.indexOf(myQueueData.status) > -1) {
+      // Sırada — panel açık kalsın, kapatmasın
       return;
     }
-    enterVitrinMode();
+    panel.classList.add('hidden');
+    updateIconStates();
   }
 }
 
@@ -531,6 +563,8 @@ function showScreen(name) {
   if (name === 'timeout') { var btn2 = document.getElementById('btn-retry'); if (btn2) btn2.disabled = false; }
   var we = document.getElementById('wait-estimate');
   if (we) we.style.display = (name === 'queued' && currentStats && currentStats.estimatedWait > 0) ? 'flex' : 'none';
+  // Her ekran değişiminde ikon durumlarını güncelle
+  updateIconStates();
 }
 
 function showLoading(v) { var el = document.getElementById('loading'); if (el) el.style.display = v ? 'flex' : 'none'; }

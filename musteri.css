@@ -91,12 +91,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   background:var(--accent);
   border:none;color:#0d1117;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;
+  cursor:pointer;transition:all .25s;
   box-shadow:0 0 12px rgba(16,229,176,.2);
 }
-.ticket-btn:active{transform:scale(.9);box-shadow:0 0 6px rgba(16,229,176,.15)}
-.ticket-btn.active-pulse{animation:ticket-glow 1.5s ease infinite}
-@keyframes ticket-glow{0%,100%{box-shadow:0 0 12px rgba(16,229,176,.2)}50%{box-shadow:0 0 20px rgba(16,229,176,.4)}}
+.ticket-btn:active:not(:disabled){transform:scale(.9)}
+.ticket-btn.btn-active{box-shadow:0 0 20px rgba(16,229,176,.35)}
+.ticket-btn.btn-passive{
+  background:var(--bg3);color:var(--text2);
+  box-shadow:none;cursor:default;opacity:.45;
+}
 
 /* QR ikonu — sağ */
 .qr-btn{
@@ -105,10 +108,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   border:1.5px solid rgba(16,229,176,.2);
   color:var(--accent);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;
+  cursor:pointer;transition:all .25s;
 }
-.qr-btn:active{background:rgba(16,229,176,.2);transform:scale(.92)}
+.qr-btn:active:not(:disabled){background:rgba(16,229,176,.2);transform:scale(.92)}
 .qr-btn svg{width:18px;height:18px}
+.qr-btn.btn-passive{
+  background:var(--bg3);border-color:var(--bg3);
+  color:var(--text2);cursor:default;opacity:.45;
+}
 
 /* ═══ SIRA PANELİ ═══ */
 .queue-panel{
