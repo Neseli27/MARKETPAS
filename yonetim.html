@@ -222,37 +222,31 @@
         </button>
       </div>
 
-      <!-- Sürpriz Hediye Paketi Ayarları (Günün Fırsatı sekmesinde görünür) -->
+      <!-- Sürpriz Hediye Paketi Yönetimi -->
       <div id="gift-settings" class="gift-panel" style="display:none">
         <div class="gift-panel-head">
-          <span>🎁 Sürpriz Hediye Paketi</span>
-          <label class="gift-toggle"><input type="checkbox" id="gift-active"><span class="toggle-slider"></span></label>
+          <span>🎁 Sürpriz Yönetimi</span>
+          <button class="btn btn-accent btn-sm" onclick="showGiftForm()">+ Yeni Ekle</button>
         </div>
-        <div class="gift-panel-body" id="gift-body">
-          <div id="gift-status" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px"></div>
-          <div class="form-row">
-            <label>Açılma Saati *</label>
-            <input type="time" id="gift-time" value="14:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+
+        <!-- Yeni/Düzenle Formu -->
+        <div id="gift-form" style="display:none">
+          <div id="gift-form-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:10px;border-radius:8px;margin-bottom:10px"></div>
+          <div class="form-row"><label>Sürpriz Başlığı *</label><input type="text" id="gift-title" placeholder="Örn: Et Reyonunda %50 İndirim!"></div>
+          <div class="form-row"><label>Açıklama</label><textarea id="gift-content" rows="2" placeholder="Detay..." style="resize:vertical;font-family:'Outfit',sans-serif;font-size:14px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea></div>
+          <div class="form-row"><label>Görsel URL (opsiyonel)</label><input type="url" id="gift-image" placeholder="https://..."></div>
+          <div style="display:flex;gap:10px">
+            <div class="form-row" style="flex:1"><label>Başlama Tarih & Saat *</label><input type="datetime-local" id="gift-start" style="width:100%"></div>
+            <div class="form-row" style="flex:1"><label>Bitiş Tarih & Saat *</label><input type="datetime-local" id="gift-end" style="width:100%"></div>
           </div>
-          <div class="form-row">
-            <label>Bitiş Saati * (bu saatte sürpriz sona erer)</label>
-            <input type="time" id="gift-end-time" value="15:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button class="btn btn-accent" onclick="saveGift()">💾 Kaydet</button>
+            <button class="btn" onclick="cancelGiftForm()">İptal</button>
           </div>
-          <div class="form-row">
-            <label>Sürpriz Başlık * (açılınca görünecek)</label>
-            <input type="text" id="gift-title" placeholder="Örn: Çikolatalarda %50 İndirim!" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
-          </div>
-          <div class="form-row">
-            <label>Açıklama</label>
-            <textarea id="gift-content" rows="2" placeholder="Detay..." style="resize:vertical;font-family:'Outfit',sans-serif;font-size:14px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea>
-          </div>
-          <div class="form-row">
-            <label>Görsel URL (opsiyonel)</label>
-            <input type="url" id="gift-image" placeholder="https://..." style="padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
-          </div>
-          <button class="btn btn-accent" onclick="saveGiftSettings()" style="margin-top:8px">💾 Kaydet</button>
-          <div id="gift-save-msg" style="display:none;margin-top:8px;font-size:13px;font-weight:600;color:var(--accent)"></div>
         </div>
+
+        <!-- Sürpriz Listesi -->
+        <div id="gift-list"></div>
       </div>
 
       <!-- İçerik Listesi + Ekle Butonu -->

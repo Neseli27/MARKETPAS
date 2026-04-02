@@ -647,79 +647,114 @@ function cancelAnnForm() {
 async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
 async function deleteAnn(id) { if (confirm('Bu içerik silinsin mi?')) await db.collection('announcements').doc(id).delete(); }
 
-// ─── Sürpriz Hediye Paketi ──────────────────────────
-function loadGiftSettings() {
-  if (!marketData) return;
-  var g = marketData.gift || {};
-  var el = document.getElementById('gift-active');
-  if (el) el.checked = !!g.active;
-  var t = document.getElementById('gift-time');
-  if (t) t.value = g.revealTime || '14:00';
-  var et = document.getElementById('gift-end-time');
-  if (et) et.value = g.endTime || '15:00';
-  var ti = document.getElementById('gift-title');
-  if (ti) ti.value = g.title || '';
-  var c = document.getElementById('gift-content');
-  if (c) c.value = g.content || '';
-  var img = document.getElementById('gift-image');
-  if (img) img.value = g.imageUrl || '';
+// ─── Sürpriz Hediye Yönetimi ─────────────────────────
+var editingGiftId = null;
 
-  // Durum göstergesi
-  var st = document.getElementById('gift-status');
-  if (st && g.active) {
-    var now = new Date();
-    var rParts = (g.revealTime || '14:00').split(':');
-    var eParts = (g.endTime || '15:00').split(':');
-    var reveal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(rParts[0]), parseInt(rParts[1]), 0);
-    var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eParts[0]), parseInt(eParts[1]), 0);
-    if (now < reveal) {
-      st.style.display = 'block'; st.style.background = '#EFF6FF'; st.style.color = '#2563EB'; st.style.border = '1px solid #93C5FD';
-      st.innerHTML = '⏳ Aktif sürpriz bekliyor — <strong>' + g.title + '</strong> · Açılma: ' + g.revealTime;
-    } else if (now < end) {
-      st.style.display = 'block'; st.style.background = '#FEF3C7'; st.style.color = '#B45309'; st.style.border = '1px solid #FCD34D';
-      st.innerHTML = '🎁 Sürpriz AÇIK — <strong>' + g.title + '</strong> · Bitiş: ' + g.endTime;
-    } else {
-      st.style.display = 'block'; st.style.background = '#F0FDF4'; st.style.color = '#16A34A'; st.style.border = '1px solid #86EFAC';
-      st.innerHTML = '✅ Sürpriz süresi dolmuş — yeni sürpriz ekleyebilirsiniz';
-    }
-  } else if (st) { st.style.display = 'none'; }
+function loadGiftSettings() {
+  // gifts koleksiyonunu canlı dinle
+  db.collection('gifts').where('marketId', '==', marketId).orderBy('revealAt', 'desc')
+    .onSnapshot(function(snap) {
+      renderGiftList(snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); }));
+    }, function(err) {
+      // Index yoksa basit sorgu
+      db.collection('gifts').where('marketId', '==', marketId)
+        .onSnapshot(function(snap) {
+          var list = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+          list.sort(function(a, b) { return (b.revealAt?.toDate?.()?.getTime() || 0) - (a.revealAt?.toDate?.()?.getTime() || 0); });
+          renderGiftList(list);
+        });
+    });
 }
 
-async function saveGiftSettings() {
-  var active = document.getElementById('gift-active').checked;
-  var time = document.getElementById('gift-time').value || '14:00';
-  var endTime = document.getElementById('gift-end-time').value || '15:00';
+function renderGiftList(list) {
+  var c = document.getElementById('gift-list');
+  if (!c) return;
+  c.innerHTML = '';
+  if (!list.length) { c.innerHTML = '<p style="color:var(--text2);font-size:13px;padding:12px 0">Henüz sürpriz eklenmemiş.</p>'; return; }
+  var now = new Date();
+  list.forEach(function(g) {
+    var reveal = g.revealAt?.toDate ? g.revealAt.toDate() : new Date(g.revealAt);
+    var end = g.endAt?.toDate ? g.endAt.toDate() : new Date(g.endAt);
+    var status, statusCls, statusIcon;
+    if (g.status === 'stopped') { status = 'Durduruldu'; statusCls = 'gift-st-stopped'; statusIcon = '⏹'; }
+    else if (now < reveal) { status = 'Bekliyor'; statusCls = 'gift-st-waiting'; statusIcon = '⏳'; }
+    else if (now < end) { status = 'AÇIK'; statusCls = 'gift-st-active'; statusIcon = '🎁'; }
+    else { status = 'Süresi doldu'; statusCls = 'gift-st-expired'; statusIcon = '✅'; }
+
+    var fmtDate = function(d) { return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); };
+
+    var card = document.createElement('div');
+    card.className = 'gift-card ' + statusCls;
+    card.innerHTML = '<div class="gift-card-head"><strong>' + escapeHtml(g.title) + '</strong><span class="gift-status-badge ' + statusCls + '">' + statusIcon + ' ' + status + '</span></div>' +
+      '<div class="gift-card-times">' + fmtDate(reveal) + ' → ' + fmtDate(end) + '</div>' +
+      (g.content ? '<div class="gift-card-desc">' + escapeHtml(g.content) + '</div>' : '') +
+      '<div class="gift-card-actions">' +
+      (g.status !== 'stopped' && now < end ? '<button class="btn-sm btn-warn" onclick="stopGift(\'' + g.id + '\')">⏹ Durdur</button>' : '') +
+      '<button class="btn-sm btn-del" onclick="deleteGift(\'' + g.id + '\')">🗑 Sil</button>' +
+      '</div>';
+    c.appendChild(card);
+  });
+}
+
+function showGiftForm() {
+  editingGiftId = null;
+  document.getElementById('gift-form').style.display = 'block';
+  document.getElementById('gift-title').value = '';
+  document.getElementById('gift-content').value = '';
+  document.getElementById('gift-image').value = '';
+  // Varsayılan: bugün, 1 saat sonra başla, 2 saat sonra bitir
+  var now = new Date();
+  var s = new Date(now.getTime() + 3600000);
+  var e = new Date(now.getTime() + 7200000);
+  document.getElementById('gift-start').value = toLocalISO(s);
+  document.getElementById('gift-end').value = toLocalISO(e);
+  var err = document.getElementById('gift-form-error'); if (err) err.style.display = 'none';
+}
+
+function cancelGiftForm() {
+  document.getElementById('gift-form').style.display = 'none';
+  editingGiftId = null;
+}
+
+function toLocalISO(d) {
+  return d.getFullYear() + '-' + (d.getMonth() + 1).toString().padStart(2, '0') + '-' + d.getDate().toString().padStart(2, '0') + 'T' + d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+}
+
+async function saveGift() {
   var title = document.getElementById('gift-title').value.trim();
   var content = document.getElementById('gift-content').value.trim();
   var imageUrl = document.getElementById('gift-image').value.trim();
-  var msg = document.getElementById('gift-save-msg');
+  var startVal = document.getElementById('gift-start').value;
+  var endVal = document.getElementById('gift-end').value;
+  var err = document.getElementById('gift-form-error');
+  err.style.display = 'none';
 
-  if (active && !title) { if (msg) { msg.textContent = '⚠️ Aktif etmek için başlık zorunlu'; msg.style.color = '#F59E0B'; msg.style.display = 'block'; } return; }
-
-  // Çakışma kontrolü — mevcut aktif sürpriz devam ediyorsa uyar
-  if (active && marketData.gift && marketData.gift.active) {
-    var now = new Date();
-    var eParts = (marketData.gift.endTime || '15:00').split(':');
-    var currentEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eParts[0]), parseInt(eParts[1]), 0);
-    if (now < currentEnd) {
-      var rParts = (marketData.gift.revealTime || '14:00').split(':');
-      var currentReveal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(rParts[0]), parseInt(rParts[1]), 0);
-      if (now >= currentReveal) {
-        // Sürpriz açılmış ve hâlâ süresi var
-        if (!confirm('Şu an aktif bir sürpriz var ve süresi henüz dolmadı (' + marketData.gift.endTime + ' bitiş).\n\nMevcut sürprizi iptal edip yenisiyle değiştirmek istiyor musunuz?')) return;
-      }
-    }
-  }
-
-  // Saat kontrolü — bitiş, açılmadan önce olamaz
-  if (active && endTime <= time) { if (msg) { msg.textContent = '⚠️ Bitiş saati, açılma saatinden sonra olmalı'; msg.style.color = '#F59E0B'; msg.style.display = 'block'; } return; }
+  if (!title) { err.textContent = 'Başlık zorunlu'; err.style.display = 'block'; return; }
+  if (!startVal || !endVal) { err.textContent = 'Başlama ve bitiş tarihi zorunlu'; err.style.display = 'block'; return; }
+  var startDate = new Date(startVal);
+  var endDate = new Date(endVal);
+  if (endDate <= startDate) { err.textContent = 'Bitiş tarihi başlamadan sonra olmalı'; err.style.display = 'block'; return; }
 
   try {
-    await db.collection('markets').doc(marketId).update({
-      gift: { active: active, revealTime: time, endTime: endTime, title: title, content: content, imageUrl: imageUrl }
-    });
-    if (msg) { msg.textContent = '✓ Hediye ayarları kaydedildi'; msg.style.color = 'var(--accent)'; msg.style.display = 'block'; setTimeout(function() { msg.style.display = 'none'; }, 2000); }
-  } catch(e) { if (msg) { msg.textContent = 'Hata: ' + e.message; msg.style.color = '#DC2626'; msg.style.display = 'block'; } }
+    var data = {
+      marketId: marketId, title: title, content: content, imageUrl: imageUrl || '',
+      revealAt: firebase.firestore.Timestamp.fromDate(startDate),
+      endAt: firebase.firestore.Timestamp.fromDate(endDate),
+      status: 'scheduled', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('gifts').add(data);
+    cancelGiftForm();
+  } catch (e) { err.textContent = 'Kayıt hatası: ' + e.message; err.style.display = 'block'; }
+}
+
+async function stopGift(id) {
+  if (!confirm('Bu sürprizi durdurmak istiyor musunuz?')) return;
+  try { await db.collection('gifts').doc(id).update({ status: 'stopped' }); } catch (e) { alert('Hata: ' + e.message); }
+}
+
+async function deleteGift(id) {
+  if (!confirm('Bu sürpriz kalıcı olarak silinecek. Emin misiniz?')) return;
+  try { await db.collection('gifts').doc(id).delete(); } catch (e) { alert('Hata: ' + e.message); }
 }
 
 // ─── Ayarlar ──────────────────────────────────────────

@@ -33,12 +33,10 @@ async function loadMarket(){
     if(!doc.exists){showError('Market bulunamadı.');return}
     market=doc.data();
     applyBranding();loadAnnouncements();loadGiftData();
-    // Market verisini canlı dinle (hediye ayarları vs.)
+    // Market verisini canlı dinle
     db.collection('markets').doc(marketId).onSnapshot(function(snap){
       if(!snap.exists)return;
       market=snap.data();
-      loadGiftData();
-      console.log('MarketPas: Market verisi güncellendi, gift:', market.gift?'aktif='+market.gift.active:'yok');
     });
     if(isQueueMode){
       showSplash(function(){
@@ -161,8 +159,8 @@ function filterCat(cat){
   document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
   event.currentTarget.classList.add('active');
   console.log('MarketPas: Tab değişti →', cat, '| giftData:', giftData ? 'var' : 'yok');
-  // Hediye gösterimi
-  if(cat==='gunun_firsati'&&giftData){showGiftScreen()}
+  // Hediye gösterimi — Sürpriz sekmesinde her zaman göster
+  if(cat==='gunun_firsati'){pickActiveGift();showGiftScreen()}
   else{hideGiftScreen()}
   announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
   renderAnnouncements();
@@ -352,41 +350,74 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch
 
 // ═══ SÜRPRİZ HEDİYE KUTUSU ═══
 var giftData=null,giftInterval=null,giftRevealed=false;
+var allGifts=[];
 
 function loadGiftData(){
-  if(!market||!market.gift||!market.gift.active){
-    console.log('MarketPas Gift:', market?.gift ? 'pasif' : 'tanımsız');
-    giftData=null;return;
-  }
-  giftData=market.gift;
-  giftRevealed=false;
+  db.collection('gifts').where('marketId','==',marketId)
+    .onSnapshot(function(snap){
+      allGifts=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+      pickActiveGift();
+    },function(){
+      // Index yoksa basit sorgu
+      db.collection('gifts').where('marketId','==',marketId).get().then(function(snap){
+        allGifts=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+        pickActiveGift();
+      });
+    });
+}
+
+function pickActiveGift(){
   var now=new Date();
-  var parts=(giftData.revealTime||'14:00').split(':');
-  giftData._revealDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(parts[0]),parseInt(parts[1]),0);
-  var eParts=(giftData.endTime||'15:00').split(':');
-  giftData._endDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(eParts[0]),parseInt(eParts[1]),0);
-  console.log('MarketPas Gift: Yüklendi — açılma:', giftData.revealTime, '| bitiş:', giftData.endTime, '| başlık:', giftData.title);
+  giftData=null;giftRevealed=false;
+  // Önce aktif (açılmış, süresi devam eden) sürprizi bul
+  for(var i=0;i<allGifts.length;i++){
+    var g=allGifts[i];
+    if(g.status==='stopped')continue;
+    var reveal=g.revealAt?.toDate?g.revealAt.toDate():new Date(g.revealAt);
+    var end=g.endAt?.toDate?g.endAt.toDate():new Date(g.endAt);
+    if(now>=reveal&&now<end){
+      giftData={title:g.title,content:g.content,imageUrl:g.imageUrl,_revealDate:reveal,_endDate:end};
+      console.log('MarketPas Gift: Aktif sürpriz bulundu —',g.title);return;
+    }
+  }
+  // Yoksa en yakın bekleyen sürprizi bul
+  var closest=null,closestReveal=null;
+  for(var j=0;j<allGifts.length;j++){
+    var g2=allGifts[j];
+    if(g2.status==='stopped')continue;
+    var r2=g2.revealAt?.toDate?g2.revealAt.toDate():new Date(g2.revealAt);
+    var e2=g2.endAt?.toDate?g2.endAt.toDate():new Date(g2.endAt);
+    if(now<r2&&now<e2){
+      if(!closestReveal||r2<closestReveal){closest=g2;closestReveal=r2}
+    }
+  }
+  if(closest){
+    var cr=closest.revealAt?.toDate?closest.revealAt.toDate():new Date(closest.revealAt);
+    var ce=closest.endAt?.toDate?closest.endAt.toDate():new Date(closest.endAt);
+    giftData={title:closest.title,content:closest.content,imageUrl:closest.imageUrl,_revealDate:cr,_endDate:ce};
+    console.log('MarketPas Gift: Bekleyen sürpriz —',closest.title,'açılma:',cr);
+  }else{
+    console.log('MarketPas Gift: Aktif/bekleyen sürpriz yok');
+    giftData=null;
+  }
 }
 
 function showGiftScreen(){
   var gs=document.getElementById('gift-screen');
-  if(!gs){console.log('MarketPas Gift: gift-screen elementi yok');return}
-  if(!giftData){console.log('MarketPas Gift: giftData null');return}
-  console.log('MarketPas Gift: Ekran gösteriliyor');
+  if(!gs)return;
   gs.style.display='flex';
   document.getElementById('ann-slider').style.display='none';
   document.getElementById('ann-dots').style.display='none';
 
+  if(!giftData){showGiftExpired();return}
+
   var now=new Date();
   if(now>=giftData._endDate){
-    // Süre tamamen dolmuş
     showGiftExpired();
   }else if(now>=giftData._revealDate||giftRevealed){
-    // Açılmış ama süre devam ediyor
     revealGift();
     startEndCountdown();
   }else{
-    // Henüz açılmadı
     document.getElementById('gift-pre').style.display='flex';
     document.getElementById('gift-reveal').style.display='none';
     document.getElementById('gift-expired').style.display='none';
