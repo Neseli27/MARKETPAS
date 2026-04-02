@@ -94,30 +94,29 @@ function startMarketListener() {
   });
 }
 
-// ─── Sidebar Lisans Durumu ───────────────────────────
+// ─── Sidebar Lisans Durumu (soluk yazı, çıkış üstünde) ──
 function updateSidebarLicense() {
   var el = document.getElementById('sidebar-license');
   if (!el) return;
 
   if (!marketData.licenseExpiry) {
-    el.className = 'sidebar-license expired';
-    el.innerHTML = '<span>🚫</span><span>Lisans tanımlanmamış</span>';
+    el.textContent = 'Lisans tanımlanmamış';
+    el.style.color = '#F87171';
     return;
   }
 
   var days = getLicenseRemainingDays(marketData.licenseExpiry);
   var expDate = (marketData.licenseExpiry.toDate ? marketData.licenseExpiry.toDate() : new Date(marketData.licenseExpiry)).toLocaleDateString('tr-TR');
-  var planName = marketData.licenseDays === 1 ? 'Günübirlik' : (marketData.licenseDays || '') + ' günlük plan';
 
   if (days <= 0) {
-    el.className = 'sidebar-license expired';
-    el.innerHTML = '<span>🚫</span><div><div>Lisans süresi dolmuş</div><div style="font-size:11px;opacity:.7;margin-top:2px">Bitiş: ' + expDate + '</div></div>';
+    el.textContent = 'Lisans süresi dolmuş · ' + expDate;
+    el.style.color = '#F87171';
   } else if (days <= 5) {
-    el.className = 'sidebar-license warning';
-    el.innerHTML = '<span>⚠️</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + planName + ' · ' + expDate + '</div></div>';
+    el.textContent = 'Son Kullanım : ' + expDate + ' (' + days + ' gün)';
+    el.style.color = '#FBBF24';
   } else {
-    el.className = 'sidebar-license active';
-    el.innerHTML = '<span>✓</span><div><span class="lic-days">' + days + ' gün</span> kaldı<div style="font-size:11px;opacity:.7;margin-top:2px">' + planName + ' · ' + expDate + '</div></div>';
+    el.textContent = 'Son Kullanım : ' + expDate;
+    el.style.color = '#475569';
   }
 }
 
@@ -614,11 +613,25 @@ function buildKasiyerLinks(base) {
   kc.innerHTML = '';
   var count = marketData.kasaSayisi || 0;
   for (var i = 1; i <= count; i++) {
-    kc.innerHTML += '<div class="url-row" style="margin-bottom:10px"><label>Kasa ' + i + ':</label><code style="font-size:12px;word-break:break-all">' + (base || getBaseUrl()) + 'kasiyer.html?market=' + marketId + '&kasa=' + i + '</code></div>';
+    var url = (base || getBaseUrl()) + 'kasiyer.html?market=' + marketId + '&kasa=' + i;
+    kc.innerHTML += '<div class="url-row" style="margin-bottom:10px;display:flex;align-items:center;gap:8px"><label style="flex-shrink:0">Kasa ' + i + ':</label><code style="font-size:12px;word-break:break-all;flex:1">' + url + '</code><button class="btn-copy" onclick="copyLink(this,\'' + url + '\')" title="Kopyala">📋</button></div>';
   }
   if (count === 0) {
     kc.innerHTML = '<p style="color:var(--text2);font-size:13px">Henüz kasa eklenmemiş. Dashboard\'dan kasa ekleyin.</p>';
   }
+}
+
+function copyLink(btn, url) {
+  navigator.clipboard.writeText(url).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✓';
+    btn.style.color = 'var(--accent)';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    btn.textContent = '✓'; setTimeout(function() { btn.textContent = '📋'; }, 1500);
+  });
 }
 function downloadQR() { var c = document.querySelector('#qr-container canvas'); if (!c) { alert('Önce QR sayfasını açın.'); return; } var a = document.createElement('a'); a.download = 'marketpas-qr.png'; a.href = c.toDataURL('image/png'); a.click(); }
 function printQR() { var c = document.querySelector('#qr-container canvas'); if (!c) return; var w = window.open(''); w.document.write('<html><body style="text-align:center;padding:40px;font-family:sans-serif"><h2>' + escapeHtml(marketData?.name || 'Market') + '</h2><p style="color:#666;margin:16px 0">Sıra almak için QR kodu okutun</p><img src="' + c.toDataURL() + '" style="width:250px"><p style="margin-top:20px;font-size:13px;color:#666">MarketPas</p></body></html>'); w.document.close(); setTimeout(function() { w.print(); }, 500); }

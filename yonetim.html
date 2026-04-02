@@ -45,12 +45,6 @@
     <div class="sidebar-market-name" id="panel-market-name">—</div>
     <div class="sidebar-market-sub">YÖNETİM PANELİ</div>
 
-    <!-- Lisans durumu -->
-    <div class="sidebar-license active" id="sidebar-license">
-      <span>⏳</span>
-      <span>Yükleniyor...</span>
-    </div>
-
     <!-- Navigasyon -->
     <nav>
       <div class="nav-item" id="nav-reports" onclick="showSection('reports')"><span>📊</span><span>Raporlar</span></div>
@@ -59,9 +53,10 @@
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
     </nav>
 
-    <!-- Alt kısım — MARKET·PAS + Çıkış -->
+    <!-- Alt kısım -->
     <div class="sidebar-footer">
       <div class="sidebar-brand">MARKET · PAS</div>
+      <div class="sidebar-expiry" id="sidebar-license"></div>
       <button class="btn-logout" onclick="handleLogout()">⬅ Çıkış Yap</button>
     </div>
   </div>
