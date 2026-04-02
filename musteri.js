@@ -161,21 +161,62 @@ function renderAnnouncements(){
   if(!announcements.length){section.classList.add('empty');slider.innerHTML='';dots.innerHTML='';return}
   section.classList.remove('empty');slider.innerHTML='';dots.innerHTML='';
   announcements.forEach(function(a,i){
-    var s=document.createElement('div');s.className='ann-slide'+(a.imageUrl?'':' no-img')+(i===0?' active':'');
+    var hasVideo=a.videoUrl&&getYouTubeId(a.videoUrl);
+    var hasImg=a.imageUrl&&!hasVideo;
+    var s=document.createElement('div');s.className='ann-slide'+(hasImg||hasVideo?'':' no-img')+(i===0?' active':'');
+    if(hasVideo)s.classList.add('video-slide');
+
+    // Video slide
+    if(hasVideo){
+      var vid=getYouTubeId(a.videoUrl);
+      var iframe=document.createElement('iframe');
+      iframe.className='ann-slide-video';
+      iframe.src='https://www.youtube.com/embed/'+vid+'?autoplay='+(i===0?'1':'0')+'&mute=1&loop=1&playlist='+vid+'&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3';
+      iframe.setAttribute('frameborder','0');
+      iframe.setAttribute('allow','autoplay;encrypted-media');
+      iframe.setAttribute('allowfullscreen','');
+      s.appendChild(iframe);
+    }
+    // Görsel slide
+    else if(hasImg){
+      var img=document.createElement('img');img.className='ann-slide-img has-img';img.src=a.imageUrl;img.alt='';img.onerror=function(){this.style.display='none'};s.appendChild(img);
+    }
+
+    // Metin katmanı
     var t=document.createElement('div');t.className='ann-slide-text';
     var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',surpriz:'SÜRPRİZ İNDİRİM',gunun_firsati:'GÜNÜN FIRSATI'};
     var catIcons={anasayfa:'📢',kampanya:'🏷️',surpriz:'🎁',gunun_firsati:'⭐'};
     var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
     var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);
-    if(a.content){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}
-    if(a.imageUrl){var img=document.createElement('img');img.className='ann-slide-img has-img';img.src=a.imageUrl;img.alt='';img.onerror=function(){this.style.display='none'};s.appendChild(img)}
-    s.appendChild(t);slider.appendChild(s);
+    if(a.content&&!hasVideo){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}
+    if(!hasVideo)s.appendChild(t);
+
+    slider.appendChild(s);
     var d=document.createElement('div');d.className='ann-dot'+(i===0?' active':'');dots.appendChild(d);
   });
   annIndex=0;clearInterval(announcementInterval);
-  if(announcements.length>1)announcementInterval=setInterval(function(){annIndex=(annIndex+1)%announcements.length;
-    document.querySelectorAll('.ann-slide').forEach(function(s,i){s.classList.toggle('active',i===annIndex)});
-    document.querySelectorAll('.ann-dot').forEach(function(d,i){d.classList.toggle('active',i===annIndex)})},5000);
+  if(announcements.length>1)announcementInterval=setInterval(function(){
+    var prevIdx=annIndex;
+    annIndex=(annIndex+1)%announcements.length;
+    // Video iframe autoplay yönetimi
+    var slides=document.querySelectorAll('.ann-slide');
+    slides.forEach(function(s,i){
+      s.classList.toggle('active',i===annIndex);
+      var iframe=s.querySelector('iframe');
+      if(iframe){
+        var src=iframe.src;
+        if(i===annIndex)iframe.src=src.replace('autoplay=0','autoplay=1');
+        else iframe.src=src.replace('autoplay=1','autoplay=0');
+      }
+    });
+    document.querySelectorAll('.ann-dot').forEach(function(d,i){d.classList.toggle('active',i===annIndex)});
+  },7000);
+}
+
+function getYouTubeId(url){
+  if(!url)return null;
+  var m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
+  return m?m[1]:null;
 }
 
 // ═══ SIRA İŞLEMLERİ ═══

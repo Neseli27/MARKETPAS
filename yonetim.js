@@ -406,6 +406,7 @@ function renderAnnouncements() {
       '<div class="ann-info"><div class="ann-title-text">' + escapeHtml(a.title) + '</div><div class="ann-content-text">' + escapeHtml(a.content || '') + '</div>' +
       '<div class="ann-status-row">' + catBadge + '<span class="ann-order-badge">Sıra: ' + (a.order || 1) + '</span>' +
       (a.imageUrl ? '<span class="ann-has-img">🖼</span>' : '') +
+      (a.videoUrl ? '<span class="ann-has-img">🎬</span>' : '') +
       '</div></div>' +
       '<div class="ann-actions">' +
       '<button class="btn-sm ' + (a.active ? 'btn-warn' : 'btn-success') + '" onclick="toggleAnn(\'' + a.id + '\',' + !a.active + ')">' + (a.active ? 'Pasif' : 'Aktif') + '</button>' +
@@ -497,7 +498,7 @@ function finishUpload(dataUrl, sizeKB, origMB, format, ratio) {
   var sizeEl = document.getElementById('upload-size');
   if (sizeEl) {
     var fmtLabel = format === 'webp' ? 'WebP' : 'JPEG';
-    sizeEl.innerHTML = '<span style="color:#4ADE80;font-weight:700">✓ ' + origMB + ' MB → ' + sizeKB + ' KB</span><br><span style="font-size:8px;opacity:.8">' + fmtLabel + ' · %' + ratio + ' küçüldü</span>';
+    sizeEl.innerHTML = '<span style="color:#4ADE80;font-weight:700">' + origMB + ' MB → ' + sizeKB + ' KB</span><br><span style="font-size:8px;opacity:.8">' + fmtLabel + ' · kalite korundu</span>';
   }
   document.getElementById('form-ann-img').value = '';
 }
@@ -544,6 +545,7 @@ function showAnnForm(id) {
     document.getElementById('form-ann-title').value = '';
     document.getElementById('form-ann-content').value = '';
     document.getElementById('form-ann-img').value = '';
+    document.getElementById('form-ann-video').value = '';
     document.getElementById('form-ann-order').value = '1';
   }
 }
@@ -570,6 +572,7 @@ async function editAnn(id) {
   document.getElementById('form-ann-title').value = d.title;
   document.getElementById('form-ann-content').value = d.content || '';
   document.getElementById('form-ann-img').value = d.imageUrl || '';
+  document.getElementById('form-ann-video').value = d.videoUrl || '';
   document.getElementById('form-ann-order').value = d.order || 1;
   setFormCategory(d.category || 'kampanya');
   if (d.imageUrl) {
@@ -606,7 +609,9 @@ async function saveAnn() {
     }
   }
 
-  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl || '', order: o, active: true, category: category };
+  var videoUrl = document.getElementById('form-ann-video').value.trim();
+
+  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl || '', videoUrl: videoUrl || '', order: o, active: true, category: category };
 
   try {
     if (editingAnnId) {

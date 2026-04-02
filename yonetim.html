@@ -263,6 +263,11 @@
             <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
           </div>
         </div>
+        <div class="form-row">
+          <label>🎬 Video (YouTube linki — opsiyonel)</label>
+          <input type="url" id="form-ann-video" placeholder="https://www.youtube.com/watch?v=... veya https://youtu.be/..." style="padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Video sessiz + otomatik oynar, bitince tekrarlar. YouTube logosu görünmez.</div>
+        </div>
         <div class="form-row"><label>Gösterim Sırası (küçük numara önce)</label><input type="number" id="form-ann-order" value="1" min="1" max="20"></div>
         <div style="display:flex;gap:10px;margin-top:12px">
           <button class="btn btn-accent" id="btn-save-ann" onclick="saveAnn()">Kaydet</button>
