@@ -195,8 +195,8 @@ function renderAnnouncements(){
 
     // Metin katmanı
     var t=document.createElement('div');t.className='ann-slide-text';
-    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',surpriz:'SÜRPRİZ İNDİRİM',gunun_firsati:'GÜNÜN FIRSATI'};
-    var catIcons={anasayfa:'📢',kampanya:'🏷️',surpriz:'🎁',gunun_firsati:'⭐'};
+    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',gunun_firsati:'FIRSAT',surpriz:'SÜRPRİZ'};
+    var catIcons={anasayfa:'📢',kampanya:'🏷️',gunun_firsati:'🎁',surpriz:'⭐'};
     var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
     var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);
     if(a.content&&!hasVideo){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}

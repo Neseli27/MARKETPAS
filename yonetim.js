@@ -345,8 +345,8 @@ var allAnnouncements = [];
 var CAT_LABELS = {
   anasayfa: { icon: '🏠', name: 'Ana Sayfa' },
   kampanya: { icon: '🏷️', name: 'Kampanya' },
-  gunun_firsati: { icon: '⭐', name: 'Fırsat' },
-  surpriz: { icon: '🎁', name: 'Sürpriz' }
+  gunun_firsati: { icon: '🎁', name: 'Fırsat' },
+  surpriz: { icon: '⭐', name: 'Sürpriz' }
 };
 
 function loadAnnouncements() {
