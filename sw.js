@@ -1,4 +1,4 @@
-var CACHE = 'marketpas-v5.3';
+var CACHE = 'marketpas-v5.4';
 var ASSETS = ['/musteri.html','/musteri.css','/musteri.js','/yonetim.html','/yonetim.css','/yonetim.js','/kasiyer.html','/kasiyer.css','/kasiyer.js','/firebase-config.js','/manifest-yonetim.json','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install', function(e) {

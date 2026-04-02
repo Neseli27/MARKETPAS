@@ -146,15 +146,14 @@ function updateWaitEstimate(s){var el=document.getElementById('wait-est'),d=docu
 // ═══ DUYURULAR ═══
 function loadAnnouncements(){
   db.collection('announcements').where('marketId','==',marketId).where('active','==',true).orderBy('order','asc')
-    .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});announcements=allAnnouncements;renderAnnouncements()},
+    .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')==='anasayfa'});renderAnnouncements()},
     function(){db.collection('announcements').where('marketId','==',marketId)
-      .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});announcements=allAnnouncements;renderAnnouncements()})});
+      .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')==='anasayfa'});renderAnnouncements()})});
 }
 function filterCat(cat){
   document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
   event.currentTarget.classList.add('active');
-  if(cat==='all')announcements=allAnnouncements;
-  else announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
+  announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
   renderAnnouncements();
 }
 function renderAnnouncements(){
@@ -164,8 +163,8 @@ function renderAnnouncements(){
   announcements.forEach(function(a,i){
     var s=document.createElement('div');s.className='ann-slide'+(a.imageUrl?'':' no-img')+(i===0?' active':'');
     var t=document.createElement('div');t.className='ann-slide-text';
-    var catNames={kampanya:'KAMPANYA',surpriz:'SÜRPRİZ İNDİRİM',gunun_firsati:'GÜNÜN FIRSATI'};
-    var catIcons={kampanya:'🏷️',surpriz:'🎁',gunun_firsati:'⭐'};
+    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',surpriz:'SÜRPRİZ İNDİRİM',gunun_firsati:'GÜNÜN FIRSATI'};
+    var catIcons={anasayfa:'📢',kampanya:'🏷️',surpriz:'🎁',gunun_firsati:'⭐'};
     var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
     var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);
     if(a.content){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}

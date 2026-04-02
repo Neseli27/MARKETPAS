@@ -223,6 +223,7 @@ main{flex:1;margin-left:260px;min-height:100vh}
 .ann-status-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center}
 .ann-order-badge{font-size:11px;font-weight:700;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:4px}
 .ann-cat-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.ann-cat-badge.anasayfa{background:rgba(96,165,250,.1);color:#60A5FA}
 .ann-cat-badge.kampanya{background:rgba(74,222,128,.1);color:#4ADE80}
 .ann-cat-badge.surpriz{background:rgba(251,146,60,.1);color:#FB923C}
 .ann-cat-badge.gunun_firsati{background:rgba(249,115,22,.1);color:#F97316}

@@ -338,10 +338,11 @@ async function loadStats() {
 }
 
 // ─── İçerik Yönetimi (3 Kategori) ────────────────────
-var currentCategory = 'kampanya';
+var currentCategory = 'anasayfa';
 var allAnnouncements = [];
 
 var CAT_LABELS = {
+  anasayfa: { icon: '🏠', name: 'Ana Sayfa' },
   kampanya: { icon: '🏷️', name: 'Kampanyalar' },
   surpriz: { icon: '🎁', name: 'Sürpriz İndirimler' },
   gunun_firsati: { icon: '⭐', name: 'Günün Fırsatı' }
@@ -372,7 +373,7 @@ function switchCategory(cat) {
 }
 
 function updateCategoryCounts() {
-  ['kampanya', 'surpriz', 'gunun_firsati'].forEach(function(cat) {
+  ['anasayfa', 'kampanya', 'surpriz', 'gunun_firsati'].forEach(function(cat) {
     var count = allAnnouncements.filter(function(a) { return a.category === cat && a.active; }).length;
     var el = document.getElementById('count-' + cat);
     if (el) el.textContent = count;

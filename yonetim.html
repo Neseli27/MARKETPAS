@@ -200,7 +200,12 @@
 
       <!-- Kategori Sekmeleri -->
       <div class="cat-tabs">
-        <button class="cat-tab active" onclick="switchCategory('kampanya')" id="tab-kampanya">
+        <button class="cat-tab active" onclick="switchCategory('anasayfa')" id="tab-anasayfa">
+          <span class="cat-tab-icon">🏠</span>
+          <span class="cat-tab-name">Ana Sayfa</span>
+          <span class="cat-tab-count" id="count-anasayfa">0</span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('kampanya')" id="tab-kampanya">
           <span class="cat-tab-icon">🏷️</span>
           <span class="cat-tab-name">Kampanyalar</span>
           <span class="cat-tab-count" id="count-kampanya">0</span>
@@ -231,13 +236,14 @@
         <div class="form-row">
           <label>Kategori</label>
           <div class="cat-select" id="form-cat-select">
-            <label class="cat-opt active" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya" checked><span>🏷️ Kampanya</span></label>
+            <label class="cat-opt active" id="opt-anasayfa"><input type="radio" name="ann-cat" value="anasayfa" checked><span>🏠 Ana Sayfa</span></label>
+            <label class="cat-opt" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya"><span>🏷️ Kampanya</span></label>
             <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>🎁 Sürpriz İndirim</span></label>
             <label class="cat-opt" id="opt-gunun_firsati"><input type="radio" name="ann-cat" value="gunun_firsati"><span>⭐ Günün Fırsatı</span></label>
           </div>
         </div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>
-        <div class="form-row"><label>Açıklama</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
+        <div class="form-row"><label>Açıklama / Mesaj</label><textarea id="form-ann-content" rows="3" placeholder="Detaylı açıklama, duyuru metni veya mesajınız..." style="resize:vertical;min-height:60px;font-family:'Outfit',sans-serif;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea></div>
         <div class="form-row">
           <label>Görsel</label>
           <div class="img-upload-row">
