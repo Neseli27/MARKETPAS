@@ -75,9 +75,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .banners.empty{display:flex;align-items:center;justify-content:center}
 .banners.empty::after{content:'Kampanyalar burada görünecek';font-size:13px;color:var(--text3)}
 .ann-slider{width:100%;height:100%;position:relative}
-.ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .6s;pointer-events:none}
+.ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .6s;pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ann-slide.active{opacity:1;pointer-events:auto}
-.ann-slide-img{width:100%;height:100%;object-fit:cover;display:none}
+.ann-slide-img{width:100%;min-height:100%;object-fit:cover;display:none}
 .ann-slide-img.has-img{display:block}
 .ann-slide-text{position:absolute;bottom:0;left:0;right:0;padding:60px 20px 20px;background:linear-gradient(0deg,rgba(10,15,26,.95) 0%,rgba(10,15,26,.5) 60%,transparent 100%)}
 .ann-slide-badge{display:inline-block;background:rgba(16,229,176,.12);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:6px}
@@ -157,6 +157,26 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .code-lbl{font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;font-weight:700;margin-bottom:6px}
 .code-num{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:5px;line-height:1}
 .kasa-badge{display:inline-block;background:var(--accent);color:#0a0f1a;font-weight:700;font-size:14px;padding:5px 18px;border-radius:20px;margin-top:8px}
+
+/* KASA büyük gösterim — yanıp söner */
+.kasa-big{text-align:center;width:100%;padding:8px 0}
+.kasa-badge-big{
+  display:inline-block;
+  background:var(--accent);color:#0a0f1a;
+  font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;
+  padding:10px 32px;border-radius:14px;
+  box-shadow:0 0 24px rgba(16,229,176,.3);
+  animation:kasaBlink 1.2s ease infinite;
+}
+.kasa-sub{
+  font-size:16px;font-weight:600;color:var(--accent);
+  margin-top:6px;letter-spacing:1px;
+  animation:kasaBlink 1.2s ease infinite;
+}
+@keyframes kasaBlink{
+  0%,100%{opacity:1;box-shadow:0 0 24px rgba(16,229,176,.3)}
+  50%{opacity:.7;box-shadow:0 0 40px rgba(16,229,176,.5)}
+}
 .cd-row{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--text2);width:100%}
 #countdown{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--warn);min-width:44px}
 .cd-btns{display:flex;gap:8px;width:100%}

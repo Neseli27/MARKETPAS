@@ -193,7 +193,7 @@ function startQueueListener(){
     switch(s){
       case 'waiting':case 'priority':case 'priority_ready':showScreen('queued');if(currentStats)updateWaitEstimate(currentStats);break;
       case 'called':showScreen('called');document.getElementById('called-code').textContent=myQueueData.code||'---';
-        document.getElementById('called-kasa').textContent='Kasa '+(myQueueData.kasaNo||'—');
+        document.getElementById('called-kasa').textContent='KASA '+(myQueueData.kasaNo||'—');
         startCountdown(myQueueData.calledAt?.toDate()||new Date());
         if(!notifiedForThisCall){notifyCustomer(myQueueData.code,myQueueData.kasaNo);notifiedForThisCall=true}break;
       case 'arrived':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('arrived');break;
