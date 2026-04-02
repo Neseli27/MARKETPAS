@@ -424,30 +424,81 @@ function handleFileSelect(input) {
   if (!file) return;
   if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
 
+  var origMB = (file.size / 1024 / 1024).toFixed(1);
   var ph = document.getElementById('upload-placeholder');
-  ph.innerHTML = '<div style="font-size:12px;color:var(--accent)">Sıkıştırılıyor...</div>';
+  ph.innerHTML = '<div style="font-size:12px;color:var(--accent)">Sıkıştırılıyor... (' + origMB + ' MB)</div>';
 
-  var steps = [{ maxW: 800, q: 0.45 },{ maxW: 600, q: 0.30 },{ maxW: 500, q: 0.20 },{ maxW: 400, q: 0.15 }];
-  function tryCompress(i) {
-    compressImage(file, steps[i].maxW, steps[i].q, function(dataUrl) {
+  // Akıllı sıkıştırma — önce kaliteyi düşür, sonra çözünürlüğü
+  // Telefon ekranı max 430px genişlik, 3x retina = 1290px → 1080px yeterli
+  var steps = [
+    { maxW: 1080, q: 0.80, fmt: 'webp' },   // 1. WebP deneme — en iyi kalite/boyut oranı
+    { maxW: 1080, q: 0.70, fmt: 'jpeg' },    // 2. JPEG yüksek kalite
+    { maxW: 1080, q: 0.55, fmt: 'jpeg' },    // 3. JPEG orta kalite
+    { maxW: 800,  q: 0.50, fmt: 'jpeg' },    // 4. Çözünürlük düşür
+    { maxW: 600,  q: 0.45, fmt: 'jpeg' },    // 5. Son çare
+  ];
+
+  function tryStep(i) {
+    var s = steps[i];
+    smartCompress(file, s.maxW, s.q, s.fmt, function(dataUrl, usedFmt) {
       var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
-      if (sizeKB > 700 && i < steps.length - 1) tryCompress(i + 1);
-      else finishUpload(dataUrl, sizeKB);
+      if (sizeKB > 700 && i < steps.length - 1) {
+        tryStep(i + 1);
+      } else {
+        var ratio = Math.round((1 - sizeKB / (file.size / 1024)) * 100);
+        finishUpload(dataUrl, sizeKB, origMB, usedFmt, ratio);
+      }
     });
   }
-  tryCompress(0);
+  tryStep(0);
+}
+
+function smartCompress(file, maxWidth, quality, preferFmt, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      
+      // Yüksek kalite rendering
+      var ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // WebP desteği kontrol et
+      var usedFmt = 'jpeg';
+      if (preferFmt === 'webp') {
+        var testUrl = canvas.toDataURL('image/webp', 0.5);
+        if (testUrl.indexOf('data:image/webp') === 0) {
+          usedFmt = 'webp';
+          callback(canvas.toDataURL('image/webp', quality), usedFmt);
+          return;
+        }
+      }
+      callback(canvas.toDataURL('image/jpeg', quality), usedFmt);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 var defaultPlaceholderHTML = '<div style="font-size:24px">📸</div><div style="font-size:12px;color:var(--text2)">Görsel Yükle</div>';
 
-function finishUpload(dataUrl, sizeKB) {
+function finishUpload(dataUrl, sizeKB, origMB, format, ratio) {
   uploadedImageData = dataUrl;
   document.getElementById('upload-preview-img').src = dataUrl;
   document.getElementById('upload-preview').style.display = 'block';
   document.getElementById('upload-placeholder').style.display = 'none';
   document.getElementById('upload-placeholder').innerHTML = defaultPlaceholderHTML;
   var sizeEl = document.getElementById('upload-size');
-  if (sizeEl) sizeEl.textContent = sizeKB + ' KB';
+  if (sizeEl) {
+    var fmtLabel = format === 'webp' ? 'WebP' : 'JPEG';
+    sizeEl.innerHTML = '<span style="color:#4ADE80;font-weight:700">✓ ' + origMB + ' MB → ' + sizeKB + ' KB</span><br><span style="font-size:8px;opacity:.8">' + fmtLabel + ' · %' + ratio + ' küçüldü</span>';
+  }
   document.getElementById('form-ann-img').value = '';
 }
 
@@ -459,6 +510,7 @@ function removeUpload() {
   document.getElementById('form-ann-file').value = '';
 }
 
+// Eski compressImage fonksiyonu — PWA ikon ve karşılama görseli için hâlâ kullanılıyor
 function compressImage(file, maxWidth, quality, callback) {
   var reader = new FileReader();
   reader.onload = function(e) {
