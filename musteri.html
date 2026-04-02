@@ -83,7 +83,7 @@
             <div class="gcd-sep">:</div>
             <div class="gcd-item"><span class="gcd-num" id="gcd-s">00</span><span class="gcd-lbl">saniye</span></div>
           </div>
-          <div class="gift-hint">Sürpriz açılıyor... merak edin!</div>
+          <div class="gift-hint">SÜRPRİZ AÇILIYOR</div>
         </div>
 
         <!-- Açılmış hediye — tam ekran -->
@@ -97,8 +97,14 @@
             <div class="reveal-divider"></div>
             <div class="reveal-content" id="reveal-content"></div>
             <img class="reveal-img" id="reveal-img" src="" alt="" style="display:none">
+            <div class="reveal-end-timer" id="reveal-end-timer" style="display:none">⏱ Kalan süre: <strong id="reveal-end-time">--:--</strong></div>
             <div class="reveal-footer">Acele edin — sınırlı süre!</div>
           </div>
+        </div>
+
+        <!-- Süre doldu ekranı -->
+        <div class="gift-expired" id="gift-expired" style="display:none">
+          <div class="expired-text">YENİ SÜRPRİZLER İÇİN<br>TAKİP ETMEYE<br>DEVAM EDİN</div>
         </div>
       </div>
     </div>
@@ -107,8 +113,8 @@
     <div class="tab-bar">
       <button class="tab-item active" onclick="filterCat('anasayfa')"><span class="tab-icon">🏠</span><span class="tab-lbl">Ana Sayfa</span></button>
       <button class="tab-item" onclick="filterCat('kampanya')"><span class="tab-icon">🏷️</span><span class="tab-lbl">Kampanya</span></button>
-      <button class="tab-item" onclick="filterCat('surpriz')"><span class="tab-icon">🎁</span><span class="tab-lbl">Sürpriz</span></button>
       <button class="tab-item" onclick="filterCat('gunun_firsati')"><span class="tab-icon">⭐</span><span class="tab-lbl">Fırsat</span></button>
+      <button class="tab-item" onclick="filterCat('surpriz')"><span class="tab-icon">🎁</span><span class="tab-lbl">Sürpriz</span></button>
     </div>
   </div>
 

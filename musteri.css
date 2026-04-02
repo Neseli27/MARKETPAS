@@ -236,7 +236,16 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 .gift-pre{display:flex;flex-direction:column;align-items:center;gap:20px;position:relative;z-index:2}
 .gift-label{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:6px;color:#fbbf24;text-shadow:0 0 30px rgba(251,191,36,.4),0 0 60px rgba(251,191,36,.15)}
-.gift-hint{font-size:13px;color:rgba(255,255,255,.5);animation:fadeUp 1s ease 1s both}
+.gift-hint{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:rgba(251,191,36,.6);animation:fadeUp 1s ease 1s both}
+
+/* Bitiş sayacı */
+.reveal-end-timer{margin-top:12px;font-size:14px;color:var(--warn);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:8px 16px}
+.reveal-end-timer strong{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
+
+/* Süre doldu ekranı */
+.gift-expired{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1040 0%,#0a0f1a 70%);padding:32px;z-index:10}
+.expired-text{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:5px;color:rgba(251,191,36,.7);text-align:center;line-height:1.6;text-shadow:0 0 30px rgba(251,191,36,.15);animation:expiredPulse 3s ease infinite}
+@keyframes expiredPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
 
 /* Arka plan ışık efektleri */
 .gift-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);animation:glowPulse 3s ease infinite;pointer-events:none}

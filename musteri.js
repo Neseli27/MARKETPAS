@@ -360,27 +360,36 @@ function loadGiftData(){
   }
   giftData=market.gift;
   giftRevealed=false;
-  var parts=(giftData.revealTime||'14:00').split(':');
   var now=new Date();
+  var parts=(giftData.revealTime||'14:00').split(':');
   giftData._revealDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(parts[0]),parseInt(parts[1]),0);
-  console.log('MarketPas Gift: Yüklendi — açılma:', giftData.revealTime, '| başlık:', giftData.title);
+  var eParts=(giftData.endTime||'15:00').split(':');
+  giftData._endDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(eParts[0]),parseInt(eParts[1]),0);
+  console.log('MarketPas Gift: Yüklendi — açılma:', giftData.revealTime, '| bitiş:', giftData.endTime, '| başlık:', giftData.title);
 }
 
 function showGiftScreen(){
   var gs=document.getElementById('gift-screen');
   if(!gs){console.log('MarketPas Gift: gift-screen elementi yok');return}
-  if(!giftData){console.log('MarketPas Gift: giftData null — Fırsat sekmesinde hediye gösterilmiyor');return}
+  if(!giftData){console.log('MarketPas Gift: giftData null');return}
   console.log('MarketPas Gift: Ekran gösteriliyor');
   gs.style.display='flex';
   document.getElementById('ann-slider').style.display='none';
   document.getElementById('ann-dots').style.display='none';
 
   var now=new Date();
-  if(now>=giftData._revealDate||giftRevealed){
+  if(now>=giftData._endDate){
+    // Süre tamamen dolmuş
+    showGiftExpired();
+  }else if(now>=giftData._revealDate||giftRevealed){
+    // Açılmış ama süre devam ediyor
     revealGift();
+    startEndCountdown();
   }else{
+    // Henüz açılmadı
     document.getElementById('gift-pre').style.display='flex';
     document.getElementById('gift-reveal').style.display='none';
+    document.getElementById('gift-expired').style.display='none';
     startGiftCountdown();
   }
 }
@@ -418,7 +427,7 @@ function startGiftCountdown(){
 function triggerRevealAnimation(){
   var box=document.getElementById('gift-box');
   if(box){box.className='gift-box-3d opening'}
-  setTimeout(function(){revealGift()},1000);
+  setTimeout(function(){revealGift();startEndCountdown()},1000);
 }
 
 function revealGift(){
@@ -462,6 +471,30 @@ function spawnConfetti(){
       c.appendChild(p2);
     }
   },1500);
+}
+
+var giftEndInterval=null;
+function startEndCountdown(){
+  if(giftEndInterval)clearInterval(giftEndInterval);
+  var timerEl=document.getElementById('reveal-end-timer');
+  var timeEl=document.getElementById('reveal-end-time');
+  if(!timerEl||!timeEl||!giftData._endDate)return;
+  timerEl.style.display='block';
+  function tick(){
+    var left=giftData._endDate.getTime()-Date.now();
+    if(left<=0){clearInterval(giftEndInterval);giftEndInterval=null;showGiftExpired();return}
+    var m=Math.floor(left/60000);
+    var s=Math.floor((left%60000)/1000);
+    timeEl.textContent=m+':'+s.toString().padStart(2,'0');
+  }
+  tick();giftEndInterval=setInterval(tick,1000);
+}
+
+function showGiftExpired(){
+  if(giftEndInterval){clearInterval(giftEndInterval);giftEndInterval=null}
+  document.getElementById('gift-pre').style.display='none';
+  document.getElementById('gift-reveal').style.display='none';
+  document.getElementById('gift-expired').style.display='flex';
 }
 
 document.addEventListener('DOMContentLoaded',init);

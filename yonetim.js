@@ -344,9 +344,9 @@ var allAnnouncements = [];
 
 var CAT_LABELS = {
   anasayfa: { icon: '🏠', name: 'Ana Sayfa' },
-  kampanya: { icon: '🏷️', name: 'Kampanyalar' },
-  surpriz: { icon: '🎁', name: 'Sürpriz İndirimler' },
-  gunun_firsati: { icon: '⭐', name: 'Günün Fırsatı' }
+  kampanya: { icon: '🏷️', name: 'Kampanya' },
+  gunun_firsati: { icon: '⭐', name: 'Fırsat' },
+  surpriz: { icon: '🎁', name: 'Sürpriz' }
 };
 
 function loadAnnouncements() {
@@ -369,10 +369,15 @@ function switchCategory(cat) {
   if (tab) tab.classList.add('active');
   var title = document.getElementById('cat-list-title');
   if (title && CAT_LABELS[cat]) title.textContent = CAT_LABELS[cat].name;
-  // Hediye paneli sadece Günün Fırsatı sekmesinde görünür
+  // Hediye paneli sadece Fırsat sekmesinde görünür
   var gp = document.getElementById('gift-settings');
   if (gp) gp.style.display = (cat === 'gunun_firsati') ? 'block' : 'none';
-  renderAnnouncements();
+  // Fırsat sekmesinde içerik listesi ve ekle butonu gizle
+  var listHeader = document.querySelector('.ann-list-header');
+  var annList = document.getElementById('ann-list');
+  if (listHeader) listHeader.style.display = (cat === 'gunun_firsati') ? 'none' : 'flex';
+  if (annList) annList.style.display = (cat === 'gunun_firsati') ? 'none' : 'block';
+  if (cat !== 'gunun_firsati') renderAnnouncements();
   cancelAnnForm();
 }
 
@@ -650,6 +655,8 @@ function loadGiftSettings() {
   if (el) el.checked = !!g.active;
   var t = document.getElementById('gift-time');
   if (t) t.value = g.revealTime || '14:00';
+  var et = document.getElementById('gift-end-time');
+  if (et) et.value = g.endTime || '15:00';
   var ti = document.getElementById('gift-title');
   if (ti) ti.value = g.title || '';
   var c = document.getElementById('gift-content');
@@ -661,6 +668,7 @@ function loadGiftSettings() {
 async function saveGiftSettings() {
   var active = document.getElementById('gift-active').checked;
   var time = document.getElementById('gift-time').value || '14:00';
+  var endTime = document.getElementById('gift-end-time').value || '15:00';
   var title = document.getElementById('gift-title').value.trim();
   var content = document.getElementById('gift-content').value.trim();
   var imageUrl = document.getElementById('gift-image').value.trim();
@@ -670,7 +678,7 @@ async function saveGiftSettings() {
 
   try {
     await db.collection('markets').doc(marketId).update({
-      gift: { active: active, revealTime: time, title: title, content: content, imageUrl: imageUrl }
+      gift: { active: active, revealTime: time, endTime: endTime, title: title, content: content, imageUrl: imageUrl }
     });
     if (msg) { msg.textContent = '✓ Hediye ayarları kaydedildi'; msg.style.color = 'var(--accent)'; msg.style.display = 'block'; setTimeout(function() { msg.style.display = 'none'; }, 2000); }
   } catch(e) { if (msg) { msg.textContent = 'Hata: ' + e.message; msg.style.color = '#DC2626'; msg.style.display = 'block'; } }

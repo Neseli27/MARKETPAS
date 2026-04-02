@@ -207,18 +207,18 @@
         </button>
         <button class="cat-tab" onclick="switchCategory('kampanya')" id="tab-kampanya">
           <span class="cat-tab-icon">🏷️</span>
-          <span class="cat-tab-name">Kampanyalar</span>
+          <span class="cat-tab-name">Kampanya</span>
           <span class="cat-tab-count" id="count-kampanya">0</span>
-        </button>
-        <button class="cat-tab" onclick="switchCategory('surpriz')" id="tab-surpriz">
-          <span class="cat-tab-icon">🎁</span>
-          <span class="cat-tab-name">Sürpriz İndirimler</span>
-          <span class="cat-tab-count" id="count-surpriz">0</span>
         </button>
         <button class="cat-tab" onclick="switchCategory('gunun_firsati')" id="tab-gunun_firsati">
           <span class="cat-tab-icon">⭐</span>
-          <span class="cat-tab-name">Günün Fırsatı</span>
-          <span class="cat-tab-count" id="count-gunun_firsati">0</span>
+          <span class="cat-tab-name">Fırsat</span>
+          <span class="cat-tab-count" id="count-gunun_firsati"></span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('surpriz')" id="tab-surpriz">
+          <span class="cat-tab-icon">🎁</span>
+          <span class="cat-tab-name">Sürpriz</span>
+          <span class="cat-tab-count" id="count-surpriz">0</span>
         </button>
       </div>
 
@@ -232,6 +232,10 @@
           <div class="form-row">
             <label>Açılma Saati *</label>
             <input type="time" id="gift-time" value="14:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          </div>
+          <div class="form-row">
+            <label>Bitiş Saati * (bu saatte sürpriz sona erer)</label>
+            <input type="time" id="gift-end-time" value="15:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
           </div>
           <div class="form-row">
             <label>Sürpriz Başlık * (açılınca görünecek)</label>
@@ -266,8 +270,7 @@
           <div class="cat-select" id="form-cat-select">
             <label class="cat-opt active" id="opt-anasayfa"><input type="radio" name="ann-cat" value="anasayfa" checked><span>🏠 Ana Sayfa</span></label>
             <label class="cat-opt" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya"><span>🏷️ Kampanya</span></label>
-            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>🎁 Sürpriz İndirim</span></label>
-            <label class="cat-opt" id="opt-gunun_firsati"><input type="radio" name="ann-cat" value="gunun_firsati"><span>⭐ Günün Fırsatı</span></label>
+            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>🎁 Sürpriz</span></label>
           </div>
         </div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>
