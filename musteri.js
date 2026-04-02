@@ -195,7 +195,7 @@ function renderAnnouncements(){
 
     // Metin katmanı
     var t=document.createElement('div');t.className='ann-slide-text';
-    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',gunun_firsati:'FIRSAT',surpriz:'SÜRPRİZ'};
+    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',gunun_firsati:'SÜRPRİZ',surpriz:'FIRSAT'};
     var catIcons={anasayfa:'📢',kampanya:'🏷️',gunun_firsati:'🎁',surpriz:'⭐'};
     var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
     var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);

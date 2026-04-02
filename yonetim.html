@@ -212,12 +212,12 @@
         </button>
         <button class="cat-tab" onclick="switchCategory('gunun_firsati')" id="tab-gunun_firsati">
           <span class="cat-tab-icon">🎁</span>
-          <span class="cat-tab-name">Fırsat</span>
+          <span class="cat-tab-name">Sürpriz</span>
           <span class="cat-tab-count" id="count-gunun_firsati"></span>
         </button>
         <button class="cat-tab" onclick="switchCategory('surpriz')" id="tab-surpriz">
           <span class="cat-tab-icon">⭐</span>
-          <span class="cat-tab-name">Sürpriz</span>
+          <span class="cat-tab-name">Fırsat</span>
           <span class="cat-tab-count" id="count-surpriz">0</span>
         </button>
       </div>
@@ -226,9 +226,10 @@
       <div id="gift-settings" class="gift-panel" style="display:none">
         <div class="gift-panel-head">
           <span>🎁 Sürpriz Hediye Paketi</span>
-          <label class="gift-toggle"><input type="checkbox" id="gift-active" onchange="saveGiftSettings()"><span class="toggle-slider"></span></label>
+          <label class="gift-toggle"><input type="checkbox" id="gift-active"><span class="toggle-slider"></span></label>
         </div>
         <div class="gift-panel-body" id="gift-body">
+          <div id="gift-status" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px"></div>
           <div class="form-row">
             <label>Açılma Saati *</label>
             <input type="time" id="gift-time" value="14:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
@@ -270,7 +271,7 @@
           <div class="cat-select" id="form-cat-select">
             <label class="cat-opt active" id="opt-anasayfa"><input type="radio" name="ann-cat" value="anasayfa" checked><span>🏠 Ana Sayfa</span></label>
             <label class="cat-opt" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya"><span>🏷️ Kampanya</span></label>
-            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>⭐ Sürpriz</span></label>
+            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>⭐ Fırsat</span></label>
           </div>
         </div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>

@@ -345,8 +345,8 @@ var allAnnouncements = [];
 var CAT_LABELS = {
   anasayfa: { icon: '🏠', name: 'Ana Sayfa' },
   kampanya: { icon: '🏷️', name: 'Kampanya' },
-  gunun_firsati: { icon: '🎁', name: 'Fırsat' },
-  surpriz: { icon: '⭐', name: 'Sürpriz' }
+  gunun_firsati: { icon: '🎁', name: 'Sürpriz' },
+  surpriz: { icon: '⭐', name: 'Fırsat' }
 };
 
 function loadAnnouncements() {
@@ -663,6 +663,26 @@ function loadGiftSettings() {
   if (c) c.value = g.content || '';
   var img = document.getElementById('gift-image');
   if (img) img.value = g.imageUrl || '';
+
+  // Durum göstergesi
+  var st = document.getElementById('gift-status');
+  if (st && g.active) {
+    var now = new Date();
+    var rParts = (g.revealTime || '14:00').split(':');
+    var eParts = (g.endTime || '15:00').split(':');
+    var reveal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(rParts[0]), parseInt(rParts[1]), 0);
+    var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eParts[0]), parseInt(eParts[1]), 0);
+    if (now < reveal) {
+      st.style.display = 'block'; st.style.background = '#EFF6FF'; st.style.color = '#2563EB'; st.style.border = '1px solid #93C5FD';
+      st.innerHTML = '⏳ Aktif sürpriz bekliyor — <strong>' + g.title + '</strong> · Açılma: ' + g.revealTime;
+    } else if (now < end) {
+      st.style.display = 'block'; st.style.background = '#FEF3C7'; st.style.color = '#B45309'; st.style.border = '1px solid #FCD34D';
+      st.innerHTML = '🎁 Sürpriz AÇIK — <strong>' + g.title + '</strong> · Bitiş: ' + g.endTime;
+    } else {
+      st.style.display = 'block'; st.style.background = '#F0FDF4'; st.style.color = '#16A34A'; st.style.border = '1px solid #86EFAC';
+      st.innerHTML = '✅ Sürpriz süresi dolmuş — yeni sürpriz ekleyebilirsiniz';
+    }
+  } else if (st) { st.style.display = 'none'; }
 }
 
 async function saveGiftSettings() {
@@ -675,6 +695,24 @@ async function saveGiftSettings() {
   var msg = document.getElementById('gift-save-msg');
 
   if (active && !title) { if (msg) { msg.textContent = '⚠️ Aktif etmek için başlık zorunlu'; msg.style.color = '#F59E0B'; msg.style.display = 'block'; } return; }
+
+  // Çakışma kontrolü — mevcut aktif sürpriz devam ediyorsa uyar
+  if (active && marketData.gift && marketData.gift.active) {
+    var now = new Date();
+    var eParts = (marketData.gift.endTime || '15:00').split(':');
+    var currentEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eParts[0]), parseInt(eParts[1]), 0);
+    if (now < currentEnd) {
+      var rParts = (marketData.gift.revealTime || '14:00').split(':');
+      var currentReveal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(rParts[0]), parseInt(rParts[1]), 0);
+      if (now >= currentReveal) {
+        // Sürpriz açılmış ve hâlâ süresi var
+        if (!confirm('Şu an aktif bir sürpriz var ve süresi henüz dolmadı (' + marketData.gift.endTime + ' bitiş).\n\nMevcut sürprizi iptal edip yenisiyle değiştirmek istiyor musunuz?')) return;
+      }
+    }
+  }
+
+  // Saat kontrolü — bitiş, açılmadan önce olamaz
+  if (active && endTime <= time) { if (msg) { msg.textContent = '⚠️ Bitiş saati, açılma saatinden sonra olmalı'; msg.style.color = '#F59E0B'; msg.style.display = 'block'; } return; }
 
   try {
     await db.collection('markets').doc(marketId).update({
