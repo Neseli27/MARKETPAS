@@ -3,7 +3,7 @@ var marketId=null,sessionId=null,market=null,queueListener=null,myQueueData=null
 var countdownInterval=null,announcementInterval=null,statsInterval=null;
 var announcements=[],allAnnouncements=[],annIndex=0,notifiedForThisCall=false,currentStats=null;
 var isQueueMode=false,sheetOpen=false;
-var SPLASH_DURATION=12000;
+var SPLASH_DURATION=5000;
 
 // Bildirim
 async function requestNotificationPermission(){if(!('Notification' in window))return;if(Notification.permission==='default')await Notification.requestPermission()}

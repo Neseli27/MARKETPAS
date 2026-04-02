@@ -32,30 +32,43 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 /* ═══ HEADER ═══ */
 .hdr{
-  height:60px;flex-shrink:0;
-  display:flex;align-items:center;
+  height:44px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
   padding:0 14px;
   background:var(--bg);
-  border-bottom:1px solid rgba(255,255,255,.04);
   z-index:20;
 }
 .hdr-name{
-  flex:1;font-family:'Bebas Neue',sans-serif;
+  font-family:'Bebas Neue',sans-serif;
   font-size:22px;letter-spacing:3px;color:var(--text);
 }
-.hdr-right{display:flex;gap:8px}
-.hdr-btn{
-  width:42px;height:42px;border-radius:11px;
-  border:none;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;
+
+/* ═══ AKSİYON BUTONLARI — yazılı, büyük ═══ */
+.act-row{
+  display:flex;gap:10px;padding:6px 12px 10px;flex-shrink:0;
+  background:var(--bg);
 }
-.hdr-btn svg{width:22px;height:22px}
-.hdr-btn:active:not(:disabled){transform:scale(.9)}
-.hdr-btn:disabled{opacity:.3;cursor:default}
-.qr-hbtn{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.25)}
-.qr-hbtn.passive{background:var(--bg3);color:var(--text3);box-shadow:none}
-.sira-hbtn{background:var(--accent);color:#0a0f1a;box-shadow:0 2px 10px rgba(16,229,176,.25)}
-.sira-hbtn:disabled{background:var(--bg3);color:var(--text3);box-shadow:none;border:none}
+.act-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 12px;border-radius:12px;
+  border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+  transition:all .2s;
+}
+.act-btn:active:not(:disabled){transform:scale(.96)}
+.act-btn:disabled{opacity:.35;cursor:default}
+.act-btn svg{flex-shrink:0}
+
+/* QR butonu */
+.qr-btn{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 12px rgba(16,185,129,.2)}
+.qr-btn.passive{background:var(--bg3);color:var(--text3);box-shadow:none}
+
+/* Sıra butonu — yeşil neon, dikkat çekici */
+.sira-btn{
+  background:var(--accent);color:#0a0f1a;
+  box-shadow:0 0 20px rgba(16,229,176,.25),0 2px 8px rgba(16,229,176,.15);
+}
+.sira-btn:disabled{background:var(--bg3);color:var(--text3);box-shadow:none}
 
 /* ═══ BANNER SLIDER — tam ekran ═══ */
 .banners{flex:1;position:relative;overflow:hidden}
