@@ -91,6 +91,7 @@ function startMarketListener() {
     var mt = document.getElementById('mob-title'); if (mt) mt.textContent = marketData.name;
     updateSidebarLicense();
     checkLicenseWarning();
+    loadGiftSettings();
   });
 }
 
@@ -368,6 +369,9 @@ function switchCategory(cat) {
   if (tab) tab.classList.add('active');
   var title = document.getElementById('cat-list-title');
   if (title && CAT_LABELS[cat]) title.textContent = CAT_LABELS[cat].name;
+  // Hediye paneli sadece Günün Fırsatı sekmesinde görünür
+  var gp = document.getElementById('gift-settings');
+  if (gp) gp.style.display = (cat === 'gunun_firsati') ? 'block' : 'none';
   renderAnnouncements();
   cancelAnnForm();
 }
@@ -637,6 +641,40 @@ function cancelAnnForm() {
 }
 async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
 async function deleteAnn(id) { if (confirm('Bu içerik silinsin mi?')) await db.collection('announcements').doc(id).delete(); }
+
+// ─── Sürpriz Hediye Paketi ──────────────────────────
+function loadGiftSettings() {
+  if (!marketData) return;
+  var g = marketData.gift || {};
+  var el = document.getElementById('gift-active');
+  if (el) el.checked = !!g.active;
+  var t = document.getElementById('gift-time');
+  if (t) t.value = g.revealTime || '14:00';
+  var ti = document.getElementById('gift-title');
+  if (ti) ti.value = g.title || '';
+  var c = document.getElementById('gift-content');
+  if (c) c.value = g.content || '';
+  var img = document.getElementById('gift-image');
+  if (img) img.value = g.imageUrl || '';
+}
+
+async function saveGiftSettings() {
+  var active = document.getElementById('gift-active').checked;
+  var time = document.getElementById('gift-time').value || '14:00';
+  var title = document.getElementById('gift-title').value.trim();
+  var content = document.getElementById('gift-content').value.trim();
+  var imageUrl = document.getElementById('gift-image').value.trim();
+  var msg = document.getElementById('gift-save-msg');
+
+  if (active && !title) { if (msg) { msg.textContent = '⚠️ Aktif etmek için başlık zorunlu'; msg.style.color = '#F59E0B'; msg.style.display = 'block'; } return; }
+
+  try {
+    await db.collection('markets').doc(marketId).update({
+      gift: { active: active, revealTime: time, title: title, content: content, imageUrl: imageUrl }
+    });
+    if (msg) { msg.textContent = '✓ Hediye ayarları kaydedildi'; msg.style.color = 'var(--accent)'; msg.style.display = 'block'; setTimeout(function() { msg.style.display = 'none'; }, 2000); }
+  } catch(e) { if (msg) { msg.textContent = 'Hata: ' + e.message; msg.style.color = '#DC2626'; msg.style.display = 'block'; } }
+}
 
 // ─── Ayarlar ──────────────────────────────────────────
 async function saveSettings() {

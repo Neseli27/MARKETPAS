@@ -222,6 +222,34 @@
         </button>
       </div>
 
+      <!-- Sürpriz Hediye Paketi Ayarları (Günün Fırsatı sekmesinde görünür) -->
+      <div id="gift-settings" class="gift-panel" style="display:none">
+        <div class="gift-panel-head">
+          <span>🎁 Sürpriz Hediye Paketi</span>
+          <label class="gift-toggle"><input type="checkbox" id="gift-active" onchange="saveGiftSettings()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="gift-panel-body" id="gift-body">
+          <div class="form-row">
+            <label>Açılma Saati *</label>
+            <input type="time" id="gift-time" value="14:00" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          </div>
+          <div class="form-row">
+            <label>Sürpriz Başlık * (açılınca görünecek)</label>
+            <input type="text" id="gift-title" placeholder="Örn: Çikolatalarda %50 İndirim!" style="padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          </div>
+          <div class="form-row">
+            <label>Açıklama</label>
+            <textarea id="gift-content" rows="2" placeholder="Detay..." style="resize:vertical;font-family:'Outfit',sans-serif;font-size:14px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Görsel URL (opsiyonel)</label>
+            <input type="url" id="gift-image" placeholder="https://..." style="padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          </div>
+          <button class="btn btn-accent" onclick="saveGiftSettings()" style="margin-top:8px">💾 Kaydet</button>
+          <div id="gift-save-msg" style="display:none;margin-top:8px;font-size:13px;font-weight:600;color:var(--accent)"></div>
+        </div>
+      </div>
+
       <!-- İçerik Listesi + Ekle Butonu -->
       <div class="ann-list-header">
         <span style="font-size:14px;font-weight:600" id="cat-list-title">Kampanyalar</span>

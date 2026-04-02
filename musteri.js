@@ -32,7 +32,7 @@ async function loadMarket(){
     var doc=await db.collection('markets').doc(marketId).get();
     if(!doc.exists){showError('Market bulunamadı.');return}
     market=doc.data();
-    applyBranding();loadAnnouncements();
+    applyBranding();loadAnnouncements();loadGiftData();
     if(isQueueMode){
       showSplash(function(){
         updateButtons();loadCongestion();checkExistingQueue();
@@ -153,6 +153,9 @@ function loadAnnouncements(){
 function filterCat(cat){
   document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
   event.currentTarget.classList.add('active');
+  // Hediye gösterimi
+  if(cat==='gunun_firsati'&&giftData){showGiftScreen()}
+  else{hideGiftScreen()}
   announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
   renderAnnouncements();
 }
@@ -338,4 +341,98 @@ function showConfirmModal(msg,onConfirm){
 }
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
+
+// ═══ SÜRPRİZ HEDİYE KUTUSU ═══
+var giftData=null,giftInterval=null,giftRevealed=false;
+
+function loadGiftData(){
+  if(!market||!market.gift||!market.gift.active)return;
+  giftData=market.gift;
+  giftRevealed=false;
+  // Açılma saatini bugünün tarihiyle birleştir
+  var parts=(giftData.revealTime||'14:00').split(':');
+  var now=new Date();
+  giftData._revealDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(parts[0]),parseInt(parts[1]),0);
+}
+
+function showGiftScreen(){
+  var gs=document.getElementById('gift-screen');
+  if(!gs||!giftData)return;
+  gs.style.display='flex';
+  document.getElementById('ann-slider').style.display='none';
+  document.getElementById('ann-dots').style.display='none';
+
+  var now=new Date();
+  if(now>=giftData._revealDate||giftRevealed){
+    revealGift();
+  }else{
+    document.getElementById('gift-pre').style.display='flex';
+    document.getElementById('gift-reveal').style.display='none';
+    startGiftCountdown();
+  }
+}
+
+function hideGiftScreen(){
+  var gs=document.getElementById('gift-screen');
+  if(gs)gs.style.display='none';
+  document.getElementById('ann-slider').style.display='';
+  document.getElementById('ann-dots').style.display='';
+  if(giftInterval){clearInterval(giftInterval);giftInterval=null}
+}
+
+function startGiftCountdown(){
+  if(giftInterval)clearInterval(giftInterval);
+  function tick(){
+    var now=new Date();
+    var diff=giftData._revealDate.getTime()-now.getTime();
+    if(diff<=0){clearInterval(giftInterval);giftInterval=null;triggerRevealAnimation();return}
+    var h=Math.floor(diff/3600000);
+    var m=Math.floor((diff%3600000)/60000);
+    var s=Math.floor((diff%60000)/1000);
+    document.getElementById('gcd-h').textContent=h.toString().padStart(2,'0');
+    document.getElementById('gcd-m').textContent=m.toString().padStart(2,'0');
+    document.getElementById('gcd-s').textContent=s.toString().padStart(2,'0');
+    // Son 60 saniye — heyecan modu
+    var box=document.getElementById('gift-box');
+    if(box){
+      if(diff<60000)box.className='gift-box excited';
+      else box.className='gift-box';
+    }
+  }
+  tick();giftInterval=setInterval(tick,1000);
+}
+
+function triggerRevealAnimation(){
+  var box=document.getElementById('gift-box');
+  if(box){box.className='gift-box opening'}
+  setTimeout(function(){revealGift()},800);
+}
+
+function revealGift(){
+  giftRevealed=true;
+  document.getElementById('gift-pre').style.display='none';
+  var rv=document.getElementById('gift-reveal');rv.style.display='flex';
+  document.getElementById('reveal-title').textContent=giftData.title||'Sürpriz Fırsat!';
+  document.getElementById('reveal-content').textContent=giftData.content||'';
+  var img=document.getElementById('reveal-img');
+  if(giftData.imageUrl){img.src=giftData.imageUrl;img.style.display='block';img.onerror=function(){this.style.display='none'}}
+  spawnConfetti();
+}
+
+function spawnConfetti(){
+  var c=document.getElementById('confetti');if(!c)return;c.innerHTML='';
+  var colors=['#fbbf24','#ef4444','#10b981','#a78bfa','#f472b6','#60a5fa','#34d399'];
+  for(var i=0;i<40;i++){
+    var p=document.createElement('div');p.className='confetti-piece';
+    p.style.left=Math.random()*100+'%';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDelay=Math.random()*2+'s';
+    p.style.animationDuration=(2+Math.random()*2)+'s';
+    p.style.width=(6+Math.random()*6)+'px';
+    p.style.height=(8+Math.random()*8)+'px';
+    p.style.borderRadius=Math.random()>.5?'50%':'2px';
+    c.appendChild(p);
+  }
+}
+
 document.addEventListener('DOMContentLoaded',init);

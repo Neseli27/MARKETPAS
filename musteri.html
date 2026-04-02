@@ -49,6 +49,38 @@
     <div class="banners" id="ann-section">
       <div class="ann-slider" id="ann-slider"></div>
       <div class="ann-dots" id="ann-dots"></div>
+
+      <!-- SÜRPRİZ HEDİYE KUTUSU -->
+      <div class="gift-screen" id="gift-screen" style="display:none">
+        <!-- Geri sayım -->
+        <div class="gift-pre" id="gift-pre">
+          <div class="gift-sparkles"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="gift-box" id="gift-box">
+            <div class="gift-lid"><div class="gift-bow"></div></div>
+            <div class="gift-base"><div class="gift-q">?</div></div>
+          </div>
+          <div class="gift-label">Sürpriz Fırsat</div>
+          <div class="gift-countdown" id="gift-countdown">
+            <div class="gcd-item"><span class="gcd-num" id="gcd-h">00</span><span class="gcd-lbl">saat</span></div>
+            <div class="gcd-sep">:</div>
+            <div class="gcd-item"><span class="gcd-num" id="gcd-m">00</span><span class="gcd-lbl">dakika</span></div>
+            <div class="gcd-sep">:</div>
+            <div class="gcd-item"><span class="gcd-num" id="gcd-s">00</span><span class="gcd-lbl">saniye</span></div>
+          </div>
+          <div class="gift-hint">Sürpriz açılıyor... merak edin!</div>
+        </div>
+
+        <!-- Açılmış hediye -->
+        <div class="gift-reveal" id="gift-reveal" style="display:none">
+          <div class="confetti" id="confetti"></div>
+          <div class="reveal-card">
+            <div class="reveal-badge">🎉 SÜRPRİZ FIRSAT!</div>
+            <div class="reveal-title" id="reveal-title"></div>
+            <div class="reveal-content" id="reveal-content"></div>
+            <img class="reveal-img" id="reveal-img" src="" alt="" style="display:none">
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ALT TAB BAR -->
