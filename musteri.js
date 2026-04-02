@@ -1,13 +1,11 @@
-// =====================================================
-// MarketPas v4 — Müşteri Ekranı
-// =====================================================
+// MarketPas v5 — Müşteri Ekranı (Bottom Sheet)
 var marketId=null,sessionId=null,market=null,queueListener=null,myQueueData=null;
 var countdownInterval=null,announcementInterval=null,statsInterval=null;
-var announcements=[],annIndex=0,notifiedForThisCall=false,currentStats=null;
-var isQueueMode=false;
+var announcements=[],allAnnouncements=[],annIndex=0,notifiedForThisCall=false,currentStats=null;
+var isQueueMode=false,sheetOpen=false;
 var SPLASH_DURATION=12000;
 
-// ─── Bildirim ────────────────────────────────────────
+// Bildirim
 async function requestNotificationPermission(){if(!('Notification' in window))return;if(Notification.permission==='default')await Notification.requestPermission()}
 function notifyCustomer(code,kasaNo){
   if(navigator.vibrate)navigator.vibrate([300,100,300,100,500]);
@@ -15,7 +13,7 @@ function notifyCustomer(code,kasaNo){
   if(Notification.permission==='granted'&&document.hidden)new Notification('Sıranız Geldi!',{body:'Kodunuz: '+code+' — Kasa '+kasaNo+"'e gidiniz",icon:'/icon-192.png',tag:'mp-q',requireInteraction:true});
 }
 
-// ─── Başlangıç ───────────────────────────────────────
+// ═══ BAŞLANGIÇ ═══
 function init(){
   var p=new URLSearchParams(window.location.search);
   var urlMarket=p.get('market');
@@ -34,20 +32,15 @@ async function loadMarket(){
     var doc=await db.collection('markets').doc(marketId).get();
     if(!doc.exists){showError('Market bulunamadı.');return}
     market=doc.data();
-    applyBranding();
-    loadAnnouncements();
-    renderCategoryCards();
+    applyBranding();loadAnnouncements();
     if(isQueueMode){
       showSplash(function(){
-        updateButtons();
-        loadCongestion();
-        checkExistingQueue();
+        updateButtons();loadCongestion();checkExistingQueue();
         requestNotificationPermission();
         statsInterval=setInterval(loadCongestion,15000);
       });
     }else{
-      updateButtons();
-      checkExistingQueueSilent();
+      updateButtons();checkExistingQueueSilent();
     }
   }catch(e){showError('Bağlantı hatası. Sayfayı yenileyin.')}
   finally{showLoading(false)}
@@ -56,7 +49,6 @@ async function loadMarket(){
 function applyBranding(){
   document.getElementById('hdr-name').textContent=market.name;
   document.title=market.name;
-  // PWA manifest
   var icon=market.pwaIconUrl||market.logoUrl||'/icon-192.png';
   var name=market.name||'MarketPas';
   var f=document.getElementById('pwa-icon'),a=document.getElementById('pwa-apple-icon');
@@ -66,78 +58,79 @@ function applyBranding(){
   var lnk=document.createElement('link');lnk.rel='manifest';lnk.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));document.head.appendChild(lnk);
 }
 
-// ═══ BUTON DURUMLARI ═════════════════════════════════
-// Akış:
-// 1. Vitrin (markette değil): QR AKTİF, Sıra PASİF
-// 2. QR okuttu (markete girdi): QR PASİF, Sıra AKTİF
-// 3. Sıra aldı/kod üretildi: QR PASİF, Sıra PASİF
-// 4. İşlem bitti: QR AKTİF, Sıra PASİF (vitrine döner)
+// ═══ BUTON DURUMLARI ═══
 function updateButtons(){
   var qrBtn=document.getElementById('btn-qr');
   var siraBtn=document.getElementById('btn-sira');
   if(!qrBtn||!siraBtn)return;
-
   var status=myQueueData?myQueueData.status:null;
   var inQueue=status&&['waiting','priority','priority_ready','called','arrived','active','paused'].indexOf(status)>-1;
-
-  // QR butonu: sadece markette değilken aktif
   qrBtn.disabled=isQueueMode;
   qrBtn.classList.toggle('passive',isQueueMode);
-
-  // Sıra butonu: sadece markette VE henüz sıra almamışken aktif
   siraBtn.disabled=!(isQueueMode&&!inQueue);
 }
 
-// ═══ SPLASH ═════════════════════════════════════════
+// ═══ BOTTOM SHEET ═══
+function openSheet(){
+  var sheet=document.getElementById('sheet');
+  var overlay=document.getElementById('sheet-overlay');
+  sheet.classList.add('open');overlay.style.display='block';
+  setTimeout(function(){overlay.classList.add('show')},10);
+  sheetOpen=true;
+  if(!statsInterval){loadCongestion();statsInterval=setInterval(loadCongestion,15000)}
+  checkExistingQueue();requestNotificationPermission();
+}
+
+function closeSheet(){
+  var sheet=document.getElementById('sheet');
+  var overlay=document.getElementById('sheet-overlay');
+  sheet.classList.remove('open');overlay.classList.remove('show');
+  setTimeout(function(){overlay.style.display='none'},300);
+  sheetOpen=false;
+}
+
+function toggleSheet(){
+  if(sheetOpen)closeSheetIfAllowed();else openSheet();
+}
+
+function closeSheetIfAllowed(){
+  var status=myQueueData?myQueueData.status:null;
+  var locked=status&&['waiting','priority','priority_ready','called','arrived','active','paused'].indexOf(status)>-1;
+  if(!locked)closeSheet();
+}
+
+// ═══ SPLASH ═══
 function showSplash(cb){
-  var key='mp_w_'+marketId;
-  var last=localStorage.getItem(key);
+  var key='mp_w_'+marketId;var last=localStorage.getItem(key);
   if(last&&(Date.now()-parseInt(last))<600000){if(cb)cb();return}
   var el=document.getElementById('splash'),bg=document.getElementById('splash-bg');
   var nameEl=document.getElementById('splash-name'),fill=document.getElementById('splash-fill');
   nameEl.textContent=market.name;
   if(market.welcomeImageUrl){bg.style.backgroundImage='url('+market.welcomeImageUrl+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center'}
-  el.style.display='flex';
-  localStorage.setItem(key,Date.now().toString());
+  el.style.display='flex';localStorage.setItem(key,Date.now().toString());
   var t=0,iv=setInterval(function(){t+=100;fill.style.width=Math.min(100,t/SPLASH_DURATION*100)+'%';
     if(t>=SPLASH_DURATION){clearInterval(iv);closeSplash(el,cb)}},100);
   el.onclick=function(){clearInterval(iv);closeSplash(el,cb)};
 }
 function closeSplash(el,cb){el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(function(){el.style.display='none';el.style.opacity='1';el.style.transition='';el.onclick=null;if(cb)cb()},400)}
 
-// ═══ MOD GEÇİŞLERİ ═════════════════════════════════
-function enterQueueMode(){isQueueMode=true;updateButtons()}
+// ═══ MOD GEÇİŞLERİ ═══
+function enterQueueMode(){isQueueMode=true;openSheet();updateButtons()}
 function enterVitrinMode(){
-  isQueueMode=false;
-  document.getElementById('q-panel').classList.add('hidden');
-  updateButtons();
-}
-
-function toggleQueuePanel(){
-  var panel=document.getElementById('q-panel');
-  if(panel.classList.contains('hidden')){
-    panel.classList.remove('hidden');
-    if(!statsInterval){loadCongestion();statsInterval=setInterval(loadCongestion,15000)}
-    checkExistingQueue();requestNotificationPermission();
-  }else{
-    var s=myQueueData?myQueueData.status:null;
-    var inQ=s&&['waiting','priority','priority_ready','called','arrived','active','paused'].indexOf(s)>-1;
-    if(!inQ)panel.classList.add('hidden');
-  }
-  updateButtons();
+  isQueueMode=false;closeSheet();updateButtons();
 }
 
 async function checkExistingQueueSilent(){
   try{var doc=await db.collection('queue').doc(sessionId).get();
     if(doc.exists){var s=doc.data().status;
       if(['waiting','priority','priority_ready','called','arrived','active','paused'].includes(s)){
-        enterQueueMode();document.getElementById('q-panel').classList.remove('hidden');
+        isQueueMode=true;updateButtons();openSheet();
         loadCongestion();statsInterval=setInterval(loadCongestion,15000);
         requestNotificationPermission();startQueueListener();return}
     }}catch(e){}
 }
 
-// ═══ YOĞUNLUK ═══════════════════════════════════════
+// ═══ YOĞUNLUK ═══
 async function loadCongestion(){try{currentStats=await getMarketStats(marketId);renderCongestion(currentStats);updateWaitEstimate(currentStats)}catch(e){}}
 function renderCongestion(s){
   var dot=document.getElementById('cg-dot'),lbl=document.getElementById('cg-lbl'),fill=document.getElementById('cg-fill'),info=document.getElementById('cg-info');
@@ -150,37 +143,30 @@ function updateWaitEstimate(s){var el=document.getElementById('wait-est'),d=docu
   if(s&&s.estimatedWait>0){d.textContent=formatWaitTime(s.estimatedWait);el.style.display='flex'}
   else if(s&&s.waitingCount===0){d.textContent='Hemen';el.style.display='flex'}}
 
-// ═══ KATEGORİ KARTLARI ═══════════════════════════════
-function renderCategoryCards(){
-  var sc=document.getElementById('cats-scroll');if(!sc)return;
-  sc.innerHTML='';
-  var cats=[
-    {cls:'camp',icon:'🏷️',name:'Kampanyalar',sub:'Tüm aktif indirimler'},
-    {cls:'surp',icon:'🎁',name:'Sürpriz İndirimler',sub:'Günlük fırsatlar'},
-    {cls:'gun',icon:'⭐',name:'Günün Fırsatı',sub:'Kaçırmayın'}
-  ];
-  cats.forEach(function(c){
-    var card=document.createElement('div');card.className='cat-card '+c.cls;
-    card.innerHTML='<div class="cat-icon">'+c.icon+'</div><div class="cat-name">'+c.name+'</div><div class="cat-sub">'+c.sub+'</div>';
-    sc.appendChild(card);
-  });
-}
-
-// ═══ DUYURULAR ═══════════════════════════════════════
+// ═══ DUYURULAR ═══
 function loadAnnouncements(){
   db.collection('announcements').where('marketId','==',marketId).where('active','==',true).orderBy('order','asc')
-    .onSnapshot(function(snap){announcements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderAnnouncements()},
-    function(err){db.collection('announcements').where('marketId','==',marketId)
-      .onSnapshot(function(snap){announcements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});renderAnnouncements()})});
+    .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});announcements=allAnnouncements;renderAnnouncements()},
+    function(){db.collection('announcements').where('marketId','==',marketId)
+      .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});announcements=allAnnouncements;renderAnnouncements()})});
+}
+function filterCat(cat){
+  document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
+  event.currentTarget.classList.add('active');
+  if(cat==='all')announcements=allAnnouncements;
+  else announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
+  renderAnnouncements();
 }
 function renderAnnouncements(){
   var section=document.getElementById('ann-section'),slider=document.getElementById('ann-slider'),dots=document.getElementById('ann-dots');
-  if(!announcements.length){section.classList.add('empty');return}
+  if(!announcements.length){section.classList.add('empty');slider.innerHTML='';dots.innerHTML='';return}
   section.classList.remove('empty');slider.innerHTML='';dots.innerHTML='';
   announcements.forEach(function(a,i){
     var s=document.createElement('div');s.className='ann-slide'+(a.imageUrl?'':' no-img')+(i===0?' active':'');
     var t=document.createElement('div');t.className='ann-slide-text';
-    var b=document.createElement('div');b.className='ann-slide-badge';b.textContent='🏷️ Kampanya';t.appendChild(b);
+    var catNames={kampanya:'KAMPANYA',surpriz:'SÜRPRİZ İNDİRİM',gunun_firsati:'GÜNÜN FIRSATI'};
+    var catIcons={kampanya:'🏷️',surpriz:'🎁',gunun_firsati:'⭐'};
+    var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
     var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);
     if(a.content){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}
     if(a.imageUrl){var img=document.createElement('img');img.className='ann-slide-img has-img';img.src=a.imageUrl;img.alt='';img.onerror=function(){this.style.display='none'};s.appendChild(img)}
@@ -193,7 +179,7 @@ function renderAnnouncements(){
     document.querySelectorAll('.ann-dot').forEach(function(d,i){d.classList.toggle('active',i===annIndex)})},5000);
 }
 
-// ═══ SIRA İŞLEMLERİ ═════════════════════════════════
+// ═══ SIRA İŞLEMLERİ ═══
 async function checkExistingQueue(){try{var doc=await db.collection('queue').doc(sessionId).get();
   if(doc.exists){var s=doc.data().status;if(['waiting','priority','priority_ready','called','arrived','active','paused'].includes(s)){startQueueListener();return}}
   newSession();showScreen('ready')}catch(e){showScreen('ready')}}
@@ -203,7 +189,7 @@ function startQueueListener(){
   queueListener=db.collection('queue').doc(sessionId).onSnapshot(function(doc){
     if(!doc.exists){if(!isQueueMode)enterVitrinMode();else showScreen('ready');return}
     myQueueData=doc.data();var s=myQueueData.status;
-    if(!isQueueMode&&s!=='done'&&s!=='cancelled'){enterQueueMode();document.getElementById('q-panel').classList.remove('hidden')}
+    if(!sheetOpen&&s!=='done'&&s!=='cancelled'){enterQueueMode()}
     switch(s){
       case 'waiting':case 'priority':case 'priority_ready':showScreen('queued');if(currentStats)updateWaitEstimate(currentStats);break;
       case 'called':showScreen('called');document.getElementById('called-code').textContent=myQueueData.code||'---';
@@ -216,7 +202,7 @@ function startQueueListener(){
       case 'timeout':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('timeout');break;
       case 'done':clearInterval(countdownInterval);notifiedForThisCall=false;
         document.getElementById('thanks-title').textContent='🛍️ Teşekkürler!';
-        document.getElementById('thanks-sub').textContent=market?.thanksMessage||'Alışverişiniz için teşekkür ederiz. İyi günler!';
+        document.getElementById('thanks-sub').textContent=market?.thanksMessage||'Alışverişiniz için teşekkür ederiz!';
         showScreen('thanks');setTimeout(function(){newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)},5000);break;
       case 'cancelled':clearInterval(countdownInterval);notifiedForThisCall=false;newSession();enterVitrinMode();
         if(window.location.search)history.replaceState({},'',window.location.pathname);break;
@@ -232,55 +218,23 @@ function startCountdown(calledAt){clearInterval(countdownInterval);var total=120
 
 async function handleQueueButton(){var btn=document.getElementById('btn-queue');btn.disabled=true;btn.textContent='Sıraya alınıyor...';
   try{var num=await getNextQueueNumber(marketId);
-    console.log('MarketPas: Sıra no alındı:', num);
+    console.log('MarketPas: Sıra no:',num);
     await db.collection('queue').doc(sessionId).set({marketId:marketId,sessionId:sessionId,queueNumber:num,status:'waiting',code:null,registerId:null,kasaNo:null,createdAt:firebase.firestore.FieldValue.serverTimestamp(),calledAt:null,arrivedAt:null,completedAt:null});
-    console.log('MarketPas: Kuyruk kaydı oluşturuldu, sessionId:', sessionId);
-    notifiedForThisCall=false;startQueueListener();
-    await tryAssignToOpenRegister();
-    await loadCongestion();
-  }catch(e){console.error('MarketPas: Sıra alma hatası:', e);btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Bir hata oluştu: '+e.message)}}
+    notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister();await loadCongestion();
+  }catch(e){console.error('MarketPas:',e);btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Hata: '+e.message)}}
 
 async function tryAssignToOpenRegister(){try{
-    console.log('MarketPas: Boş kasa aranıyor...');
     var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
-    console.log('MarketPas: Aktif kasa sayısı:', snap.size);
-    var assigned=false;
     for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();
-      console.log('MarketPas: Kasa', d.kasaNo, '- waitingQueueId:', d.waitingQueueId||'BOŞ', '- activeQueueId:', d.activeQueueId||'BOŞ');
-
-      // Stuck kontrol — waitingQueueId varsa ama queue kaydı geçersizse temizle
-      if(d.waitingQueueId){
-        try{
-          var stuckDoc=await db.collection('queue').doc(d.waitingQueueId).get();
-          if(!stuckDoc.exists||['done','cancelled','timeout'].indexOf(stuckDoc.data().status)>-1){
-            console.log('MarketPas: Kasa', d.kasaNo, 'stuck tespit edildi, temizleniyor...');
-            await db.collection('registers').doc(snap.docs[i].id).update({waitingQueueId:null,waitingCode:null,calledAt:null});
-            d.waitingQueueId=null; // Yerel referansı da güncelle
-          }
-        }catch(e){}
-      }
-
-      if(!d.waitingQueueId){
-        console.log('MarketPas: Kasa', d.kasaNo, 'boş — atama yapılıyor');
-        await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);assigned=true;break}}
-    if(!assigned)console.log('MarketPas: Tüm kasalar dolu veya sırada müşteri yok');
-  }catch(e){console.error('MarketPas: tryAssign hatası:', e)}}
+      if(d.waitingQueueId){try{var stuckDoc=await db.collection('queue').doc(d.waitingQueueId).get();
+        if(!stuckDoc.exists||['done','cancelled','timeout'].indexOf(stuckDoc.data().status)>-1){
+          await db.collection('registers').doc(snap.docs[i].id).update({waitingQueueId:null,waitingCode:null,calledAt:null});d.waitingQueueId=null}}catch(e){}}
+      if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}
+  }catch(e){}}
 
 async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
-  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
-})}
-
-// ─── Özel Onay Modalı ────────────────────────────────
-function showConfirmModal(msg,onConfirm){
-  var existing=document.getElementById('confirm-modal');if(existing)existing.remove();
-  var overlay=document.createElement('div');overlay.id='confirm-modal';overlay.className='modal-overlay';
-  overlay.innerHTML='<div class="modal-box"><div class="modal-msg">'+msg+'</div><div class="modal-btns"><button class="modal-btn cancel" id="modal-cancel">Vazgeç</button><button class="modal-btn confirm" id="modal-confirm">Evet, İptal Et</button></div></div>';
-  document.body.appendChild(overlay);
-  document.getElementById('modal-cancel').onclick=function(){overlay.remove()};
-  document.getElementById('modal-confirm').onclick=function(){overlay.remove();if(onConfirm)onConfirm()};
-  overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
-}
+  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)})}
 
 async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
   await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
@@ -292,10 +246,10 @@ async function handleReady(){
     notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister()}catch(e){}}
 
 async function handleRetryQueue(){var btn=document.getElementById('btn-retry');btn.disabled=true;
-  try{await db.collection('queue').doc(sessionId).update({status:'priority',calledAt:null,code:null,registerId:null,kasaNo:null});
+  try{await db.collection('queue').doc(sessionId).update({status:'priority_ready',calledAt:null,code:null,registerId:null,kasaNo:null});
     notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister()}catch(e){btn.disabled=false}}
 
-// ═══ QR TARAYICI ════════════════════════════════════
+// ═══ QR ═══
 var qrStream=null,qrScanInterval=null;
 function openQRScanner(){
   var ov=document.getElementById('qr-scanner'),vid=document.getElementById('qr-video'),st=document.getElementById('qr-status');
@@ -322,7 +276,7 @@ function processQRResult(data,st){
   setTimeout(function(){st.textContent='Kamerayı QR koda doğrultun...';st.style.color='#94a3b8'},2000);
 }
 
-// ═══ YARDIMCILAR ════════════════════════════════════
+// ═══ YARDIMCILAR ═══
 function showScreen(name){
   document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('active')});
   var el=document.getElementById('screen-'+name);if(el)el.classList.add('active');
@@ -334,6 +288,14 @@ function showScreen(name){
 function showLoading(v){var el=document.getElementById('loading');if(el)el.style.display=v?'flex':'none'}
 function showError(msg){document.body.innerHTML='<div class="error-screen"><p>⚠️</p><p>'+escapeHtml(msg)+'</p></div>'}
 function newSession(){sessionId=generateId();localStorage.setItem('mp_s_'+marketId,sessionId);if(queueListener){queueListener();queueListener=null}clearInterval(countdownInterval);notifiedForThisCall=false;myQueueData=null}
+
+function showConfirmModal(msg,onConfirm){
+  var m=document.getElementById('confirm-modal');
+  document.getElementById('modal-msg').textContent=msg;
+  m.style.display='flex';
+  document.getElementById('modal-cancel').onclick=function(){m.style.display='none'};
+  document.getElementById('modal-confirm').onclick=function(){m.style.display='none';if(onConfirm)onConfirm()};
+}
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 document.addEventListener('DOMContentLoaded',init);
