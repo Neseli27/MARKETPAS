@@ -33,6 +33,13 @@ async function loadMarket(){
     if(!doc.exists){showError('Market bulunamadı.');return}
     market=doc.data();
     applyBranding();loadAnnouncements();loadGiftData();
+    // Market verisini canlı dinle (hediye ayarları vs.)
+    db.collection('markets').doc(marketId).onSnapshot(function(snap){
+      if(!snap.exists)return;
+      market=snap.data();
+      loadGiftData();
+      console.log('MarketPas: Market verisi güncellendi, gift:', market.gift?'aktif='+market.gift.active:'yok');
+    });
     if(isQueueMode){
       showSplash(function(){
         updateButtons();loadCongestion();checkExistingQueue();
@@ -153,6 +160,7 @@ function loadAnnouncements(){
 function filterCat(cat){
   document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
   event.currentTarget.classList.add('active');
+  console.log('MarketPas: Tab değişti →', cat, '| giftData:', giftData ? 'var' : 'yok');
   // Hediye gösterimi
   if(cat==='gunun_firsati'&&giftData){showGiftScreen()}
   else{hideGiftScreen()}
@@ -346,18 +354,23 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch
 var giftData=null,giftInterval=null,giftRevealed=false;
 
 function loadGiftData(){
-  if(!market||!market.gift||!market.gift.active)return;
+  if(!market||!market.gift||!market.gift.active){
+    console.log('MarketPas Gift:', market?.gift ? 'pasif' : 'tanımsız');
+    giftData=null;return;
+  }
   giftData=market.gift;
   giftRevealed=false;
-  // Açılma saatini bugünün tarihiyle birleştir
   var parts=(giftData.revealTime||'14:00').split(':');
   var now=new Date();
   giftData._revealDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),parseInt(parts[0]),parseInt(parts[1]),0);
+  console.log('MarketPas Gift: Yüklendi — açılma:', giftData.revealTime, '| başlık:', giftData.title);
 }
 
 function showGiftScreen(){
   var gs=document.getElementById('gift-screen');
-  if(!gs||!giftData)return;
+  if(!gs){console.log('MarketPas Gift: gift-screen elementi yok');return}
+  if(!giftData){console.log('MarketPas Gift: giftData null — Fırsat sekmesinde hediye gösterilmiyor');return}
+  console.log('MarketPas Gift: Ekran gösteriliyor');
   gs.style.display='flex';
   document.getElementById('ann-slider').style.display='none';
   document.getElementById('ann-dots').style.display='none';
