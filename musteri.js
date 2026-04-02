@@ -408,8 +408,8 @@ function startGiftCountdown(){
     // Son 60 saniye — heyecan modu
     var box=document.getElementById('gift-box');
     if(box){
-      if(diff<60000)box.className='gift-box excited';
-      else box.className='gift-box';
+      if(diff<60000)box.className='gift-box-3d excited';
+      else box.className='gift-box-3d';
     }
   }
   tick();giftInterval=setInterval(tick,1000);
@@ -417,8 +417,8 @@ function startGiftCountdown(){
 
 function triggerRevealAnimation(){
   var box=document.getElementById('gift-box');
-  if(box){box.className='gift-box opening'}
-  setTimeout(function(){revealGift()},800);
+  if(box){box.className='gift-box-3d opening'}
+  setTimeout(function(){revealGift()},1000);
 }
 
 function revealGift(){
@@ -434,18 +434,34 @@ function revealGift(){
 
 function spawnConfetti(){
   var c=document.getElementById('confetti');if(!c)return;c.innerHTML='';
-  var colors=['#fbbf24','#ef4444','#10b981','#a78bfa','#f472b6','#60a5fa','#34d399'];
-  for(var i=0;i<40;i++){
+  var colors=['#fbbf24','#ef4444','#10b981','#a78bfa','#f472b6','#60a5fa','#34d399','#f97316','#06b6d4','#e879f9'];
+  var shapes=['50%','2px','0'];
+  for(var i=0;i<80;i++){
     var p=document.createElement('div');p.className='confetti-piece';
     p.style.left=Math.random()*100+'%';
     p.style.background=colors[Math.floor(Math.random()*colors.length)];
-    p.style.animationDelay=Math.random()*2+'s';
-    p.style.animationDuration=(2+Math.random()*2)+'s';
-    p.style.width=(6+Math.random()*6)+'px';
-    p.style.height=(8+Math.random()*8)+'px';
-    p.style.borderRadius=Math.random()>.5?'50%':'2px';
+    p.style.animationDelay=Math.random()*1.5+'s';
+    p.style.animationDuration=(2.5+Math.random()*2)+'s';
+    p.style.width=(5+Math.random()*8)+'px';
+    p.style.height=(6+Math.random()*10)+'px';
+    p.style.borderRadius=shapes[Math.floor(Math.random()*shapes.length)];
+    p.style.opacity=.8+Math.random()*.2;
     c.appendChild(p);
   }
+  // İkinci dalga konfeti
+  setTimeout(function(){
+    for(var j=0;j<30;j++){
+      var p2=document.createElement('div');p2.className='confetti-piece';
+      p2.style.left=Math.random()*100+'%';
+      p2.style.background=colors[Math.floor(Math.random()*colors.length)];
+      p2.style.animationDelay=Math.random()+'s';
+      p2.style.animationDuration=(3+Math.random()*2)+'s';
+      p2.style.width=(6+Math.random()*6)+'px';
+      p2.style.height=(8+Math.random()*8)+'px';
+      p2.style.borderRadius='50%';
+      c.appendChild(p2);
+    }
+  },1500);
 }
 
 document.addEventListener('DOMContentLoaded',init);

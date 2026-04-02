@@ -54,12 +54,28 @@
       <div class="gift-screen" id="gift-screen" style="display:none">
         <!-- Geri sayım -->
         <div class="gift-pre" id="gift-pre">
-          <div class="gift-sparkles"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <div class="gift-box" id="gift-box">
-            <div class="gift-lid"><div class="gift-bow"></div></div>
-            <div class="gift-base"><div class="gift-q">?</div></div>
+          <!-- Işık efektleri -->
+          <div class="gift-glow"></div>
+          <div class="gift-rays"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="gift-sparkles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+          <!-- 3D Hediye Kutusu -->
+          <div class="gift-box-3d" id="gift-box">
+            <div class="gbox-lid">
+              <div class="gbox-lid-top"></div>
+              <div class="gbox-lid-front"></div>
+              <div class="gbox-bow"><div class="bow-loop left"></div><div class="bow-loop right"></div><div class="bow-knot"></div></div>
+            </div>
+            <div class="gbox-body">
+              <div class="gbox-front"></div>
+              <div class="gbox-right"></div>
+              <div class="gbox-ribbon-v"></div>
+              <div class="gbox-ribbon-h"></div>
+              <div class="gbox-q">?</div>
+            </div>
           </div>
-          <div class="gift-label">Sürpriz Fırsat</div>
+
+          <div class="gift-label">SÜRPRİZ FIRSAT</div>
           <div class="gift-countdown" id="gift-countdown">
             <div class="gcd-item"><span class="gcd-num" id="gcd-h">00</span><span class="gcd-lbl">saat</span></div>
             <div class="gcd-sep">:</div>
@@ -70,14 +86,18 @@
           <div class="gift-hint">Sürpriz açılıyor... merak edin!</div>
         </div>
 
-        <!-- Açılmış hediye -->
+        <!-- Açılmış hediye — tam ekran -->
         <div class="gift-reveal" id="gift-reveal" style="display:none">
+          <div class="reveal-burst"></div>
           <div class="confetti" id="confetti"></div>
           <div class="reveal-card">
-            <div class="reveal-badge">🎉 SÜRPRİZ FIRSAT!</div>
+            <div class="reveal-stars">✦ ✦ ✦</div>
+            <div class="reveal-badge">🎉 SÜRPRİZ FIRSAT AÇILDI!</div>
             <div class="reveal-title" id="reveal-title"></div>
+            <div class="reveal-divider"></div>
             <div class="reveal-content" id="reveal-content"></div>
             <img class="reveal-img" id="reveal-img" src="" alt="" style="display:none">
+            <div class="reveal-footer">Acele edin — sınırlı süre!</div>
           </div>
         </div>
       </div>
