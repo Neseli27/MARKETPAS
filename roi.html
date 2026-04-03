@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarketPas — ROI Hesaplama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e17;--bg2:#0f1520;--bg3:#151d2e;
+  --card:#121a2a;--border:#1c2940;
+  --accent:#10e5b0;--gold:#fbbf24;--red:#ef4444;
+  --text:#e8ecf4;--text2:#7a8ba8;--text3:#3d4f6a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Header */
+.hero{padding:48px 24px 32px;text-align:center;background:linear-gradient(180deg,#0d1222 0%,var(--bg) 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;left:50%;width:500px;height:500px;background:radial-gradient(circle,rgba(16,229,176,.06),transparent 70%);transform:translateX(-50%);pointer-events:none}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:6px;color:var(--accent);margin-bottom:8px;opacity:.8}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,6vw,52px);letter-spacing:3px;line-height:1.1;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,#a0b4d0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:16px;color:var(--text2);max-width:600px;margin:0 auto;line-height:1.6}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:0 20px 60px}
+
+/* Input Section */
+.input-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:40px}
+.input-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+.input-card label{display:block;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.input-card input{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.input-card input:focus{border-color:var(--accent)}
+.input-unit{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Hesapla butonu */
+.calc-btn{display:block;width:100%;max-width:400px;margin:0 auto 40px;padding:18px;background:var(--accent);color:#0a0e17;border:none;border-radius:14px;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;cursor:pointer;box-shadow:0 0 30px rgba(16,229,176,.2);transition:all .2s}
+.calc-btn:hover{box-shadow:0 0 50px rgba(16,229,176,.3);transform:translateY(-2px)}
+.calc-btn:active{transform:translateY(0)}
+
+/* Results */
+.results{display:none}
+.results.show{display:block;animation:fadeUp .6s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:var(--accent);margin-bottom:16px;padding-left:4px}
+
+/* Big stat row */
+.stats-big{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+.stat-big{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 20px;text-align:center;position:relative;overflow:hidden}
+.stat-big::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.stat-big.save::before{background:var(--accent)}
+.stat-big.revenue::before{background:var(--gold)}
+.stat-big.total::before{background:linear-gradient(90deg,var(--accent),var(--gold))}
+.stat-big .stat-label{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.stat-big .stat-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,42px);letter-spacing:2px;line-height:1}
+.stat-big.save .stat-value{color:var(--accent)}
+.stat-big.revenue .stat-value{color:var(--gold)}
+.stat-big.total .stat-value{background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-big .stat-sub{font-size:12px;color:var(--text3);margin-top:6px}
+
+/* Detail cards */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+.detail-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.detail-card h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px}
+.detail-row:last-child{border:none}
+.detail-row .dl{color:var(--text2)}
+.detail-row .dv{font-weight:700;color:var(--text)}
+.detail-row .dv.green{color:var(--accent)}
+.detail-row .dv.gold{color:var(--gold)}
+.detail-row .dv.red{color:var(--red)}
+
+/* ROI Bar */
+.roi-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:32px}
+.roi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.roi-header h3{font-size:15px;font-weight:700}
+.roi-pct{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);letter-spacing:2px}
+.roi-bar-track{width:100%;height:20px;background:var(--bg);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.roi-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--gold));width:0%;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+.roi-note{font-size:12px;color:var(--text3);text-align:center}
+
+/* Bar chart */
+.chart-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:32px}
+.chart-section h3{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.chart-bars{display:flex;align-items:flex-end;gap:12px;height:200px;padding:0 8px}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.chart-bar{width:100%;border-radius:8px 8px 0 0;min-height:4px;transition:height 1.2s cubic-bezier(.4,0,.2,1)}
+.chart-bar.cur{background:linear-gradient(180deg,#3d4f6a,#2a3548)}
+.chart-bar.new{background:linear-gradient(180deg,var(--accent),#059669)}
+.chart-val{font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap}
+.chart-label{font-size:10px;color:var(--text3);text-align:center}
+
+/* Summary quote */
+.summary{background:linear-gradient(135deg,#0d1a12,#0a1520);border:1px solid rgba(16,229,176,.15);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:20px}
+.summary-text{font-size:18px;font-weight:600;line-height:1.6;color:var(--text);margin-bottom:8px}
+.summary-text strong{color:var(--accent)}
+.summary-sub{font-size:13px;color:var(--text2)}
+
+/* Footer */
+.footer{text-align:center;padding:24px;font-size:11px;color:var(--text3);letter-spacing:1px}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* Print */
+@media print{
+  body{background:#fff;color:#111}
+  .hero{background:#fff}.hero h1{color:#111;-webkit-text-fill-color:#111}
+  .calc-btn{display:none}
+  .stat-big,.detail-card,.roi-section,.chart-section,.summary{border:1px solid #ddd;background:#fafafa}
+  .stat-big .stat-value,.stat-big.save .stat-value,.stat-big.revenue .stat-value{color:#111;-webkit-text-fill-color:#111}
+}
+
+@media(max-width:768px){
+  .stats-big{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .chart-bars{height:160px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="brand">MARKET · PAS</div>
+  <h1>Dijital Sıra Yönetimi<br>Yatırım Getirisi Hesaplama</h1>
+  <p>Marketinize özel tasarruf ve gelir artışı hesaplayın. Gerçek rakamlarla karar verin.</p>
+</div>
+
+<div class="container">
+  <div class="section-title">MARKETİNİZİN BİLGİLERİ</div>
+  <div class="input-section">
+    <div class="input-card">
+      <label>Kasa Sayısı</label>
+      <input type="number" id="in-kasa" value="50" min="1" max="500">
+      <div class="input-unit">aktif kasa terminali</div>
+    </div>
+    <div class="input-card">
+      <label>Personel Maliyeti</label>
+      <input type="number" id="in-maas" value="50000" min="10000" step="1000">
+      <div class="input-unit">₺ / ay (sigorta dahil)</div>
+    </div>
+    <div class="input-card">
+      <label>Günlük Ciro</label>
+      <input type="number" id="in-ciro" value="5000000" min="100000" step="100000">
+      <div class="input-unit">₺ / gün (ortalama)</div>
+    </div>
+    <div class="input-card">
+      <label>Şube Sayısı</label>
+      <input type="number" id="in-sube" value="1" min="1" max="100">
+      <div class="input-unit">toplam şube</div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">HESAPLA</button>
+
+  <div class="results" id="results">
+    <div class="section-title">TASARRUF & GELİR ANALİZİ</div>
+
+    <div class="stats-big">
+      <div class="stat-big save">
+        <div class="stat-label">Personel Tasarrufu</div>
+        <div class="stat-value" id="r-save">—</div>
+        <div class="stat-sub" id="r-save-sub">yıllık</div>
+      </div>
+      <div class="stat-big revenue">
+        <div class="stat-label">Ek Gelir (Ciro Artışı)</div>
+        <div class="stat-value" id="r-revenue">—</div>
+        <div class="stat-sub" id="r-revenue-sub">yıllık</div>
+      </div>
+      <div class="stat-big total">
+        <div class="stat-label">Toplam Yıllık Getiri</div>
+        <div class="stat-value" id="r-total">—</div>
+        <div class="stat-sub" id="r-total-sub">tasarruf + ek gelir</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h3>💰 Personel Tasarrufu Detayı</h3>
+        <div class="detail-row"><span class="dl">Mevcut kasa sayısı</span><span class="dv" id="d-kasa">50</span></div>
+        <div class="detail-row"><span class="dl">Azaltılabilecek kasa</span><span class="dv green" id="d-azalt">10</span></div>
+        <div class="detail-row"><span class="dl">Kasa başına maliyet</span><span class="dv" id="d-maas">50.000 ₺</span></div>
+        <div class="detail-row"><span class="dl">Aylık tasarruf</span><span class="dv green" id="d-aylik">500.000 ₺</span></div>
+        <div class="detail-row"><span class="dl">Yıllık tasarruf</span><span class="dv green" id="d-yillik">6.000.000 ₺</span></div>
+      </div>
+      <div class="detail-card">
+        <h3>📈 Ciro Artışı Detayı</h3>
+        <div class="detail-row"><span class="dl">Mevcut günlük ciro</span><span class="dv" id="d-ciro">5.000.000 ₺</span></div>
+        <div class="detail-row"><span class="dl">Bekleme → Gezme etkisi</span><span class="dv gold">%12</span></div>
+        <div class="detail-row"><span class="dl">Günlük ek gelir</span><span class="dv gold" id="d-gunluk-ek">600.000 ₺</span></div>
+        <div class="detail-row"><span class="dl">Aylık ek gelir</span><span class="dv gold" id="d-aylik-ek">18.000.000 ₺</span></div>
+        <div class="detail-row"><span class="dl">Yıllık ek gelir</span><span class="dv gold" id="d-yillik-ek">216.000.000 ₺</span></div>
+      </div>
+    </div>
+
+    <!-- Akıllı Kasa Hesabı -->
+    <div class="detail-card" style="margin-bottom:32px">
+      <h3>🧠 Akıllı Kasa İhtiyaç Analizi</h3>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
+        MarketPas ile müşteriler kasada fiziksel olarak beklemez — dijital sıra ile gezmeye devam eder. Bu sayede kasalar boş kalmaz, her kasa sürekli aktif çalışır. Verimlilik artışı ile aynı müşteri trafiğini daha az kasa ile karşılayabilirsiniz.
+      </div>
+      <div class="detail-row"><span class="dl">Mevcut kasa sayısı</span><span class="dv" id="k-mevcut">50</span></div>
+      <div class="detail-row"><span class="dl">Ort. işlem süresi (tahmini)</span><span class="dv" id="k-islem">3-4 dk</span></div>
+      <div class="detail-row"><span class="dl">Bir kasanın saatlik kapasitesi</span><span class="dv" id="k-kapasite">15-20 müşteri</span></div>
+      <div class="detail-row"><span class="dl">Dijital sıra verimlilik artışı</span><span class="dv green">+%25-30</span></div>
+      <div class="detail-row"><span class="dl">Yeni kapasite (kasa başına/saat)</span><span class="dv green" id="k-yeni-kap">20-25 müşteri</span></div>
+      <div class="detail-row" style="border-top:2px solid var(--border);padding-top:12px;margin-top:4px"><span class="dl" style="font-weight:700;color:var(--text)">MarketPas ile gereken kasa</span><span class="dv green" id="k-gereken" style="font-size:18px">40</span></div>
+      <div class="detail-row"><span class="dl">Tasarruf edilen kasa</span><span class="dv green" id="k-tasarruf">10</span></div>
+      <div style="margin-top:12px;padding:12px;background:rgba(16,229,176,.05);border:1px solid rgba(16,229,176,.1);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6">
+        <strong style="color:var(--accent)">💡 Akıllı Kasa Yönetimi:</strong> MarketPas, kasa başına 4'ten fazla müşteri beklediğinde otomatik uyarı verir. Sakin saatlerde gereksiz kasaları kapatarak ek tasarruf sağlarsınız.
+      </div>
+    </div>
+
+    <div class="roi-section">
+      <div class="roi-header">
+        <h3>📊 MarketPas Yatırım Getirisi (ROI)</h3>
+        <div class="roi-pct" id="r-roi">—</div>
+      </div>
+      <div class="roi-bar-track"><div class="roi-bar-fill" id="roi-bar"></div></div>
+      <div class="roi-note" id="roi-note">MarketPas lisans maliyeti, kazancınızın yanında yok denecek kadar küçüktür</div>
+    </div>
+
+    <div class="chart-section">
+      <h3>📊 Maliyet Karşılaştırması (Aylık)</h3>
+      <div class="chart-bars">
+        <div class="chart-col"><div class="chart-val" id="cv-1">—</div><div class="chart-bar cur" id="cb-1" style="height:0"></div><div class="chart-label">Mevcut<br>Personel</div></div>
+        <div class="chart-col"><div class="chart-val" id="cv-2">—</div><div class="chart-bar new" id="cb-2" style="height:0"></div><div class="chart-label">MarketPas<br>ile</div></div>
+        <div class="chart-col"><div class="chart-val" id="cv-3">—</div><div class="chart-bar cur" id="cb-3" style="height:0"></div><div class="chart-label">Mevcut<br>Ciro</div></div>
+        <div class="chart-col"><div class="chart-val" id="cv-4">—</div><div class="chart-bar new" id="cb-4" style="height:0"></div><div class="chart-label">MarketPas<br>ile Ciro</div></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary">
+      <div class="summary-text" id="summary-text"></div>
+      <div class="summary-sub">Bu hesaplama tahmini değerlere dayanmaktadır. Gerçek sonuçlar market yoğunluğuna göre değişebilir.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    MARKET·PAS — Dijital Sıra Yönetim Sistemi · <a href="https://marketpas.com">marketpas.com</a><br>
+    İletişim: Murat AYDIN · 0535 496 72 45 · murat.aydin@msn.com
+  </div>
+</div>
+
+<script>
+var KASA_AZALTMA_ORANI = 0.20; // %20 kasa azaltılabilir
+var CIRO_ARTIS_ORANI = 0.12;    // %12 ciro artışı
+var CALISMA_GUNU = 30;          // aylık çalışma günü
+
+function fmt(n) {
+  return new Intl.NumberFormat('tr-TR').format(Math.round(n));
+}
+
+function calculate() {
+  var kasa = parseInt(document.getElementById('in-kasa').value) || 50;
+  var maas = parseInt(document.getElementById('in-maas').value) || 50000;
+  var ciro = parseInt(document.getElementById('in-ciro').value) || 5000000;
+  var sube = parseInt(document.getElementById('in-sube').value) || 1;
+
+  // Personel tasarrufu
+  var azalt = Math.max(1, Math.round(kasa * KASA_AZALTMA_ORANI));
+  var aylikTasarruf = azalt * maas * sube;
+  var yillikTasarruf = aylikTasarruf * 12;
+
+  // Ciro artışı
+  var gunlukEk = ciro * CIRO_ARTIS_ORANI * sube;
+  var aylikEk = gunlukEk * CALISMA_GUNU;
+  var yillikEk = aylikEk * 12;
+
+  // Toplam
+  var yillikToplam = yillikTasarruf + yillikEk;
+  var marketpasYillik = sube * 12 * 5000; // Tahmini lisans maliyeti
+  var roi = ((yillikToplam - marketpasYillik) / marketpasYillik * 100);
+
+  // Göster
+  var r = document.getElementById('results');
+  r.classList.add('show');
+
+  document.getElementById('r-save').textContent = fmt(yillikTasarruf) + ' ₺';
+  document.getElementById('r-revenue').textContent = fmt(yillikEk) + ' ₺';
+  document.getElementById('r-total').textContent = fmt(yillikToplam) + ' ₺';
+
+  // Detaylar
+  document.getElementById('d-kasa').textContent = kasa * sube;
+  document.getElementById('d-azalt').textContent = azalt * sube + ' kasa (' + (KASA_AZALTMA_ORANI*100) + '%)';
+  document.getElementById('d-maas').textContent = fmt(maas) + ' ₺/ay';
+  document.getElementById('d-aylik').textContent = fmt(aylikTasarruf) + ' ₺';
+  document.getElementById('d-yillik').textContent = fmt(yillikTasarruf) + ' ₺';
+
+  document.getElementById('d-ciro').textContent = fmt(ciro * sube) + ' ₺';
+  document.getElementById('d-gunluk-ek').textContent = fmt(gunlukEk) + ' ₺';
+  document.getElementById('d-aylik-ek').textContent = fmt(aylikEk) + ' ₺';
+  document.getElementById('d-yillik-ek').textContent = fmt(yillikEk) + ' ₺';
+
+  // Akıllı kasa hesabı
+  var gerekli = Math.ceil(kasa * (1 - KASA_AZALTMA_ORANI));
+  document.getElementById('k-mevcut').textContent = kasa;
+  document.getElementById('k-gereken').textContent = gerekli;
+  document.getElementById('k-tasarruf').textContent = azalt + ' kasa = ' + fmt(azalt * maas) + ' ₺/ay';
+
+  // ROI
+  document.getElementById('r-roi').textContent = '%' + fmt(Math.min(roi, 99999));
+  setTimeout(function() {
+    document.getElementById('roi-bar').style.width = Math.min(100, roi / 100) + '%';
+  }, 200);
+
+  // Grafik
+  var mevcutPersonel = kasa * maas * sube;
+  var yeniPersonel = (kasa - azalt) * maas * sube;
+  var mevcutCiro = ciro * CALISMA_GUNU * sube;
+  var yeniCiro = mevcutCiro + aylikEk;
+  var maxVal = Math.max(mevcutPersonel, yeniPersonel, mevcutCiro, yeniCiro);
+
+  setTimeout(function() {
+    setBar('cb-1', 'cv-1', mevcutPersonel, maxVal, fmt(mevcutPersonel/1000000) + 'M ₺');
+    setBar('cb-2', 'cv-2', yeniPersonel, maxVal, fmt(yeniPersonel/1000000) + 'M ₺');
+    setBar('cb-3', 'cv-3', mevcutCiro, maxVal, fmt(mevcutCiro/1000000) + 'M ₺');
+    setBar('cb-4', 'cv-4', yeniCiro, maxVal, fmt(yeniCiro/1000000) + 'M ₺');
+  }, 300);
+
+  // Özet
+  document.getElementById('summary-text').innerHTML = 
+    'MarketPas ile yılda <strong>' + fmt(yillikToplam) + ' ₺</strong> değerinde kazanç elde edebilirsiniz.' +
+    (sube > 1 ? ' <strong>' + sube + ' şube</strong> genelinde.' : '');
+
+  // Scroll
+  r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setBar(barId, valId, val, max, label) {
+  var pct = Math.max(5, (val / max) * 85);
+  document.getElementById(barId).style.height = pct + '%';
+  document.getElementById(valId).textContent = label;
+}
+</script>
+</body>
+</html>

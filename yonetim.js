@@ -270,10 +270,28 @@ async function loadCongestionStats() {
     if (kasaEl) kasaEl.textContent = stats.activeCasas;
     if (waitEl) waitEl.textContent = stats.estimatedWait > 0 ? formatWaitTime(stats.estimatedWait) : '—';
 
+    // Akıllı kasa uyarısı — kasa başına 4+ bekleyen = yeni kasa aç
     var al = document.getElementById('congestion-alert');
-    if (stats.congestionPercent >= 90) { al.style.display = 'flex'; al.className = 'alert-card critical'; al.querySelector('.alert-icon').textContent = '🚨'; al.querySelector('.alert-title').textContent = 'Aşırı Yoğunluk! (%' + stats.congestionPercent + ')'; al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor. Acil yeni kasa açın!'; }
-    else if (stats.congestionPercent >= 70) { al.style.display = 'flex'; al.className = 'alert-card'; al.querySelector('.alert-icon').textContent = '⚠️'; al.querySelector('.alert-title').textContent = 'Yoğunluk Artıyor (%' + stats.congestionPercent + ')'; al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor.'; }
-    else { al.style.display = 'none'; }
+    var perKasa = stats.activeCasas > 0 ? Math.round(stats.waitingCount / stats.activeCasas * 10) / 10 : 0;
+    var idealKasa = stats.activeCasas > 0 ? Math.ceil(stats.waitingCount / 4) : 0;
+    var eksikKasa = Math.max(0, idealKasa - stats.activeCasas);
+
+    if (perKasa >= 4) {
+      al.style.display = 'flex'; al.className = 'alert-card critical';
+      al.querySelector('.alert-icon').textContent = '🚨';
+      al.querySelector('.alert-title').textContent = 'Yeni Kasa Açın! (Kasa başına ' + perKasa + ' müşteri)';
+      al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor · ' + stats.activeCasas + ' kasa açık · En az ' + eksikKasa + ' kasa daha açılmalı';
+    } else if (perKasa >= 2.5) {
+      al.style.display = 'flex'; al.className = 'alert-card';
+      al.querySelector('.alert-icon').textContent = '⚠️';
+      al.querySelector('.alert-title').textContent = 'Yoğunluk Artıyor (Kasa başına ' + perKasa + ' müşteri)';
+      al.querySelector('.alert-sub').textContent = stats.waitingCount + ' müşteri bekliyor · ' + stats.activeCasas + ' kasa açık';
+    } else if (stats.activeCasas > 2 && stats.waitingCount === 0 && stats.busyCasas < stats.activeCasas * 0.3) {
+      al.style.display = 'flex'; al.className = 'alert-card info';
+      al.querySelector('.alert-icon').textContent = '💡';
+      al.querySelector('.alert-title').textContent = 'Kasa Fazlası Tespit Edildi';
+      al.querySelector('.alert-sub').textContent = stats.activeCasas + ' kasa açık ama müşteri yok · Maliyet düşürmek için ' + Math.max(1, Math.floor(stats.activeCasas * 0.3)) + ' kasa kapatılabilir';
+    } else { al.style.display = 'none'; }
 
     await loadKasaPerformance();
     await loadStats();

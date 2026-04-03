@@ -88,6 +88,9 @@ main{flex:1;margin-left:260px;min-height:100vh}
 .alert-card.critical .alert-title{color:#991B1B}
 .alert-sub{font-size:13px;color:#A16207;margin-top:2px}
 .alert-card.critical .alert-sub{color:#B91C1C}
+.alert-card.info{background:var(--blue-bg);border-color:#60A5FA;box-shadow:0 0 14px rgba(96,165,250,.12)}
+.alert-card.info .alert-title{color:#1D4ED8}
+.alert-card.info .alert-sub{color:#2563EB}
 
 /* ═══ KASA KARTLARI — Neon çerçeve ═══ */
 #registers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
