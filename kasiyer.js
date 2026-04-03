@@ -33,12 +33,48 @@ async function init() {
   document.getElementById('main-screen').style.display = 'none';
 }
 
+var kasiyerStartTime = null;
+var kasiyerServedCount = 0;
+var kasiyerTotalTime = 0;
+var clockInterval = null;
+
 function switchToMain() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('main-screen').style.display = 'flex';
   var saved = localStorage.getItem('mp_auto_' + marketId);
   if (saved !== null) autoMode = saved === 'true';
   updateAutoToggleUI();
+  startClock();
+  kasiyerStartTime = new Date();
+  var stEl = document.getElementById('stat-start');
+  if (stEl) stEl.textContent = kasiyerStartTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function startClock() {
+  function tick() {
+    var now = new Date();
+    var ce = document.getElementById('live-clock');
+    var de = document.getElementById('live-date');
+    if (ce) ce.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if (de) {
+      var days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+      de.textContent = days[now.getDay()] + ', ' + now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+  }
+  tick();
+  clockInterval = setInterval(tick, 1000);
+}
+
+function updateKasiyerStats() {
+  var se = document.getElementById('stat-served');
+  var ae = document.getElementById('stat-avg');
+  if (se) se.textContent = kasiyerServedCount;
+  if (ae) {
+    if (kasiyerServedCount > 0 && kasiyerTotalTime > 0) {
+      var avgMin = Math.round(kasiyerTotalTime / kasiyerServedCount / 60000 * 10) / 10;
+      ae.textContent = avgMin + ' dk';
+    } else { ae.textContent = '—'; }
+  }
 }
 
 // ─── Giriş ───────────────────────────────────────────
@@ -76,6 +112,7 @@ async function handleLogout() {
   if (registerListener) registerListener();
   if (queueCountListener) queueCountListener();
   if (timerInterval) clearInterval(timerInterval);
+  if (clockInterval) clearInterval(clockInterval);
   location.reload();
 }
 
@@ -85,7 +122,7 @@ async function loadRegister() {
     .where('marketId', '==', marketId).where('kasaNo', '==', kasaNo).limit(1).get();
   if (snap.empty) { mpAlert('Kasa ' + kasaNo + ' bulunamadı.','❌'); return; }
   registerId = snap.docs[0].id;
-  document.getElementById('kasa-no').textContent = 'Kasa ' + kasaNo;
+  document.getElementById('kasa-no').textContent = 'KASA ' + kasaNo;
   if (!marketData) {
     var mDoc = await db.collection('markets').doc(marketId).get();
     if (mDoc.exists) { marketData = mDoc.data(); document.getElementById('header-market-name').textContent = marketData.name || ''; }
@@ -93,6 +130,29 @@ async function loadRegister() {
   startRegisterListener();
   startQueueCountListener();
   setInterval(checkTimeout, 5000);
+  loadTodayStats();
+}
+
+async function loadTodayStats() {
+  try {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var ts = firebase.firestore.Timestamp.fromDate(today);
+    var snap = await db.collection('queue').where('marketId', '==', marketId)
+      .where('status', '==', 'done').where('kasaNo', '==', kasaNo)
+      .where('createdAt', '>=', ts).get();
+    kasiyerServedCount = snap.size;
+    kasiyerTotalTime = 0;
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      if (d.arrivedAt && d.completedAt) {
+        var a = d.arrivedAt.toDate ? d.arrivedAt.toDate() : new Date(d.arrivedAt);
+        var c = d.completedAt.toDate ? d.completedAt.toDate() : new Date(d.completedAt);
+        var pt = c.getTime() - a.getTime();
+        if (pt > 0 && pt < 1800000) kasiyerTotalTime += pt;
+      }
+    });
+    updateKasiyerStats();
+  } catch(e) { /* index eksik olabilir */ }
 }
 
 function startRegisterListener() {
@@ -265,6 +325,13 @@ async function handleIslemTamam(queueId) {
       status: 'done',
       completedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    // İstatistik güncelle
+    kasiyerServedCount++;
+    if (qDoc.exists) {
+      var at = qDoc.data().arrivedAt?.toDate();
+      if (at) { var pt = now.getTime() - at.getTime(); if (pt > 0 && pt < 1800000) kasiyerTotalTime += pt; }
+    }
+    updateKasiyerStats();
 
     // 2) Bekleme slotundaki müşteriyi aktife taşı
     if (d.waitingQueueId) {
