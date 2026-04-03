@@ -7,17 +7,7 @@ var SPLASH_DURATION=5000;
 
 // ═══ LOTTİE ANİMASYONLARI ═══
 var LOTTIE={
-  gift:'https://lottie.host/dea0ddec-e1a7-48c9-9fcc-3abbe7e12f5e/dPSYLvmYck.lottie',
-  confetti:'https://assets2.lottiefiles.com/packages/lf20_aZTdD6.json',
-  queued:'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
-  called:'https://assets2.lottiefiles.com/packages/lf20_puciaact.json',
-  arrived:'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json',
-  active:'https://assets10.lottiefiles.com/packages/lf20_svy4ivvy.json',
-  thanks:'https://assets10.lottiefiles.com/packages/lf20_q5pk6p1k.json',
-  timeout:'https://assets2.lottiefiles.com/packages/lf20_qpwbiyxf.json',
-  empty_home:'https://assets2.lottiefiles.com/packages/lf20_xlmz9xwm.json',
-  empty_campaign:'https://assets10.lottiefiles.com/packages/lf20_5ngs2ksb.json',
-  empty_deal:'https://assets10.lottiefiles.com/packages/lf20_obhph3sh.json'
+  gift:'https://lottie.host/dea0ddec-e1a7-48c9-9fcc-3abbe7e12f5e/dPSYLvmYck.lottie'
 };
 
 function createLottie(src,w,h,loop){
@@ -232,9 +222,9 @@ function renderAnnouncements(){
     if(activeEl){var oc=activeEl.getAttribute('onclick');if(oc){var m=oc.match(/filterCat\('([^']+)'\)/);if(m)activeTab=m[1]}}
     
     var placeholders={
-      anasayfa:{lottie:LOTTIE.empty_home,title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
-      kampanya:{lottie:LOTTIE.empty_campaign,title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
-      surpriz:{lottie:LOTTIE.empty_deal,title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
+      anasayfa:{icon:'📢',title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
+      kampanya:{icon:'🏷️',title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
+      surpriz:{icon:'⭐',title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
       gunun_firsati:null
     };
     var ph=placeholders[activeTab];
@@ -245,9 +235,8 @@ function renderAnnouncements(){
     for(var p=0;p<6;p++){particles.appendChild(document.createElement('span'))}
     wrap.appendChild(particles);
     var card=document.createElement('div');card.className='empty-card';card.style.borderColor=ph.color;
-    var lottieDiv=document.createElement('div');lottieDiv.className='empty-lottie';
-    lottieDiv.appendChild(createLottie(ph.lottie,120,120,true));
-    card.appendChild(lottieDiv);
+    var iconDiv=document.createElement('div');iconDiv.className='empty-icon pulse-icon';iconDiv.style.color=ph.color;iconDiv.textContent=ph.icon;
+    card.appendChild(iconDiv);
     var title=document.createElement('div');title.className='empty-title';title.style.color=ph.color;title.textContent=ph.title;card.appendChild(title);
     var sub=document.createElement('div');sub.className='empty-sub';sub.textContent=ph.sub;card.appendChild(sub);
     wrap.appendChild(card);
@@ -357,7 +346,7 @@ async function handleQueueButton(){var btn=document.getElementById('btn-queue');
     console.log('MarketPas: Sıra no:',num);
     await db.collection('queue').doc(sessionId).set({marketId:marketId,sessionId:sessionId,queueNumber:num,status:'waiting',code:null,registerId:null,kasaNo:null,createdAt:firebase.firestore.FieldValue.serverTimestamp(),calledAt:null,arrivedAt:null,completedAt:null});
     notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister();await loadCongestion();
-  }catch(e){console.error('MarketPas:',e);btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Hata: '+e.message)}}
+  }catch(e){console.error('MarketPas:',e);btn.disabled=false;btn.textContent='KASA SIRASI AL';mpAlert('Hata: '+e.message,'❌')}}
 
 async function tryAssignToOpenRegister(){try{
     var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
@@ -368,9 +357,12 @@ async function tryAssignToOpenRegister(){try{
       if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}
   }catch(e){}}
 
-async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){
+async function handleCancel(){
+  var ok=await mpConfirm('Sıranızı iptal etmek istiyor musunuz?','⚠️');
+  if(!ok)return;
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
-  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)})}
+  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
+}
 
 async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
   await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
@@ -419,24 +411,11 @@ function showScreen(name){
   if(name==='ready'){var b=document.getElementById('btn-queue');if(b){b.disabled=false;b.textContent='KASA SIRASI AL'}}
   if(name==='timeout'){var b2=document.getElementById('btn-retry');if(b2)b2.disabled=false}
   var we=document.getElementById('wait-est');if(we)we.style.display=(name==='queued'&&currentStats&&currentStats.estimatedWait>0)?'flex':'none';
-  // Lottie animasyonları
-  var lottieMap={queued:'queued',called:'called',arrived:'arrived',active:'active',thanks:'thanks',timeout:'timeout'};
-  if(lottieMap[name]&&LOTTIE[lottieMap[name]]){
-    initLottieFor('lottie-'+name,LOTTIE[lottieMap[name]],90,90,name!=='thanks');
-  }
   updateButtons();
 }
 function showLoading(v){var el=document.getElementById('loading');if(el)el.style.display=v?'flex':'none'}
 function showError(msg){document.body.innerHTML='<div class="error-screen"><p>⚠️</p><p>'+escapeHtml(msg)+'</p></div>'}
 function newSession(){sessionId=generateId();localStorage.setItem('mp_s_'+marketId,sessionId);if(queueListener){queueListener();queueListener=null}clearInterval(countdownInterval);notifiedForThisCall=false;myQueueData=null}
-
-function showConfirmModal(msg,onConfirm){
-  var m=document.getElementById('confirm-modal');
-  document.getElementById('modal-msg').textContent=msg;
-  m.style.display='flex';
-  document.getElementById('modal-cancel').onclick=function(){m.style.display='none'};
-  document.getElementById('modal-confirm').onclick=function(){m.style.display='none';if(onConfirm)onConfirm()};
-}
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 

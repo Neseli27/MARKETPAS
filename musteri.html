@@ -145,7 +145,7 @@
         <button class="btn-main" id="btn-queue" onclick="handleQueueButton()">KASA SIRASI AL</button>
       </div>
       <div id="screen-queued" class="scr">
-        <div class="lottie-wrap" id="lottie-queued"></div>
+        <div class="scr-icon pulse-icon">⏳</div>
         <div class="info-card"><div class="ic-title">Sıraya Alındınız</div><div class="ic-sub">Kasaya çağrılınca bildirim alacaksınız.</div></div>
         <div class="wait-est" id="wait-est" style="display:none"><span>⏱</span><span>Tahmini: </span><strong id="wait-time">—</strong></div>
         <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
@@ -170,10 +170,10 @@
         <button class="btn-main" onclick="handleReady()">HAZIRIM — SIRAMA DÖN</button>
         <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
       </div>
-      <div id="screen-arrived" class="scr"><div class="lottie-wrap" id="lottie-arrived"></div><div class="info-card warn"><div class="ic-title">Kasaya Yönlendirildiniz</div><div class="ic-sub">Lütfen kasanıza gidiniz.</div></div></div>
-      <div id="screen-active" class="scr"><div class="lottie-wrap" id="lottie-active"></div><div class="info-card accent"><div class="ic-title">Kasa İşleminiz Başlamıştır</div><div class="ic-sub">İyi alışverişler!</div></div></div>
-      <div id="screen-thanks" class="scr"><div class="lottie-wrap" id="lottie-thanks"></div><div class="info-card accent"><div class="ic-title" id="thanks-title">Teşekkürler!</div><div class="ic-sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
-      <div id="screen-timeout" class="scr"><div class="lottie-wrap" id="lottie-timeout"></div><div class="info-card warn"><div class="ic-title">Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
+      <div id="screen-arrived" class="scr"><div class="scr-icon bounce-icon">🚶</div><div class="info-card warn"><div class="ic-title">Kasaya Yönlendirildiniz</div><div class="ic-sub">Lütfen kasanıza gidiniz.</div></div></div>
+      <div id="screen-active" class="scr"><div class="scr-icon spin-icon">🛒</div><div class="info-card accent"><div class="ic-title">Kasa İşleminiz Başlamıştır</div><div class="ic-sub">İyi alışverişler!</div></div></div>
+      <div id="screen-thanks" class="scr"><div class="scr-icon pop-icon">✅</div><div class="info-card accent"><div class="ic-title" id="thanks-title">Kasa İşleminiz Tamamlandı</div><div class="ic-sub" id="thanks-sub">Teşekkür ederiz. İyi günler dileriz!</div></div></div>
+      <div id="screen-timeout" class="scr"><div class="scr-icon shake-icon">⚠️</div><div class="info-card warn"><div class="ic-title">Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
     </div>
   </div>
 

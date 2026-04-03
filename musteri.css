@@ -268,12 +268,23 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 /* ═══ LOTTİE CONTAINERS ═══ */
 .lottie-wrap{display:flex;justify-content:center;align-items:center;min-height:80px}
-.lottie-wrap dotlottie-wc{filter:drop-shadow(0 4px 12px rgba(16,229,176,.15))}
 .empty-lottie{display:flex;justify-content:center;margin-bottom:8px}
-.empty-lottie dotlottie-wc{filter:drop-shadow(0 0 20px currentColor)}
 .gift-anim-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;z-index:2}
 .lottie-gift{position:absolute;inset:0}
 .lottie-gift dotlottie-wc{width:100%!important;height:100%!important}
+
+/* ═══ EKRAN İKONLARI — CSS Animasyonlu ═══ */
+.scr-icon{font-size:64px;margin-bottom:8px;filter:drop-shadow(0 4px 20px rgba(16,229,176,.2))}
+.pulse-icon{animation:sPulse 2s ease infinite}
+@keyframes sPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.7}}
+.bounce-icon{animation:sBounce 1s ease infinite}
+@keyframes sBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.spin-icon{animation:sSpin 3s linear infinite}
+@keyframes sSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.pop-icon{animation:sPop .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes sPop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+.shake-icon{animation:sShake .5s ease infinite}
+@keyframes sShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 
 /* Error */
 .error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;padding:32px;text-align:center;color:var(--text2)}
