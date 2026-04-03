@@ -69,8 +69,8 @@ async function handleLogin() {
   }
 }
 
-function handleLogout() {
-  if (!confirm('Çıkış yapmak istiyor musunuz?')) return;
+async function handleLogout() {
+  var ok=await mpConfirm('Çıkış yapmak istiyor musunuz?','👋');if(!ok)return;
   localStorage.removeItem('mp_kasiyer_market');
   localStorage.removeItem('mp_kasiyer_kasa');
   if (registerListener) registerListener();
@@ -83,7 +83,7 @@ function handleLogout() {
 async function loadRegister() {
   var snap = await db.collection('registers')
     .where('marketId', '==', marketId).where('kasaNo', '==', kasaNo).limit(1).get();
-  if (snap.empty) { alert('Kasa ' + kasaNo + ' bulunamadı.'); return; }
+  if (snap.empty) { mpAlert('Kasa ' + kasaNo + ' bulunamadı.','❌'); return; }
   registerId = snap.docs[0].id;
   document.getElementById('kasa-no').textContent = 'Kasa ' + kasaNo;
   if (!marketData) {
@@ -237,7 +237,7 @@ async function handleGeldi(queueId) {
       // Aktif slot DOLU → müşteri beklesin
       await db.collection('queue').doc(queueId).update({ status: 'arrived', arrivedAt: now });
     }
-  } catch(e) { console.error('Geldi hatası:', e); alert('İşlem hatası.'); }
+  } catch(e) { console.error('Geldi hatası:', e); mpAlert('İşlem hatası.','❌'); }
 }
 
 // ── "İşlem Tamam" ────────────────────────────────────
@@ -281,7 +281,7 @@ async function handleIslemTamam(queueId) {
       await regRef.update({ activeQueueId: null });
       if (autoMode) await assignNextToRegister(marketId, registerId, kasaNo);
     }
-  } catch(e) { console.error('İşlem tamam hatası:', e); alert('İşlem hatası: ' + e.message); }
+  } catch(e) { console.error('İşlem tamam hatası:', e); mpAlert('İşlem hatası: ' + e.message,'❌'); }
 }
 
 // ── Manuel Çağır ─────────────────────────────────────
@@ -291,7 +291,7 @@ async function handleManuelCagir() {
   try {
     await assignNextToRegister(marketId, registerId, kasaNo);
     setTimeout(function() {
-      if (registerData && !registerData.waitingQueueId) alert('Sırada bekleyen müşteri yok.');
+      if (registerData && !registerData.waitingQueueId) mpAlert('Sırada bekleyen müşteri yok.','ℹ️');
       if (btn) { btn.disabled = false; btn.textContent = '📢 Sıradaki Müşteriyi Çağır'; }
     }, 1500);
   } catch(e) {

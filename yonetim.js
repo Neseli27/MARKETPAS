@@ -197,7 +197,7 @@ function renderRegisters(registers) {
     var del = document.createElement('button');
     del.className = 'btn btn-sm'; del.style.cssText = 'background:#FEE2E2;color:#DC2626;margin-left:8px;padding:4px 10px;font-size:11px;';
     del.textContent = 'Sil';
-    del.onclick = function() { if (confirm('Kasa ' + r.kasaNo + ' silinsin mi?')) deleteKasa(r.id); };
+    del.onclick = function() { showAppConfirm('Kasa ' + r.kasaNo + ' silinsin mi?', function() { deleteKasa(r.id); }, {icon:'🗑️'}); };
     td.appendChild(del);
 
     card.appendChild(td);
@@ -217,7 +217,7 @@ async function deleteKasa(regId) {
   try {
     await db.collection('registers').doc(regId).delete();
     await db.collection('markets').doc(marketId).update({ kasaSayisi: firebase.firestore.FieldValue.increment(-1) });
-  } catch(e) { alert('Hata: ' + e.message); }
+  } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
 }
 
 async function handleAddKasa() {
@@ -229,13 +229,13 @@ async function handleAddKasa() {
       activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null
     });
     await db.collection('markets').doc(marketId).update({ kasaSayisi: firebase.firestore.FieldValue.increment(1) });
-    alert('Kasa ' + (max + 1) + ' eklendi.');
-  } catch(e) { alert('Hata: ' + e.message); }
+    mpSuccess('Kasa ' + (max + 1) + ' eklendi.','🎉');
+  } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
 }
 
 // ─── Kasaları Sıfırla (stuck verileri temizle) ───────
 async function resetAllRegisters() {
-  if (!confirm('Tüm kasaların bekleyen/aktif müşteri verileri sıfırlanacak. Bu işlem geri alınamaz. Devam edilsin mi?')) return;
+  showAppConfirm('Tüm kasaların bekleyen/aktif müşteri verileri sıfırlanacak. Bu işlem geri alınamaz.', async function() {
   try {
     var snap = await db.collection('registers').where('marketId', '==', marketId).get();
     var batch = db.batch();
@@ -253,8 +253,9 @@ async function resetAllRegisters() {
       batch.update(doc.ref, { status: 'cancelled', code: null, registerId: null, kasaNo: null });
     });
     await batch.commit();
-    alert(count + ' kasa sıfırlandı, ' + qSnap.size + ' bekleyen sıra iptal edildi.');
-  } catch(e) { alert('Sıfırlama hatası: ' + e.message); }
+    mpSuccess(count + ' kasa sıfırlandı, ' + qSnap.size + ' sıra iptal edildi.','✅');
+  } catch(e) { mpAlert('Sıfırlama hatası: ' + e.message,'❌'); }
+  }, {icon:'🔄'});
 }
 
 // ─── Yoğunluk + Performans ──────────────────────────
@@ -454,7 +455,7 @@ var uploadedImageData = null;
 function handleFileSelect(input) {
   var file = input.files[0];
   if (!file) return;
-  if (!file.type.match(/image\/(jpeg|png|webp)/)) { alert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.'); input.value = ''; return; }
+  if (!file.type.match(/image\/(jpeg|png|webp)/)) { mpAlert('Sadece JPG, PNG veya WebP yükleyebilirsiniz.','⚠️'); input.value = ''; return; }
 
   var origMB = (file.size / 1024 / 1024).toFixed(1);
   var ph = document.getElementById('upload-placeholder');
@@ -667,7 +668,7 @@ function cancelAnnForm() {
   uploadedImageData = null;
 }
 async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
-async function deleteAnn(id) { if (confirm('Bu içerik silinsin mi?')) await db.collection('announcements').doc(id).delete(); }
+async function deleteAnn(id) { showAppConfirm('Bu içerik silinsin mi?', async function() { await db.collection('announcements').doc(id).delete(); }, {icon:'🗑️'}); }
 
 // ─── Sürpriz Hediye Yönetimi ─────────────────────────
 var editingGiftId = null;
@@ -770,13 +771,15 @@ async function saveGift() {
 }
 
 async function stopGift(id) {
-  if (!confirm('Bu sürprizi durdurmak istiyor musunuz?')) return;
-  try { await db.collection('gifts').doc(id).update({ status: 'stopped' }); } catch (e) { alert('Hata: ' + e.message); }
+  showAppConfirm('Bu sürprizi durdurmak istiyor musunuz?', async function() {
+    try { await db.collection('gifts').doc(id).update({ status: 'stopped' }); } catch (e) { mpAlert('Hata: ' + e.message,'❌'); }
+  }, {icon:'⏹️'});
 }
 
 async function deleteGift(id) {
-  if (!confirm('Bu sürpriz kalıcı olarak silinecek. Emin misiniz?')) return;
-  try { await db.collection('gifts').doc(id).delete(); } catch (e) { alert('Hata: ' + e.message); }
+  showAppConfirm('Bu sürpriz kalıcı olarak silinecek. Emin misiniz?', async function() {
+    try { await db.collection('gifts').doc(id).delete(); } catch (e) { mpAlert('Hata: ' + e.message,'❌'); }
+  }, {icon:'🗑️'});
 }
 
 // ─── Ayarlar ──────────────────────────────────────────
@@ -788,10 +791,10 @@ async function saveSettings() {
   var u = {};
   if (name) u.name = name; if (pin && pin.length >= 4) u.kasiyerPin = pin;
   if (logo !== undefined) u.logoUrl = logo; if (thanks) u.thanksMessage = thanks;
-  if (!Object.keys(u).length) { alert('Değişiklik yok.'); return; }
+  if (!Object.keys(u).length) { mpAlert('Değişiklik yapılmadı.','ℹ️');return; return; }
   await db.collection('markets').doc(marketId).update(u);
   if (u.name) { marketData.name = u.name; document.getElementById('panel-market-name').textContent = u.name; }
-  alert('Kaydedildi.');
+  mpSuccess('Ayarlar kaydedildi.','✅');
 }
 
 // ─── QR ───────────────────────────────────────────────
@@ -832,7 +835,7 @@ function copyLink(btn, url) {
     btn.textContent = '✓'; setTimeout(function() { btn.textContent = '📋'; }, 1500);
   });
 }
-function downloadQR() { var c = document.querySelector('#qr-container canvas'); if (!c) { alert('Önce QR sayfasını açın.'); return; } var a = document.createElement('a'); a.download = 'marketpas-qr.png'; a.href = c.toDataURL('image/png'); a.click(); }
+function downloadQR() { var c = document.querySelector('#qr-container canvas'); if (!c) { mpAlert('Önce QR sayfasını açın.','ℹ️'); return; } var a = document.createElement('a'); a.download = 'marketpas-qr.png'; a.href = c.toDataURL('image/png'); a.click(); }
 function printQR() { var c = document.querySelector('#qr-container canvas'); if (!c) return; var w = window.open(''); w.document.write('<html><body style="text-align:center;padding:40px;font-family:sans-serif"><h2>' + escapeHtml(marketData?.name || 'Market') + '</h2><p style="color:#666;margin:16px 0">Sıra almak için QR kodu okutun</p><img src="' + c.toDataURL() + '" style="width:250px"><p style="margin-top:20px;font-size:13px;color:#666">MarketPas</p></body></html>'); w.document.close(); setTimeout(function() { w.print(); }, 500); }
 
 // ─── Navigasyon ──────────────────────────────────────
@@ -907,7 +910,7 @@ function loadPwaIconPreview() {
 function handlePwaIconUpload(input) {
   var file = input.files[0];
   if (!file) return;
-  if (!file.type.match(/image\/(png|jpeg|webp)/)) { alert('PNG, JPG veya WebP yükleyin.'); input.value = ''; return; }
+  if (!file.type.match(/image\/(png|jpeg|webp)/)) { mpAlert('PNG, JPG veya WebP yükleyin.','⚠️'); input.value = ''; return; }
 
   // 192x192'ye sıkıştır
   compressImage(file, 192, 0.85, function(dataUrl) {
@@ -926,27 +929,28 @@ async function savePwaIcon(dataUrl) {
     await db.collection('markets').doc(marketId).update({ pwaIconUrl: dataUrl });
     marketData.pwaIconUrl = dataUrl;
     loadPwaIconPreview();
-  } catch(e) { alert('İkon kayıt hatası: ' + e.message); }
+  } catch(e) { mpAlert('İkon kayıt hatası: ' + e.message,'❌'); }
 }
 
 async function savePwaIconUrl() {
   var url = document.getElementById('pwa-icon-url').value.trim();
-  if (!url) { alert('URL girin.'); return; }
+  if (!url) { mpAlert('URL girin.','⚠️'); return; }
   try {
     await db.collection('markets').doc(marketId).update({ pwaIconUrl: url });
     marketData.pwaIconUrl = url;
     loadPwaIconPreview();
     document.getElementById('pwa-icon-url').value = '';
-  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+  } catch(e) { mpAlert('Kayıt hatası: ' + e.message,'❌'); }
 }
 
 async function removePwaIcon() {
-  if (!confirm('Özel ikon kaldırılsın mı? Varsayılan ikon kullanılacak.')) return;
-  try {
-    await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
-    marketData.pwaIconUrl = '';
-    loadPwaIconPreview();
-  } catch(e) { alert('Hata: ' + e.message); }
+  showAppConfirm('Özel ikon kaldırılsın mı? Varsayılan ikon kullanılacak.', async function() {
+    try {
+      await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
+      marketData.pwaIconUrl = '';
+      loadPwaIconPreview();
+    } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
+  }, {icon:'🖼️'});
 }
 
 // ─── Karşılama Görseli Yönetimi ──────────────────────
@@ -973,7 +977,7 @@ function loadWelcomeImagePreview() {
 function handleWelcomeImageUpload(input) {
   var file = input.files[0];
   if (!file) return;
-  if (!file.type.match(/image\/(png|jpeg|webp)/)) { alert('PNG, JPG veya WebP yükleyin.'); input.value = ''; return; }
+  if (!file.type.match(/image\/(png|jpeg|webp)/)) { mpAlert('PNG, JPG veya WebP yükleyin.','⚠️'); input.value = ''; return; }
   compressImage(file, 800, 0.5, function(dataUrl) {
     var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
     if (sizeKB > 700) {
@@ -990,31 +994,31 @@ async function saveWelcomeImage(dataUrl) {
     await db.collection('markets').doc(marketId).update({ welcomeImageUrl: dataUrl });
     marketData.welcomeImageUrl = dataUrl;
     loadWelcomeImagePreview();
-  } catch(e) { alert('Görsel kayıt hatası: ' + e.message); }
+  } catch(e) { mpAlert('Görsel kayıt hatası: ' + e.message,'❌'); }
 }
 
 async function saveWelcomeImageUrl() {
   var url = document.getElementById('welcome-img-url').value.trim();
-  if (!url) { alert('URL girin.'); return; }
+  if (!url) { mpAlert('URL girin.','⚠️'); return; }
   try {
     await db.collection('markets').doc(marketId).update({ welcomeImageUrl: url });
     marketData.welcomeImageUrl = url;
     loadWelcomeImagePreview();
     document.getElementById('welcome-img-url').value = '';
-  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+  } catch(e) { mpAlert('Kayıt hatası: ' + e.message,'❌'); }
 }
 
 async function removeWelcomeImage() {
-  if (!confirm('Karşılama görseli kaldırılsın mı?')) return;
+  var ok=await mpConfirm('Karşılama görseli kaldırılsın mı?','🖼️');if(!ok)return;
   try {
     await db.collection('markets').doc(marketId).update({ welcomeImageUrl: '' });
     marketData.welcomeImageUrl = '';
     loadWelcomeImagePreview();
-  } catch(e) { alert('Hata: ' + e.message); }
+  } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
 }
 
-function handleLogout() {
-  if (!confirm('Çıkış?')) return;
+async function handleLogout() {
+  var ok=await mpConfirm('Çıkış yapmak istiyor musunuz?','👋');if(!ok)return;
   localStorage.removeItem('mp_market_id');
   localStorage.removeItem('mp_market_email');
   window.location.href = '/';
@@ -1320,6 +1324,25 @@ async function renderKasaChart(doneRecords) {
       }
     }
   });
+}
+
+// ═══ ÖZEL ONAY MODALI ═════════════════════════════════
+function showAppConfirm(msg, onConfirm, opts) {
+  opts = opts || {};
+  var m = document.getElementById('mp-modal');
+  var icon = document.getElementById('mp-modal-icon');
+  var msgEl = document.getElementById('mp-modal-msg');
+  var confirmBtn = document.getElementById('mp-modal-confirm');
+  var cancelBtn = document.getElementById('mp-modal-cancel');
+  icon.textContent = opts.icon || '⚠️';
+  msgEl.textContent = msg;
+  confirmBtn.textContent = opts.confirmText || 'Evet';
+  confirmBtn.className = 'mp-modal-btn confirm' + (opts.green ? ' green' : '');
+  cancelBtn.textContent = opts.cancelText || 'Vazgeç';
+  m.style.display = 'flex';
+  confirmBtn.onclick = function() { m.style.display = 'none'; if (onConfirm) onConfirm(); };
+  cancelBtn.onclick = function() { m.style.display = 'none'; };
+  m.onclick = function(e) { if (e.target === m) m.style.display = 'none'; };
 }
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
