@@ -59,8 +59,10 @@
           <div class="gift-rays"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="gift-sparkles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 
-          <!-- 3D Hediye Kutusu -->
-          <div class="gift-box-3d" id="gift-box">
+          <!-- 3D Hediye Kutusu + Lottie -->
+          <div class="gift-anim-wrap">
+            <div class="lottie-gift" id="lottie-gift"></div>
+            <div class="gift-box-3d" id="gift-box" style="display:none">
             <div class="gbox-lid">
               <div class="gbox-lid-top"></div>
               <div class="gbox-lid-front"></div>
@@ -73,6 +75,7 @@
               <div class="gbox-ribbon-h"></div>
               <div class="gbox-q">?</div>
             </div>
+          </div>
           </div>
 
           <div class="gift-label">SÜRPRİZ FIRSAT</div>
@@ -132,7 +135,7 @@
         <button class="btn-main" id="btn-queue" onclick="handleQueueButton()">KASA SIRASI AL</button>
       </div>
       <div id="screen-queued" class="scr">
-        <div class="pulse-ring">⏳</div>
+        <div class="lottie-wrap" id="lottie-queued"></div>
         <div class="info-card"><div class="ic-title">Sıraya Alındınız</div><div class="ic-sub">Kasaya çağrılınca bildirim alacaksınız.</div></div>
         <div class="wait-est" id="wait-est" style="display:none"><span>⏱</span><span>Tahmini: </span><strong id="wait-time">—</strong></div>
         <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
@@ -157,10 +160,10 @@
         <button class="btn-main" onclick="handleReady()">HAZIRIM — SIRAMA DÖN</button>
         <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
       </div>
-      <div id="screen-arrived" class="scr"><div class="info-card warn"><div class="ic-title">🕐 Birazdan İşleminiz Başlayacak</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
-      <div id="screen-active" class="scr"><div class="info-card accent"><div class="ic-title">💳 Ödeme Başlamak Üzere</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
-      <div id="screen-thanks" class="scr"><div class="info-card accent"><div class="ic-title" id="thanks-title">🛍️ Teşekkürler!</div><div class="ic-sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
-      <div id="screen-timeout" class="scr"><div class="info-card warn"><div class="ic-title">⚠️ Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
+      <div id="screen-arrived" class="scr"><div class="lottie-wrap" id="lottie-arrived"></div><div class="info-card warn"><div class="ic-title">Birazdan İşleminiz Başlayacak</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
+      <div id="screen-active" class="scr"><div class="lottie-wrap" id="lottie-active"></div><div class="info-card accent"><div class="ic-title">Ödeme Başlamak Üzere</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
+      <div id="screen-thanks" class="scr"><div class="lottie-wrap" id="lottie-thanks"></div><div class="info-card accent"><div class="ic-title" id="thanks-title">Teşekkürler!</div><div class="ic-sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
+      <div id="screen-timeout" class="scr"><div class="lottie-wrap" id="lottie-timeout"></div><div class="info-card warn"><div class="ic-title">Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
     </div>
   </div>
 
@@ -181,6 +184,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>

@@ -1,9 +1,42 @@
-// MarketPas v5 — Müşteri Ekranı (Bottom Sheet)
+// MarketPas v7 — Müşteri Ekranı (Lottie Enhanced)
 var marketId=null,sessionId=null,market=null,queueListener=null,myQueueData=null;
 var countdownInterval=null,announcementInterval=null,statsInterval=null;
 var announcements=[],allAnnouncements=[],annIndex=0,notifiedForThisCall=false,currentStats=null;
 var isQueueMode=false,sheetOpen=false;
 var SPLASH_DURATION=5000;
+
+// ═══ LOTTİE ANİMASYONLARI ═══
+// URL'leri değiştirmek için sadece bu objeyi güncelleyin
+var LOTTIE={
+  gift:'https://assets9.lottiefiles.com/packages/lf20_u0pjflct.json',
+  confetti:'https://assets2.lottiefiles.com/packages/lf20_aZTdD6.json',
+  queued:'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+  called:'https://assets2.lottiefiles.com/packages/lf20_puciaact.json',
+  arrived:'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json',
+  active:'https://assets10.lottiefiles.com/packages/lf20_svy4ivvy.json',
+  thanks:'https://assets10.lottiefiles.com/packages/lf20_q5pk6p1k.json',
+  timeout:'https://assets2.lottiefiles.com/packages/lf20_qpwbiyxf.json',
+  empty_home:'https://assets2.lottiefiles.com/packages/lf20_xlmz9xwm.json',
+  empty_campaign:'https://assets10.lottiefiles.com/packages/lf20_5ngs2ksb.json',
+  empty_deal:'https://assets10.lottiefiles.com/packages/lf20_obhph3sh.json'
+};
+
+function createLottie(src,w,h,loop){
+  var el=document.createElement('lottie-player');
+  el.setAttribute('src',src);
+  el.setAttribute('background','transparent');
+  el.setAttribute('speed','1');
+  if(loop!==false)el.setAttribute('loop','');
+  el.setAttribute('autoplay','');
+  el.style.width=(w||120)+'px';el.style.height=(h||120)+'px';
+  return el;
+}
+
+function initLottieFor(containerId,src,w,h,loop){
+  var c=document.getElementById(containerId);
+  if(!c)return;c.innerHTML='';
+  c.appendChild(createLottie(src,w||100,h||100,loop));
+}
 
 // Bildirim
 async function requestNotificationPermission(){if(!('Notification' in window))return;if(Notification.permission==='default')await Notification.requestPermission()}
@@ -177,15 +210,26 @@ function renderAnnouncements(){
     if(activeEl){var oc=activeEl.getAttribute('onclick');if(oc){var m=oc.match(/filterCat\('([^']+)'\)/);if(m)activeTab=m[1]}}
     
     var placeholders={
-      anasayfa:{icon:'📢',title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
-      kampanya:{icon:'🏷️',title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
-      surpriz:{icon:'⭐',title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
-      gunun_firsati:null // Sürpriz sekmesi kendi ekranını gösteriyor
+      anasayfa:{lottie:LOTTIE.empty_home,title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
+      kampanya:{lottie:LOTTIE.empty_campaign,title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
+      surpriz:{lottie:LOTTIE.empty_deal,title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
+      gunun_firsati:null
     };
     var ph=placeholders[activeTab];
     if(!ph){slider.innerHTML='';return}
     
-    slider.innerHTML='<div class="empty-state"><div class="empty-particles"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="empty-card" style="border-color:'+ph.color+'"><div class="empty-icon" style="color:'+ph.color+'">'+ph.icon+'</div><div class="empty-title" style="color:'+ph.color+'">'+ph.title+'</div><div class="empty-sub">'+ph.sub+'</div></div></div>';
+    var wrap=document.createElement('div');wrap.className='empty-state';
+    var particles=document.createElement('div');particles.className='empty-particles';
+    for(var p=0;p<6;p++){particles.appendChild(document.createElement('span'))}
+    wrap.appendChild(particles);
+    var card=document.createElement('div');card.className='empty-card';card.style.borderColor=ph.color;
+    var lottieDiv=document.createElement('div');lottieDiv.className='empty-lottie';
+    lottieDiv.appendChild(createLottie(ph.lottie,120,120,true));
+    card.appendChild(lottieDiv);
+    var title=document.createElement('div');title.className='empty-title';title.style.color=ph.color;title.textContent=ph.title;card.appendChild(title);
+    var sub=document.createElement('div');sub.className='empty-sub';sub.textContent=ph.sub;card.appendChild(sub);
+    wrap.appendChild(card);
+    slider.innerHTML='';slider.appendChild(wrap);
     return;
   }
   
@@ -353,6 +397,11 @@ function showScreen(name){
   if(name==='ready'){var b=document.getElementById('btn-queue');if(b){b.disabled=false;b.textContent='KASA SIRASI AL'}}
   if(name==='timeout'){var b2=document.getElementById('btn-retry');if(b2)b2.disabled=false}
   var we=document.getElementById('wait-est');if(we)we.style.display=(name==='queued'&&currentStats&&currentStats.estimatedWait>0)?'flex':'none';
+  // Lottie animasyonları
+  var lottieMap={queued:'queued',called:'called',arrived:'arrived',active:'active',thanks:'thanks',timeout:'timeout'};
+  if(lottieMap[name]&&LOTTIE[lottieMap[name]]){
+    initLottieFor('lottie-'+name,LOTTIE[lottieMap[name]],90,90,name!=='thanks');
+  }
   updateButtons();
 }
 function showLoading(v){var el=document.getElementById('loading');if(el)el.style.display=v?'flex':'none'}
@@ -442,6 +491,8 @@ function showGiftScreen(){
     document.getElementById('gift-pre').style.display='flex';
     document.getElementById('gift-reveal').style.display='none';
     document.getElementById('gift-expired').style.display='none';
+    // Lottie hediye kutusu
+    initLottieFor('lottie-gift',LOTTIE.gift,160,160,true);
     startGiftCountdown();
   }
 }
@@ -490,6 +541,13 @@ function revealGift(){
   document.getElementById('reveal-content').textContent=giftData.content||'';
   var img=document.getElementById('reveal-img');
   if(giftData.imageUrl){img.src=giftData.imageUrl;img.style.display='block';img.onerror=function(){this.style.display='none'}}
+  // Lottie konfeti + CSS konfeti birlikte
+  var confDiv=document.getElementById('confetti');
+  if(confDiv){
+    var lc=createLottie(LOTTIE.confetti,400,400,false);
+    lc.style.position='absolute';lc.style.top='50%';lc.style.left='50%';lc.style.transform='translate(-50%,-50%)';lc.style.width='100%';lc.style.height='100%';lc.style.pointerEvents='none';
+    confDiv.appendChild(lc);
+  }
   spawnConfetti();
 }
 

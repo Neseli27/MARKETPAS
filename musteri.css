@@ -257,6 +257,15 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .modal-btn.confirm{background:var(--danger);color:#fff}
 .modal-btn:active{transform:scale(.96)}
 
+/* ═══ LOTTİE CONTAINERS ═══ */
+.lottie-wrap{display:flex;justify-content:center;align-items:center;min-height:80px}
+.lottie-wrap lottie-player{filter:drop-shadow(0 4px 12px rgba(16,229,176,.15))}
+.empty-lottie{display:flex;justify-content:center;margin-bottom:8px}
+.empty-lottie lottie-player{filter:drop-shadow(0 0 20px currentColor)}
+.gift-anim-wrap{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lottie-gift{position:absolute;inset:0}
+.lottie-gift lottie-player{width:100%!important;height:100%!important}
+
 /* Error */
 .error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;padding:32px;text-align:center;color:var(--text2)}
 
