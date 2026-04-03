@@ -3,6 +3,7 @@
   "short_name": "MP Yönetim",
   "description": "MarketPas Market Yönetim Paneli",
   "start_url": "/yonetim.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0B1120",
   "theme_color": "#0B1120",
