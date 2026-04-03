@@ -107,10 +107,10 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:scale(1.05) translateY(10px);transition:opacity .7s ease,transform .7s cubic-bezier(.4,0,.2,1)}
 .ann-slide.active{opacity:1;pointer-events:auto;transform:scale(1) translateY(0)}
 
-/* Görseller — Ken Burns efekti (yavaş zoom) */
-.ann-slide-img{width:100%;min-height:100%;object-fit:cover;display:none;transform:scale(1);transition:transform 8s ease-out}
+/* Görseller — tam görünür + Ken Burns efekti */
+.ann-slide-img{width:100%;height:100%;object-fit:contain;display:none;transform:scale(1);transition:transform 8s ease-out}
 .ann-slide-img.has-img{display:block}
-.ann-slide.active .ann-slide-img{transform:scale(1.08)}
+.ann-slide.active .ann-slide-img{transform:scale(1.06)}
 
 /* Metin — kademeli giriş (badge → başlık → açıklama sırayla gelir) */
 .ann-slide-text{position:absolute;bottom:0;left:0;right:0;padding:60px 20px 20px;background:linear-gradient(0deg,rgba(10,15,26,.95) 0%,rgba(10,15,26,.5) 60%,transparent 100%)}
