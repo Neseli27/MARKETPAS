@@ -167,7 +167,28 @@ function filterCat(cat){
 }
 function renderAnnouncements(){
   var section=document.getElementById('ann-section'),slider=document.getElementById('ann-slider'),dots=document.getElementById('ann-dots');
-  if(!announcements.length){section.classList.add('empty');slider.innerHTML='';dots.innerHTML='';return}
+  
+  if(!announcements.length){
+    section.classList.remove('empty');
+    dots.innerHTML='';
+    // Kategori bazlı boş ekran
+    var activeTab='anasayfa';
+    var activeEl=document.querySelector('.tab-item.active');
+    if(activeEl){var oc=activeEl.getAttribute('onclick');if(oc){var m=oc.match(/filterCat\('([^']+)'\)/);if(m)activeTab=m[1]}}
+    
+    var placeholders={
+      anasayfa:{icon:'📢',title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
+      kampanya:{icon:'🏷️',title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
+      surpriz:{icon:'⭐',title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
+      gunun_firsati:null // Sürpriz sekmesi kendi ekranını gösteriyor
+    };
+    var ph=placeholders[activeTab];
+    if(!ph){slider.innerHTML='';return}
+    
+    slider.innerHTML='<div class="empty-state"><div class="empty-particles"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="empty-card" style="border-color:'+ph.color+'"><div class="empty-icon" style="color:'+ph.color+'">'+ph.icon+'</div><div class="empty-title" style="color:'+ph.color+'">'+ph.title+'</div><div class="empty-sub">'+ph.sub+'</div></div></div>';
+    return;
+  }
+  
   section.classList.remove('empty');slider.innerHTML='';dots.innerHTML='';
   announcements.forEach(function(a,i){
     var hasVideo=a.videoUrl&&getYouTubeId(a.videoUrl);

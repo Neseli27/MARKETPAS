@@ -73,7 +73,36 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 /* ═══ BANNER SLIDER — tam ekran ═══ */
 .banners{flex:1;position:relative;overflow:hidden}
 .banners.empty{display:flex;align-items:center;justify-content:center}
-.banners.empty::after{content:'Kampanyalar burada görünecek';font-size:13px;color:var(--text3)}
+
+/* Boş sekme — animasyonlu placeholder */
+.empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#111830 0%,#0a0f1a 70%)}
+.empty-card{
+  text-align:center;padding:32px 28px;
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  background:rgba(255,255,255,.03);backdrop-filter:blur(8px);
+  max-width:300px;width:85%;position:relative;z-index:2;
+  animation:emptyFloat 4s ease-in-out infinite;
+}
+@keyframes emptyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.empty-icon{font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 20px currentColor)}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:5px;margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* Yüzen parçacıklar */
+.empty-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.empty-particles span{position:absolute;width:4px;height:4px;border-radius:50%;opacity:0;animation:emptyParticle 6s ease infinite}
+.empty-particles span:nth-child(1){left:15%;top:20%;background:#60a5fa;animation-delay:0s}
+.empty-particles span:nth-child(2){right:20%;top:15%;background:#4ade80;animation-delay:1s}
+.empty-particles span:nth-child(3){left:10%;bottom:30%;background:#fbbf24;animation-delay:2s}
+.empty-particles span:nth-child(4){right:10%;bottom:25%;background:#f472b6;animation-delay:3s}
+.empty-particles span:nth-child(5){left:40%;top:10%;background:#a78bfa;animation-delay:4s}
+.empty-particles span:nth-child(6){right:35%;bottom:15%;background:#34d399;animation-delay:5s}
+@keyframes emptyParticle{
+  0%{transform:translateY(0) scale(0);opacity:0}
+  20%{opacity:.8;transform:translateY(-10px) scale(1.5)}
+  80%{opacity:.4;transform:translateY(-40px) scale(1)}
+  100%{transform:translateY(-60px) scale(0);opacity:0}
+}
 .ann-slider{width:100%;height:100%;position:relative}
 .ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .6s;pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ann-slide.active{opacity:1;pointer-events:auto}
