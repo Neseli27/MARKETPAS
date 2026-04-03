@@ -104,14 +104,23 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   100%{transform:translateY(-60px) scale(0);opacity:0}
 }
 .ann-slider{width:100%;height:100%;position:relative}
-.ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .6s;pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.ann-slide.active{opacity:1;pointer-events:auto}
-.ann-slide-img{width:100%;min-height:100%;object-fit:cover;display:none}
+.ann-slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:scale(1.05) translateY(10px);transition:opacity .7s ease,transform .7s cubic-bezier(.4,0,.2,1)}
+.ann-slide.active{opacity:1;pointer-events:auto;transform:scale(1) translateY(0)}
+
+/* Görseller — Ken Burns efekti (yavaş zoom) */
+.ann-slide-img{width:100%;min-height:100%;object-fit:cover;display:none;transform:scale(1);transition:transform 8s ease-out}
 .ann-slide-img.has-img{display:block}
+.ann-slide.active .ann-slide-img{transform:scale(1.08)}
+
+/* Metin — kademeli giriş (badge → başlık → açıklama sırayla gelir) */
 .ann-slide-text{position:absolute;bottom:0;left:0;right:0;padding:60px 20px 20px;background:linear-gradient(0deg,rgba(10,15,26,.95) 0%,rgba(10,15,26,.5) 60%,transparent 100%)}
-.ann-slide-badge{display:inline-block;background:rgba(16,229,176,.12);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:6px}
-.ann-slide-title{font-size:20px;font-weight:700;line-height:1.3;margin-bottom:3px}
-.ann-slide-content{font-size:14px;color:var(--text2);line-height:1.4}
+.ann-slide-badge{display:inline-block;background:rgba(16,229,176,.12);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:6px;opacity:0;transform:translateY(14px);transition:opacity .4s ease .2s,transform .4s ease .2s}
+.ann-slide.active .ann-slide-badge{opacity:1;transform:translateY(0)}
+.ann-slide-title{font-size:20px;font-weight:700;line-height:1.3;margin-bottom:3px;opacity:0;transform:translateY(14px);transition:opacity .4s ease .35s,transform .4s ease .35s}
+.ann-slide.active .ann-slide-title{opacity:1;transform:translateY(0)}
+.ann-slide-content{font-size:14px;color:var(--text2);line-height:1.4;opacity:0;transform:translateY(14px);transition:opacity .4s ease .5s,transform .4s ease .5s}
+.ann-slide.active .ann-slide-content{opacity:1;transform:translateY(0)}
+
 .ann-slide.no-img{justify-content:center;background:linear-gradient(135deg,#0f2027,#1a2e3b);padding:32px 24px}
 .ann-slide.no-img .ann-slide-text{position:relative;background:transparent;padding:0}
 
