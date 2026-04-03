@@ -166,8 +166,8 @@
         <button class="btn-main" onclick="handleReady()">HAZIRIM — SIRAMA DÖN</button>
         <button class="btn-ghost" onclick="handleCancel()">İptal Et</button>
       </div>
-      <div id="screen-arrived" class="scr"><div class="lottie-wrap" id="lottie-arrived"></div><div class="info-card warn"><div class="ic-title">Birazdan İşleminiz Başlayacak</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
-      <div id="screen-active" class="scr"><div class="lottie-wrap" id="lottie-active"></div><div class="info-card accent"><div class="ic-title">Ödeme Başlamak Üzere</div><div class="ic-sub">Kasadan ayrılmayınız.</div></div></div>
+      <div id="screen-arrived" class="scr"><div class="lottie-wrap" id="lottie-arrived"></div><div class="info-card warn"><div class="ic-title">Kasaya Yönlendirildiniz</div><div class="ic-sub">Lütfen kasanıza gidiniz.</div></div></div>
+      <div id="screen-active" class="scr"><div class="lottie-wrap" id="lottie-active"></div><div class="info-card accent"><div class="ic-title">Kasa İşleminiz Başlamıştır</div><div class="ic-sub">İyi alışverişler!</div></div></div>
       <div id="screen-thanks" class="scr"><div class="lottie-wrap" id="lottie-thanks"></div><div class="info-card accent"><div class="ic-title" id="thanks-title">Teşekkürler!</div><div class="ic-sub" id="thanks-sub">İyi günler dileriz.</div></div></div>
       <div id="screen-timeout" class="scr"><div class="lottie-wrap" id="lottie-timeout"></div><div class="info-card warn"><div class="ic-title">Süreniz Doldu</div><div class="ic-sub">Kasaya zamanında ulaşamadınız.</div></div><button class="btn-main" id="btn-retry" onclick="handleRetryQueue()">TEKRAR SIRA AL</button></div>
     </div>
@@ -182,7 +182,13 @@
     </div>
   </div>
 
-  <!-- Modallar artık firebase-config.js'teki global sistem tarafından oluşturuluyor -->
+  <!-- ONAY MODAL -->
+  <div class="modal-overlay" id="confirm-modal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-msg" id="modal-msg"></div>
+      <div class="modal-btns"><button class="modal-btn cancel" id="modal-cancel">Vazgeç</button><button class="modal-btn confirm" id="modal-confirm">Evet</button></div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.10/dist/dotlottie-wc.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>

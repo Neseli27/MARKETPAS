@@ -208,7 +208,7 @@ async function renderCards() {
         activeCard.innerHTML = '';
         var b = document.createElement('div'); b.className = 'card-badge'; b.textContent = 'AKTİF — ÖDEME YAPILIYOR'; activeCard.appendChild(b);
         var c = document.createElement('div'); c.className = 'card-code'; c.textContent = qData.code || '—'; activeCard.appendChild(c);
-        var bt = document.createElement('button'); bt.className = 'btn-islem-tamam'; bt.textContent = '✓ İşlem Tamam';
+        var bt = document.createElement('button'); bt.className = 'btn-islem-tamam'; bt.textContent = '✓ İşlem Tamamlandı';
         bt.onclick = function() { handleIslemTamam(d.activeQueueId); }; activeCard.appendChild(bt);
       }
     } catch(e) {}
@@ -235,7 +235,7 @@ async function renderCards() {
           var b1 = document.createElement('div'); b1.className = 'card-badge'; b1.textContent = 'ÇAĞRILDI — GELİYOR'; waitingCard.appendChild(b1);
           var c1 = document.createElement('div'); c1.className = 'card-code'; c1.textContent = qData2.code || '—'; waitingCard.appendChild(c1);
           var t1 = document.createElement('div'); t1.className = 'card-timer'; t1.id = 'waiting-timer'; t1.textContent = '⏱ 2:00'; waitingCard.appendChild(t1);
-          var gb = document.createElement('button'); gb.className = 'btn-geldi'; gb.textContent = '✓ Geldi';
+          var gb = document.createElement('button'); gb.className = 'btn-geldi'; gb.textContent = '✓ Müşteri Kasaya Geldi';
           gb.onclick = function() { handleGeldi(d.waitingQueueId); }; waitingCard.appendChild(gb);
           startWaitingTimer(qData2.calledAt?.toDate());
 

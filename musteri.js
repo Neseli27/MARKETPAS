@@ -3,7 +3,7 @@ var marketId=null,sessionId=null,market=null,queueListener=null,myQueueData=null
 var countdownInterval=null,announcementInterval=null,statsInterval=null;
 var announcements=[],allAnnouncements=[],annIndex=0,notifiedForThisCall=false,currentStats=null;
 var isQueueMode=false,sheetOpen=false;
-var SPLASH_DURATION=6000;
+var SPLASH_DURATION=5000;
 
 // ═══ LOTTİE ANİMASYONLARI ═══
 var LOTTIE={
@@ -337,9 +337,9 @@ function startQueueListener(){
       case 'paused':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('paused');break;
       case 'timeout':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('timeout');break;
       case 'done':clearInterval(countdownInterval);notifiedForThisCall=false;
-        document.getElementById('thanks-title').textContent='🛍️ Teşekkürler!';
-        document.getElementById('thanks-sub').textContent=market?.thanksMessage||'Alışverişiniz için teşekkür ederiz!';
-        showScreen('thanks');setTimeout(function(){newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)},5000);break;
+        document.getElementById('thanks-title').textContent='Kasa İşleminiz Tamamlandı';
+        document.getElementById('thanks-sub').textContent='Teşekkür ederiz. İyi günler dileriz!';
+        showScreen('thanks');setTimeout(function(){newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)},6000);break;
       case 'cancelled':clearInterval(countdownInterval);notifiedForThisCall=false;newSession();enterVitrinMode();
         if(window.location.search)history.replaceState({},'',window.location.pathname);break;
       default:showScreen('ready');
@@ -357,7 +357,7 @@ async function handleQueueButton(){var btn=document.getElementById('btn-queue');
     console.log('MarketPas: Sıra no:',num);
     await db.collection('queue').doc(sessionId).set({marketId:marketId,sessionId:sessionId,queueNumber:num,status:'waiting',code:null,registerId:null,kasaNo:null,createdAt:firebase.firestore.FieldValue.serverTimestamp(),calledAt:null,arrivedAt:null,completedAt:null});
     notifiedForThisCall=false;startQueueListener();await tryAssignToOpenRegister();await loadCongestion();
-  }catch(e){console.error('MarketPas:',e);btn.disabled=false;btn.textContent='KASA SIRASI AL';mpAlert('Hata: '+e.message,'❌')}}
+  }catch(e){console.error('MarketPas:',e);btn.disabled=false;btn.textContent='KASA SIRASI AL';alert('Hata: '+e.message)}}
 
 async function tryAssignToOpenRegister(){try{
     var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
@@ -368,12 +368,9 @@ async function tryAssignToOpenRegister(){try{
       if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}
   }catch(e){}}
 
-async function handleCancel(){
-  var ok=await mpConfirm('Sıranızı iptal etmek istiyor musunuz?','⚠️');
-  if(!ok)return;
+async function handleCancel(){showConfirmModal('Sıranızı iptal etmek istiyor musunuz?',async function(){
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
-  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
-}
+  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)})}
 
 async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
   await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
@@ -432,6 +429,14 @@ function showScreen(name){
 function showLoading(v){var el=document.getElementById('loading');if(el)el.style.display=v?'flex':'none'}
 function showError(msg){document.body.innerHTML='<div class="error-screen"><p>⚠️</p><p>'+escapeHtml(msg)+'</p></div>'}
 function newSession(){sessionId=generateId();localStorage.setItem('mp_s_'+marketId,sessionId);if(queueListener){queueListener();queueListener=null}clearInterval(countdownInterval);notifiedForThisCall=false;myQueueData=null}
+
+function showConfirmModal(msg,onConfirm){
+  var m=document.getElementById('confirm-modal');
+  document.getElementById('modal-msg').textContent=msg;
+  m.style.display='flex';
+  document.getElementById('modal-cancel').onclick=function(){m.style.display='none'};
+  document.getElementById('modal-confirm').onclick=function(){m.style.display='none';if(onConfirm)onConfirm()};
+}
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 
