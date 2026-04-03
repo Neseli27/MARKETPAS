@@ -3,12 +3,13 @@
 // =====================================================
 
 var firebaseConfig = {
-  apiKey:            "BURAYA_API_KEY",
-  authDomain:        "BURAYA_PROJECT_ID.firebaseapp.com",
-  projectId:         "BURAYA_PROJECT_ID",
-  storageBucket:     "BURAYA_PROJECT_ID.appspot.com",
-  messagingSenderId: "BURAYA_SENDER_ID",
-  appId:             "BURAYA_APP_ID"
+  apiKey: "AIzaSyCqUSoowo2EbKKhG0SBcIzBYddwYOzHKRo",
+  authDomain: "egitim-yonetim-platformu.firebaseapp.com",
+  projectId: "egitim-yonetim-platformu",
+  storageBucket: "egitim-yonetim-platformu.firebasestorage.app",
+  messagingSenderId: "548967060709",
+  appId: "1:548967060709:web:d95bbd360347021634700c",
+  measurementId: "G-89D843J9RF"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
