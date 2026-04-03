@@ -323,7 +323,7 @@
       <div class="card">
         <h3>🎉 Karşılama Ekranı Görseli</h3>
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
-          Müşteri QR kod okuttuğunda tam ekran karşılama görseli gösterilir. 12 saniye sonra otomatik kapanır.<br>
+          Müşteri QR kod okuttuğunda tam ekran karşılama görseli gösterilir. 6 saniye sonra otomatik kapanır.<br>
           Dikey format, minimum 1080×1920 piksel önerilir.
         </p>
         <div class="pwa-icon-area">
@@ -408,6 +408,18 @@
     <button class="mnav-item" id="mnav-qr" onclick="showSection('qr')"><span class="mnav-icon">📱</span><span class="mnav-label">QR</span></button>
     <button class="mnav-item" id="mnav-announcements" onclick="showSection('announcements')"><span class="mnav-icon">📢</span><span class="mnav-label">İçerikler</span></button>
     <button class="mnav-item" id="mnav-settings" onclick="showSection('settings')"><span class="mnav-icon">⚙️</span><span class="mnav-label">Ayarlar</span></button>
+  </div>
+
+  <!-- Özel Onay Modalı -->
+  <div class="mp-modal-overlay" id="mp-modal" style="display:none">
+    <div class="mp-modal-box">
+      <div class="mp-modal-icon" id="mp-modal-icon">⚠️</div>
+      <div class="mp-modal-msg" id="mp-modal-msg"></div>
+      <div class="mp-modal-btns">
+        <button class="mp-modal-btn cancel" id="mp-modal-cancel">Vazgeç</button>
+        <button class="mp-modal-btn confirm" id="mp-modal-confirm">Evet</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

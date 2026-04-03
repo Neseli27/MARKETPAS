@@ -978,14 +978,20 @@ function handleWelcomeImageUpload(input) {
   var file = input.files[0];
   if (!file) return;
   if (!file.type.match(/image\/(png|jpeg|webp)/)) { mpAlert('PNG, JPG veya WebP yükleyin.','⚠️'); input.value = ''; return; }
-  compressImage(file, 800, 0.5, function(dataUrl) {
-    var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
-    if (sizeKB > 700) {
-      compressImage(file, 600, 0.35, function(smallUrl) { saveWelcomeImage(smallUrl); });
-    } else {
-      saveWelcomeImage(dataUrl);
-    }
-  });
+  var steps = [
+    { maxW: 1080, q: 0.80, fmt: 'webp' },
+    { maxW: 1080, q: 0.70, fmt: 'jpeg' },
+    { maxW: 800,  q: 0.55, fmt: 'jpeg' },
+    { maxW: 600,  q: 0.45, fmt: 'jpeg' }
+  ];
+  function tryStep(i) {
+    smartCompress(file, steps[i].maxW, steps[i].q, steps[i].fmt, function(dataUrl) {
+      var sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+      if (sizeKB > 700 && i < steps.length - 1) tryStep(i + 1);
+      else saveWelcomeImage(dataUrl);
+    });
+  }
+  tryStep(0);
   input.value = '';
 }
 
