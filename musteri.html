@@ -91,17 +91,23 @@
 
         <!-- Açılmış hediye — tam ekran -->
         <div class="gift-reveal" id="gift-reveal" style="display:none">
-          <div class="reveal-burst"></div>
-          <div class="confetti" id="confetti"></div>
-          <div class="reveal-card">
-            <div class="reveal-stars">✦ ✦ ✦</div>
-            <div class="reveal-badge">🎉 SÜRPRİZ FIRSAT AÇILDI!</div>
-            <div class="reveal-title" id="reveal-title"></div>
-            <div class="reveal-divider"></div>
-            <div class="reveal-content" id="reveal-content"></div>
-            <img class="reveal-img" id="reveal-img" src="" alt="" style="display:none">
-            <div class="reveal-end-timer" id="reveal-end-timer" style="display:none">⏱ Kalan süre: <strong id="reveal-end-time">--:--</strong></div>
-            <div class="reveal-footer">Acele edin — sınırlı süre!</div>
+          <!-- Tüm sahne — kutu pozisyonundan başlar -->
+          <div class="scene" id="reveal-scene">
+            <!-- Işık patlaması — kutudan yayılır -->
+            <div class="scene-light"></div>
+            <!-- Konfeti — kutudan fışkırır -->
+            <div class="scene-confetti" id="scene-confetti"></div>
+            <!-- Kart — kutudan yükselir -->
+            <div class="scene-card" id="reveal-card">
+              <div class="reveal-stars">✦ ✦ ✦</div>
+              <div class="reveal-badge">🎉 SÜRPRİZ AÇILDI!</div>
+              <div class="reveal-title" id="reveal-title"></div>
+              <div class="reveal-divider"></div>
+              <div class="reveal-content" id="reveal-content"></div>
+              <img class="reveal-img" id="reveal-img" src="" alt="" style="display:none">
+              <div class="reveal-end-timer" id="reveal-end-timer" style="display:none">⏱ <strong id="reveal-end-time">--:--</strong></div>
+              <div class="reveal-footer">Acele edin — sınırlı süre!</div>
+            </div>
           </div>
         </div>
 
@@ -184,7 +190,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.10/dist/dotlottie-wc.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>

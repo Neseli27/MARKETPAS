@@ -268,12 +268,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 /* ═══ LOTTİE CONTAINERS ═══ */
 .lottie-wrap{display:flex;justify-content:center;align-items:center;min-height:80px}
-.lottie-wrap lottie-player{filter:drop-shadow(0 4px 12px rgba(16,229,176,.15))}
+.lottie-wrap dotlottie-wc{filter:drop-shadow(0 4px 12px rgba(16,229,176,.15))}
 .empty-lottie{display:flex;justify-content:center;margin-bottom:8px}
-.empty-lottie lottie-player{filter:drop-shadow(0 0 20px currentColor)}
-.gift-anim-wrap{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center;z-index:2}
+.empty-lottie dotlottie-wc{filter:drop-shadow(0 0 20px currentColor)}
+.gift-anim-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;z-index:2}
 .lottie-gift{position:absolute;inset:0}
-.lottie-gift lottie-player{width:100%!important;height:100%!important}
+.lottie-gift dotlottie-wc{width:100%!important;height:100%!important}
 
 /* Error */
 .error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;padding:32px;text-align:center;color:var(--text2)}
@@ -285,72 +285,17 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .gift-label{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:6px;color:#fbbf24;text-shadow:0 0 30px rgba(251,191,36,.4),0 0 60px rgba(251,191,36,.15)}
 .gift-hint{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:rgba(251,191,36,.6);animation:fadeUp 1s ease 1s both}
 
-/* Bitiş sayacı */
-.reveal-end-timer{margin-top:12px;font-size:14px;color:var(--warn);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:8px 16px}
-.reveal-end-timer strong{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
-
-/* Süre doldu ekranı */
-.gift-expired{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1040 0%,#0a0f1a 70%);padding:32px;z-index:10}
-.expired-text{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:5px;color:rgba(251,191,36,.7);text-align:center;line-height:1.6;text-shadow:0 0 30px rgba(251,191,36,.15);animation:expiredPulse 3s ease infinite}
-@keyframes expiredPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
-
-/* Arka plan ışık efektleri */
+/* Arka plan efektleri */
 .gift-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);animation:glowPulse 3s ease infinite;pointer-events:none}
 @keyframes glowPulse{0%,100%{transform:translate(-50%,-60%) scale(1);opacity:.6}50%{transform:translate(-50%,-60%) scale(1.2);opacity:1}}
-
-/* Işık ışınları */
 .gift-rays{position:absolute;top:50%;left:50%;width:0;height:0;transform:translate(-50%,-60%);pointer-events:none}
 .gift-rays span{position:absolute;width:2px;height:120px;background:linear-gradient(180deg,rgba(251,191,36,.3),transparent);transform-origin:bottom center;animation:rayRotate 8s linear infinite}
 .gift-rays span:nth-child(1){transform:rotate(0deg)}.gift-rays span:nth-child(2){transform:rotate(45deg)}.gift-rays span:nth-child(3){transform:rotate(90deg)}.gift-rays span:nth-child(4){transform:rotate(135deg)}.gift-rays span:nth-child(5){transform:rotate(180deg)}.gift-rays span:nth-child(6){transform:rotate(225deg)}.gift-rays span:nth-child(7){transform:rotate(270deg)}.gift-rays span:nth-child(8){transform:rotate(315deg)}
 @keyframes rayRotate{from{opacity:.3}50%{opacity:.8}to{opacity:.3}}
-
-/* Işıltılar */
 .gift-sparkles{position:absolute;inset:-60px;pointer-events:none;z-index:3}
-.gift-sparkles span{position:absolute;width:3px;height:3px;background:#fbbf24;border-radius:50%;box-shadow:0 0 6px #fbbf24,0 0 12px rgba(251,191,36,.5);animation:sparkle2 2.5s ease infinite}
-.gift-sparkles span:nth-child(1){top:15%;left:15%;animation-delay:0s}
-.gift-sparkles span:nth-child(2){top:5%;right:20%;animation-delay:.4s}
-.gift-sparkles span:nth-child(3){bottom:35%;left:8%;animation-delay:.7s}
-.gift-sparkles span:nth-child(4){bottom:25%;right:8%;animation-delay:1s}
-.gift-sparkles span:nth-child(5){top:35%;left:3%;animation-delay:1.3s;background:#f472b6;box-shadow:0 0 6px #f472b6}
-.gift-sparkles span:nth-child(6){top:10%;right:5%;animation-delay:1.6s;background:#a78bfa;box-shadow:0 0 6px #a78bfa}
-.gift-sparkles span:nth-child(7){bottom:15%;left:25%;animation-delay:1.9s;background:#60a5fa;box-shadow:0 0 6px #60a5fa}
-.gift-sparkles span:nth-child(8){top:25%;right:15%;animation-delay:2.2s;background:#34d399;box-shadow:0 0 6px #34d399}
-@keyframes sparkle2{0%,100%{opacity:0;transform:scale(0) rotate(0)}50%{opacity:1;transform:scale(2) rotate(180deg)}}
-
-/* ═══ 3D HEDİYE KUTUSU ═══ */
-.gift-box-3d{position:relative;width:160px;height:170px;perspective:600px;animation:giftFloat 3s ease-in-out infinite;z-index:2}
-@keyframes giftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-
-/* Kutu gövdesi — beyaz */
-.gbox-body{position:absolute;bottom:0;width:140px;height:100px;left:10px;transform-style:preserve-3d}
-.gbox-front{position:absolute;inset:0;background:linear-gradient(145deg,#ffffff 0%,#e8e8e8 50%,#d4d4d4 100%);border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.8)}
-.gbox-right{position:absolute;top:4px;right:-8px;width:12px;height:92px;background:linear-gradient(90deg,#d4d4d4,#bbb);border-radius:0 4px 4px 0;transform:skewY(-5deg)}
-
-/* Şeritler — kırmızı */
-.gbox-ribbon-v{position:absolute;top:0;left:50%;width:24px;margin-left:-12px;height:100%;background:linear-gradient(90deg,#dc2626,#ef4444,#dc2626);border-radius:2px;z-index:2;box-shadow:0 0 8px rgba(220,38,38,.3)}
-.gbox-ribbon-h{position:absolute;top:50%;left:0;width:100%;height:20px;margin-top:-10px;background:linear-gradient(180deg,#dc2626,#ef4444,#dc2626);border-radius:2px;z-index:2;box-shadow:0 0 8px rgba(220,38,38,.3)}
-.gbox-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:42px;color:rgba(220,38,38,.15);z-index:3}
-
-/* Kapak */
-.gbox-lid{position:absolute;top:10px;left:2px;width:156px;z-index:4;transition:all .8s cubic-bezier(.68,-.55,.27,1.55);transform-origin:left bottom}
-.gbox-lid-top{height:28px;background:linear-gradient(145deg,#ffffff,#e8e8e8);border-radius:6px;box-shadow:0 -2px 12px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.9)}
-.gbox-lid-front{height:6px;background:linear-gradient(180deg,#d4d4d4,#c4c4c4);border-radius:0 0 4px 4px}
-
-/* Fiyonk */
-.gbox-bow{position:absolute;top:-20px;left:50%;transform:translateX(-50%);z-index:5}
-.bow-loop{position:absolute;width:28px;height:22px;border:5px solid #dc2626;border-radius:50% 50% 0;top:0}
-.bow-loop.left{left:-26px;transform:rotate(-30deg);border-color:#ef4444}
-.bow-loop.right{right:-26px;transform:rotate(30deg);border-color:#dc2626}
-.bow-knot{position:absolute;width:14px;height:14px;background:radial-gradient(circle,#ef4444,#dc2626);border-radius:50%;top:8px;left:50%;margin-left:-7px;box-shadow:0 2px 6px rgba(220,38,38,.4)}
-
-/* Açılma */
-.gift-box-3d.opening .gbox-lid{transform:translateY(-100px) rotate(-35deg);opacity:0}
-.gift-box-3d.opening .gbox-body{animation:boxBurst .8s ease forwards}
-@keyframes boxBurst{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(0);opacity:0}}
-
-/* Heyecan modu — son 60sn */
-.gift-box-3d.excited{animation:giftExcited .3s ease-in-out infinite}
-@keyframes giftExcited{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(-6deg) translateY(-4px)}75%{transform:rotate(6deg) translateY(-4px)}}
+.gift-sparkles span{position:absolute;width:3px;height:3px;background:#fbbf24;border-radius:50%;box-shadow:0 0 6px #fbbf24;animation:sparkle2 2.5s ease infinite}
+.gift-sparkles span:nth-child(1){top:15%;left:15%}.gift-sparkles span:nth-child(2){top:5%;right:20%;animation-delay:.4s}.gift-sparkles span:nth-child(3){bottom:35%;left:8%;animation-delay:.7s}.gift-sparkles span:nth-child(4){bottom:25%;right:8%;animation-delay:1s}.gift-sparkles span:nth-child(5){top:35%;left:3%;animation-delay:1.3s;background:#f472b6;box-shadow:0 0 6px #f472b6}.gift-sparkles span:nth-child(6){top:10%;right:5%;animation-delay:1.6s;background:#a78bfa;box-shadow:0 0 6px #a78bfa}.gift-sparkles span:nth-child(7){bottom:15%;left:25%;animation-delay:1.9s;background:#60a5fa;box-shadow:0 0 6px #60a5fa}.gift-sparkles span:nth-child(8){top:25%;right:15%;animation-delay:2.2s;background:#34d399;box-shadow:0 0 6px #34d399}
+@keyframes sparkle2{0%,100%{opacity:0;transform:scale(0)}50%{opacity:1;transform:scale(2)}}
 
 /* Geri sayım */
 .gift-countdown{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid rgba(251,191,36,.15);border-radius:16px;padding:14px 24px}
@@ -359,36 +304,67 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .gcd-lbl{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
 .gcd-sep{font-family:'Bebas Neue',sans-serif;font-size:28px;color:rgba(251,191,36,.3);margin-top:-10px}
 
-/* ═══ AÇILMA — Tam Ekran Reveal ═══ */
-.gift-reveal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+/* Lottie + kutu fallback */
+.gift-anim-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lottie-gift{position:absolute;inset:0}
+.lottie-gift dotlottie-wc{width:100%!important;height:100%!important}
+.gift-box-3d{position:relative;width:160px;height:170px;perspective:600px;animation:giftFloat 3s ease-in-out infinite;z-index:2}
+@keyframes giftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.gift-box-3d.excited{animation:giftExcited .3s ease-in-out infinite}
+@keyframes giftExcited{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg) translateY(-4px)}75%{transform:rotate(6deg) translateY(-4px)}}
 
-/* Işık patlaması */
-.reveal-burst{position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.4),rgba(251,191,36,.1),transparent);animation:burstExpand 1s ease-out forwards;z-index:0}
-@keyframes burstExpand{from{width:0;height:0;margin-top:0;margin-left:0;opacity:1}to{width:200vw;height:200vw;margin-top:-100vw;margin-left:-100vw;opacity:0}}
+/* Süre doldu */
+.gift-expired{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1040 0%,#0a0f1a 70%);padding:32px;z-index:10}
+.expired-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:5px;color:rgba(251,191,36,.7);text-align:center;line-height:1.6;text-shadow:0 0 30px rgba(251,191,36,.15);animation:expiredPulse 3s ease infinite}
+@keyframes expiredPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
 
-.reveal-card{
-  background:linear-gradient(145deg,rgba(15,10,30,.95),rgba(20,15,40,.95));
-  backdrop-filter:blur(16px);
-  border:2px solid #fbbf24;
-  border-radius:24px;padding:32px 24px;
-  text-align:center;width:100%;max-width:380px;
-  box-shadow:0 0 60px rgba(251,191,36,.2),0 0 120px rgba(251,191,36,.05),0 20px 60px rgba(0,0,0,.5);
-  animation:revealPop .7s cubic-bezier(.34,1.56,.64,1);
-  position:relative;z-index:2;
+/* ═══ AÇILIŞ SEKANSLIĞI — tek sahne ═══ */
+.gift-reveal{position:absolute;inset:0;z-index:10;overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* 1. Işık — kutu konumundan yayılır (0.0s) */
+.scene-light{
+  position:absolute;bottom:35%;left:50%;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle,rgba(251,191,36,.9),rgba(251,191,36,.3),transparent);
+  transform:translate(-50%,0);animation:lightBurst .8s ease-out forwards;z-index:1;pointer-events:none;
 }
-@keyframes revealPop{from{transform:scale(.3) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes lightBurst{
+  0%{width:10px;height:10px;opacity:1}
+  50%{width:200vw;height:200vw;margin-left:-100vw;margin-bottom:-100vw;opacity:.5}
+  100%{width:300vw;height:300vw;margin-left:-150vw;margin-bottom:-150vw;opacity:0}
+}
 
-.reveal-stars{font-size:18px;color:#fbbf24;letter-spacing:12px;margin-bottom:8px;animation:starPulse 1.5s ease infinite}
-@keyframes starPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
-.reveal-badge{font-size:11px;font-weight:800;letter-spacing:4px;color:#fbbf24;margin-bottom:12px;text-shadow:0 0 12px rgba(251,191,36,.3)}
-.reveal-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:#fff;line-height:1.15;margin-bottom:8px;text-shadow:0 2px 20px rgba(0,0,0,.5)}
-.reveal-divider{width:60px;height:3px;background:linear-gradient(90deg,transparent,#fbbf24,transparent);margin:12px auto;border-radius:2px}
-.reveal-content{font-size:15px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:8px}
-.reveal-img{width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-top:12px;border:1px solid rgba(251,191,36,.2)}
-.reveal-footer{font-size:12px;font-weight:700;color:#ef4444;letter-spacing:2px;text-transform:uppercase;margin-top:14px;animation:urgentPulse 1s ease infinite}
-@keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.5}}
+/* 2. Konfeti — kutudan fışkırır (0.2s) */
+.scene-confetti{position:absolute;inset:0;pointer-events:none;z-index:3}
+.cf{position:absolute;bottom:35%;left:50%;transform:translate(-50%,0)}
 
-/* Konfeti — daha fazla, daha renkli */
-.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
-.confetti-piece{position:absolute;top:-20px;animation:confettiFall 3.5s ease-in forwards}
-@keyframes confettiFall{0%{transform:translateY(0) rotate(0) scale(1);opacity:1}80%{opacity:1}100%{transform:translateY(110vh) rotate(1080deg) scale(.5);opacity:0}}
+/* 3. Kart — kutudan yükselir (0.6s) */
+.scene-card{
+  position:relative;z-index:5;
+  background:linear-gradient(145deg,rgba(15,10,30,.96),rgba(20,15,40,.96));
+  backdrop-filter:blur(16px);border:2px solid #fbbf24;
+  border-radius:24px;padding:28px 22px;text-align:center;width:88%;max-width:360px;
+  box-shadow:0 0 60px rgba(251,191,36,.2),0 20px 60px rgba(0,0,0,.5);
+  transform:translateY(80vh) scale(.2);opacity:0;
+  animation:cardRise .9s cubic-bezier(.34,1.56,.64,1) .6s forwards;
+}
+@keyframes cardRise{
+  0%{transform:translateY(80vh) scale(.2);opacity:0}
+  40%{opacity:1}
+  100%{transform:translateY(0) scale(1);opacity:1}
+}
+
+/* Kart içi elemanlar — sırayla belirir */
+.reveal-stars{font-size:16px;color:#fbbf24;letter-spacing:10px;margin-bottom:6px;opacity:0;animation:rFade .3s ease 1.4s forwards}
+.reveal-badge{font-size:11px;font-weight:800;letter-spacing:4px;color:#fbbf24;margin-bottom:10px;opacity:0;animation:rFade .3s ease 1.5s forwards}
+.reveal-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:#fff;line-height:1.15;margin-bottom:6px;opacity:0;animation:rSlide .4s ease 1.6s forwards}
+.reveal-divider{width:50px;height:3px;background:linear-gradient(90deg,transparent,#fbbf24,transparent);margin:10px auto;border-radius:2px;opacity:0;animation:rFade .3s ease 1.7s forwards}
+.reveal-content{font-size:14px;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:6px;opacity:0;animation:rFade .3s ease 1.8s forwards}
+.reveal-img{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-top:10px;border:1px solid rgba(251,191,36,.2);opacity:0;animation:rFade .4s ease 1.9s forwards}
+.reveal-end-timer{margin-top:10px;font-size:13px;color:var(--warn);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:7px 14px;opacity:0;animation:rFade .3s ease 2s forwards}
+.reveal-end-timer strong{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px}
+.reveal-footer{font-size:11px;font-weight:700;color:#ef4444;letter-spacing:2px;text-transform:uppercase;margin-top:10px;opacity:0;animation:rBlink 1s ease 2.1s both}
+
+@keyframes rFade{from{opacity:0}to{opacity:1}}
+@keyframes rSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rBlink{0%,100%{opacity:1}50%{opacity:.4}}

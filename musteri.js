@@ -6,9 +6,8 @@ var isQueueMode=false,sheetOpen=false;
 var SPLASH_DURATION=5000;
 
 // ═══ LOTTİE ANİMASYONLARI ═══
-// URL'leri değiştirmek için sadece bu objeyi güncelleyin
 var LOTTIE={
-  gift:'https://assets9.lottiefiles.com/packages/lf20_u0pjflct.json',
+  gift:'https://lottie.host/dea0ddec-e1a7-48c9-9fcc-3abbe7e12f5e/dPSYLvmYck.lottie',
   confetti:'https://assets2.lottiefiles.com/packages/lf20_aZTdD6.json',
   queued:'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
   called:'https://assets2.lottiefiles.com/packages/lf20_puciaact.json',
@@ -22,13 +21,12 @@ var LOTTIE={
 };
 
 function createLottie(src,w,h,loop){
-  var el=document.createElement('lottie-player');
+  var el=document.createElement('dotlottie-wc');
   el.setAttribute('src',src);
-  el.setAttribute('background','transparent');
-  el.setAttribute('speed','1');
   if(loop!==false)el.setAttribute('loop','');
   el.setAttribute('autoplay','');
   el.style.width=(w||120)+'px';el.style.height=(h||120)+'px';
+  el.style.display='block';
   return el;
 }
 
@@ -516,7 +514,7 @@ function showGiftScreen(){
     document.getElementById('gift-reveal').style.display='none';
     document.getElementById('gift-expired').style.display='none';
     // Lottie hediye kutusu
-    initLottieFor('lottie-gift',LOTTIE.gift,160,160,true);
+    initLottieFor('lottie-gift',LOTTIE.gift,200,200,true);
     startGiftCountdown();
   }
 }
@@ -560,51 +558,37 @@ function triggerRevealAnimation(){
 function revealGift(){
   giftRevealed=true;
   document.getElementById('gift-pre').style.display='none';
-  var rv=document.getElementById('gift-reveal');rv.style.display='flex';
-  document.getElementById('reveal-title').textContent=giftData.title||'Sürpriz Fırsat!';
+  var rv=document.getElementById('gift-reveal');rv.style.display='block';
+  document.getElementById('reveal-title').textContent=giftData.title||'Sürpriz!';
   document.getElementById('reveal-content').textContent=giftData.content||'';
   var img=document.getElementById('reveal-img');
   if(giftData.imageUrl){img.src=giftData.imageUrl;img.style.display='block';img.onerror=function(){this.style.display='none'}}
-  // Lottie konfeti + CSS konfeti birlikte
-  var confDiv=document.getElementById('confetti');
-  if(confDiv){
-    var lc=createLottie(LOTTIE.confetti,400,400,false);
-    lc.style.position='absolute';lc.style.top='50%';lc.style.left='50%';lc.style.transform='translate(-50%,-50%)';lc.style.width='100%';lc.style.height='100%';lc.style.pointerEvents='none';
-    confDiv.appendChild(lc);
-  }
-  spawnConfetti();
+  spawnSceneConfetti();
 }
 
-function spawnConfetti(){
-  var c=document.getElementById('confetti');if(!c)return;c.innerHTML='';
+function spawnSceneConfetti(){
+  var c=document.getElementById('scene-confetti');if(!c)return;c.innerHTML='';
   var colors=['#fbbf24','#ef4444','#10b981','#a78bfa','#f472b6','#60a5fa','#34d399','#f97316','#06b6d4','#e879f9'];
-  var shapes=['50%','2px','0'];
-  for(var i=0;i<80;i++){
-    var p=document.createElement('div');p.className='confetti-piece';
-    p.style.left=Math.random()*100+'%';
+  for(var i=0;i<60;i++){
+    var p=document.createElement('div');p.className='cf';
+    // Rastgele yön — kutudan her yöne fışkırır
+    var angle=(Math.random()*360)*(Math.PI/180);
+    var dist=150+Math.random()*300;
+    var tx=Math.cos(angle)*dist;
+    var ty=-Math.abs(Math.sin(angle)*dist)-(Math.random()*200); // yukarı ağırlıklı
+    var endY=ty+400+Math.random()*300; // yerçekimi ile düşüş
     p.style.background=colors[Math.floor(Math.random()*colors.length)];
-    p.style.animationDelay=Math.random()*1.5+'s';
-    p.style.animationDuration=(2.5+Math.random()*2)+'s';
-    p.style.width=(5+Math.random()*8)+'px';
-    p.style.height=(6+Math.random()*10)+'px';
-    p.style.borderRadius=shapes[Math.floor(Math.random()*shapes.length)];
-    p.style.opacity=.8+Math.random()*.2;
+    p.style.width=(5+Math.random()*7)+'px';
+    p.style.height=(6+Math.random()*9)+'px';
+    p.style.borderRadius=Math.random()>.5?'50%':'2px';
+    p.style.animationDelay=(Math.random()*.3)+'s';
+    p.style.animation='cfShoot'+i+' '+(2+Math.random()*1.5)+'s ease-out forwards';
+    // Her parça için unique keyframe
+    var style=document.createElement('style');
+    style.textContent='@keyframes cfShoot'+i+'{0%{transform:translate(-50%,0) rotate(0);opacity:1}20%{transform:translate('+tx*0.6+'px,'+ty+'px) rotate('+(360+Math.random()*360)+'deg);opacity:1}100%{transform:translate('+tx+'px,'+endY+'px) rotate('+(720+Math.random()*720)+'deg);opacity:0}}';
+    document.head.appendChild(style);
     c.appendChild(p);
   }
-  // İkinci dalga konfeti
-  setTimeout(function(){
-    for(var j=0;j<30;j++){
-      var p2=document.createElement('div');p2.className='confetti-piece';
-      p2.style.left=Math.random()*100+'%';
-      p2.style.background=colors[Math.floor(Math.random()*colors.length)];
-      p2.style.animationDelay=Math.random()+'s';
-      p2.style.animationDuration=(3+Math.random()*2)+'s';
-      p2.style.width=(6+Math.random()*6)+'px';
-      p2.style.height=(8+Math.random()*8)+'px';
-      p2.style.borderRadius='50%';
-      c.appendChild(p2);
-    }
-  },1500);
 }
 
 var giftEndInterval=null;
