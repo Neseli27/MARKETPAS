@@ -268,7 +268,11 @@ async function loadCongestionStats() {
     if (avgEl) avgEl.textContent = stats.avgProcessTime > 0 ? formatWaitTime(stats.avgProcessTime) : '—';
     if (congEl) { congEl.textContent = '%' + stats.congestionPercent; congEl.style.color = stats.congestionLevel === 'yogun' ? '#EF4444' : stats.congestionLevel === 'normal' ? '#D97706' : '#16A34A'; }
     if (kasaEl) kasaEl.textContent = stats.activeCasas;
-    if (waitEl) waitEl.textContent = stats.estimatedWait > 0 ? formatWaitTime(stats.estimatedWait) : '—';
+    if (waitEl) waitEl.textContent = stats.estimatedWait > 0 ? formatWaitTime(stats.estimatedWait) : 'Hemen';
+    var rateEl = document.getElementById('stat-service-rate');
+    if (rateEl) rateEl.textContent = stats.avgServiceRate > 0 ? stats.avgServiceRate + '/sa' : '—';
+    var servedEl = document.getElementById('stat-today');
+    if (servedEl && stats.servedToday !== undefined) servedEl.textContent = stats.servedToday;
 
     // Akıllı kasa uyarısı — kasa başına 4+ bekleyen = yeni kasa aç
     var al = document.getElementById('congestion-alert');

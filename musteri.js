@@ -173,13 +173,37 @@ async function loadCongestion(){try{currentStats=await getMarketStats(marketId);
 function renderCongestion(s){
   var dot=document.getElementById('cg-dot'),lbl=document.getElementById('cg-lbl'),fill=document.getElementById('cg-fill'),info=document.getElementById('cg-info');
   if(!dot)return;var lv=s.congestionLevel;dot.className='cg-dot '+lv;fill.className='cg-fill '+lv;fill.style.width=s.congestionPercent+'%';
-  if(lv==='sakin')lbl.textContent='🟢 Sakin';else if(lv==='normal')lbl.textContent='🟡 Normal';else lbl.textContent='🔴 Yoğun (%'+s.congestionPercent+')';
-  info.textContent=[s.activeCasas+' kasa',s.waitingCount>0?s.waitingCount+' sırada':''].filter(Boolean).join(' · ');
+  if(lv==='sakin')lbl.textContent='🟢 Sakin';else if(lv==='normal')lbl.textContent='🟡 Normal';else lbl.textContent='🔴 Yoğun';
+  var parts=[];
+  if(s.activeCasas>0)parts.push(s.activeCasas+' kasa açık');
+  if(s.waitingCount>0)parts.push(s.waitingCount+' kişi sırada');
+  if(s.estimatedWait>0)parts.push('~'+formatWaitTime(s.estimatedWait)+' bekleme');
+  else if(s.activeCasas>0&&s.waitingCount===0)parts.push('Sıra yok — hemen');
+  info.textContent=parts.join(' · ');
 }
 function updateWaitEstimate(s){var el=document.getElementById('wait-est'),d=document.getElementById('wait-time');if(!el||!d)return;
   var qs=document.getElementById('screen-queued');if(!qs||!qs.classList.contains('active'))return;
-  if(s&&s.estimatedWait>0){d.textContent=formatWaitTime(s.estimatedWait);el.style.display='flex'}
-  else if(s&&s.waitingCount===0){d.textContent='Hemen';el.style.display='flex'}}
+  if(!s||s.activeCasas===0){el.style.display='none';return}
+  
+  // Kişisel tahmini hesapla — müşterinin sıra pozisyonuna göre
+  if(myQueueData&&s.avgProcessTime>0){
+    var myPos=s.waitingCount; // En kötü ihtimal — sıranın sonunda
+    // Eğer queueNumber varsa daha hassas hesapla
+    if(myQueueData.queueNumber){
+      // Kendinden önce kaç kişi var sayalım (basitleştirilmiş)
+      myPos=Math.max(1,s.waitingCount);
+    }
+    var myWait=Math.ceil(myPos/s.activeCasas)*s.avgProcessTime;
+    if(myWait>0){
+      d.textContent=formatWaitTime(myWait);
+      el.style.display='flex';
+    }else{
+      d.textContent='Hemen';el.style.display='flex';
+    }
+  }else if(s.waitingCount===0){
+    d.textContent='Hemen';el.style.display='flex';
+  }else{el.style.display='none'}
+}
 
 // ═══ DUYURULAR ═══
 function loadAnnouncements(){

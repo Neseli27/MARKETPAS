@@ -3,13 +3,12 @@
 // =====================================================
 
 var firebaseConfig = {
-  apiKey: "AIzaSyCqUSoowo2EbKKhG0SBcIzBYddwYOzHKRo",
-  authDomain: "egitim-yonetim-platformu.firebaseapp.com",
-  projectId: "egitim-yonetim-platformu",
-  storageBucket: "egitim-yonetim-platformu.firebasestorage.app",
-  messagingSenderId: "548967060709",
-  appId: "1:548967060709:web:d95bbd360347021634700c",
-  measurementId: "G-89D843J9RF"
+  apiKey:            "BURAYA_API_KEY",
+  authDomain:        "BURAYA_PROJECT_ID.firebaseapp.com",
+  projectId:         "BURAYA_PROJECT_ID",
+  storageBucket:     "BURAYA_PROJECT_ID.appspot.com",
+  messagingSenderId: "BURAYA_SENDER_ID",
+  appId:             "BURAYA_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
@@ -139,22 +138,63 @@ async function assignNextToRegister(marketId, registerId, kasaNo) {
 
 // ─── Market İstatistikleri ────────────────────────────
 async function getMarketStats(marketId) {
-  var stats = { activeCasas: 0, busyCasas: 0, waitingCount: 0, avgProcessTime: 0, estimatedWait: 0, congestionPercent: 0, congestionLevel: 'sakin' };
+  var stats = { activeCasas: 0, busyCasas: 0, waitingCount: 0, avgProcessTime: 0, estimatedWait: 0, congestionPercent: 0, congestionLevel: 'sakin', servedToday: 0, avgServiceRate: 0 };
   try {
+    // Kasa durumları
     var regSnap = await db.collection('registers').where('marketId', '==', marketId).where('active', '==', true).get();
     stats.activeCasas = regSnap.size;
-    regSnap.forEach(function(doc) { var d = doc.data(); if (d.activeQueueId || d.waitingQueueId) stats.busyCasas++; });
+    var busyWithActive = 0, busyWithWaiting = 0;
+    regSnap.forEach(function(doc) {
+      var d = doc.data();
+      if (d.activeQueueId) busyWithActive++;
+      if (d.waitingQueueId) busyWithWaiting++;
+    });
+    stats.busyCasas = busyWithActive + busyWithWaiting;
+
+    // Sırada bekleyenler
     var qSnap = await db.collection('queue').where('marketId', '==', marketId).where('status', 'in', ['waiting', 'priority', 'priority_ready']).get();
     stats.waitingCount = qSnap.size;
+
+    // Ortalama işlem süresi (gerçek veriden)
     var mDoc = await db.collection('markets').doc(marketId).get();
     stats.avgProcessTime = (mDoc.exists && mDoc.data().avgProcessTime) ? mDoc.data().avgProcessTime : 3 * 60 * 1000;
-    if (stats.activeCasas > 0) {
-      stats.estimatedWait = Math.ceil((stats.waitingCount / stats.activeCasas) * stats.avgProcessTime);
-      var cap = stats.activeCasas * 2;
-      stats.congestionPercent = Math.min(100, Math.round(((stats.busyCasas + stats.waitingCount) / cap) * 100));
+
+    // Bugün hizmet verilen müşteri sayısı
+    var today = new Date(); today.setHours(0,0,0,0);
+    try {
+      var doneSnap = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(today)).get();
+      stats.servedToday = doneSnap.size;
+    } catch(e) {}
+
+    // Saatlik hizmet hızı (kasa başına)
+    if (stats.avgProcessTime > 0) {
+      stats.avgServiceRate = Math.round(3600000 / stats.avgProcessTime); // müşteri/saat/kasa
     }
-    if (stats.congestionPercent < 30) stats.congestionLevel = 'sakin';
-    else if (stats.congestionPercent < 70) stats.congestionLevel = 'normal';
+
+    if (stats.activeCasas > 0) {
+      // Akıllı bekleme süresi hesabı:
+      // - Şu an aktif kasalardaki işlemler ortalama yarısı kadar sürede bitecek
+      // - Toplam bekleyen = sıradakiler + çağrılmış ama kasaya gitmemiş
+      // - Bekleme = (bekleyen / boş kasa kapasitesi) * ort. işlem süresi
+      var freeCasas = stats.activeCasas - busyWithActive;
+      var effectiveWaiting = stats.waitingCount;
+
+      if (freeCasas >= effectiveWaiting) {
+        // Boş kasa var — hemen işleme alınır
+        stats.estimatedWait = 0;
+      } else {
+        // Aktif kasalardaki müşteriler ortalama yarı sürede bitecek (istatistiksel)
+        var halfProcess = stats.avgProcessTime * 0.5;
+        var firstBatchTime = freeCasas > 0 ? 0 : halfProcess;
+        var remaining = effectiveWaiting - Math.max(0, freeCasas);
+        stats.estimatedWait = firstBatchTime + Math.ceil(remaining / stats.activeCasas) * stats.avgProcessTime;
+      }
+
+      var cap = stats.activeCasas * 4; // Kasa başına 4 müşteri = %100 yoğunluk
+      stats.congestionPercent = Math.min(100, Math.round((stats.waitingCount / cap) * 100));
+    }
+    if (stats.congestionPercent < 25) stats.congestionLevel = 'sakin';
+    else if (stats.congestionPercent < 60) stats.congestionLevel = 'normal';
     else stats.congestionLevel = 'yogun';
   } catch(e) {}
   return stats;
