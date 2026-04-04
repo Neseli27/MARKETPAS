@@ -186,6 +186,19 @@
 
   <!-- PWA Kurulum Banneri -->
   <div class="pwa-install-banner" id="pwa-install-banner" style="display:none">
+
+  <!-- Alarm Overlay — Kasa çağrısı tam ekran uyarı -->
+  <div class="alarm-overlay" id="alarm-overlay" style="display:none" onclick="dismissAlarm()">
+    <div class="alarm-box">
+      <div class="alarm-pulse-ring"></div>
+      <div class="alarm-icon">🔔</div>
+      <div class="alarm-title">SIRANIZ GELDİ!</div>
+      <div class="alarm-code" id="alarm-code">000-000</div>
+      <div class="alarm-kasa" id="alarm-kasa">KASA 1</div>
+      <div class="alarm-sub">Lütfen kasaya gidiniz</div>
+      <button class="alarm-stop-btn" onclick="dismissAlarm()">🔇 Alarmı Durdur</button>
+    </div>
+  </div>
     <div class="pwa-install-inner">
       <div class="pwa-install-icon" id="pwa-install-icon">
         <img src="/icon-192.png" alt="MP" width="44" height="44" style="border-radius:10px">

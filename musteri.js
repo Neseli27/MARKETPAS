@@ -26,12 +26,92 @@ function initLottieFor(containerId,src,w,h,loop){
   c.appendChild(createLottie(src,w||100,h||100,loop));
 }
 
-// Bildirim
+// ═══ ALARM SİSTEMİ ═══════════════════════════════════
+var alarmCtx=null,alarmOsc=null,alarmGain=null,alarmInterval=null,alarmTimeout=null;
+var alarmVibInterval=null;
+var ALARM_DURATION=30000; // 30 saniye
+
+function startAlarm(){
+  stopAlarm(); // önceki varsa temizle
+  try{
+    alarmCtx=new(window.AudioContext||window.webkitAudioContext)();
+    // Sessiz başlat (mobilde kullanıcı etkileşimi gerekir, resume ile aç)
+    if(alarmCtx.state==='suspended') alarmCtx.resume();
+    alarmGain=alarmCtx.createGain();
+    alarmGain.connect(alarmCtx.destination);
+    alarmGain.gain.value=0;
+
+    // İki tonlu alarm: yüksek-alçak-yüksek-alçak (mağaza çağrı sesi)
+    var step=0;
+    function playTone(){
+      if(!alarmCtx)return;
+      try{
+        var osc=alarmCtx.createOscillator();
+        var g=alarmCtx.createGain();
+        osc.connect(g);g.connect(alarmCtx.destination);
+        // Ton 1: 880Hz (yüksek), Ton 2: 660Hz (alçak) — alternatif
+        osc.frequency.value=(step%2===0)?880:660;
+        osc.type='sine';
+        g.gain.setValueAtTime(0.5,alarmCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01,alarmCtx.currentTime+0.35);
+        osc.start(alarmCtx.currentTime);
+        osc.stop(alarmCtx.currentTime+0.4);
+        step++;
+      }catch(e){}
+    }
+
+    // Hemen çal + her 500ms'de tekrarla
+    playTone();
+    alarmInterval=setInterval(playTone,500);
+
+    // Sürekli titreşim (destekleniyorsa)
+    function vibrateLoop(){
+      if(navigator.vibrate)navigator.vibrate([400,200,400,200,600]);
+    }
+    vibrateLoop();
+    alarmVibInterval=setInterval(vibrateLoop,2000);
+
+    // 30 saniye sonra otomatik dur
+    alarmTimeout=setTimeout(function(){stopAlarm()},ALARM_DURATION);
+
+    // Alarm overlay'i göster
+    showAlarmOverlay();
+  }catch(e){console.warn('MarketPas Alarm hatası:',e)}
+}
+
+function stopAlarm(){
+  if(alarmInterval){clearInterval(alarmInterval);alarmInterval=null}
+  if(alarmVibInterval){clearInterval(alarmVibInterval);alarmVibInterval=null}
+  if(alarmTimeout){clearTimeout(alarmTimeout);alarmTimeout=null}
+  if(navigator.vibrate)navigator.vibrate(0); // titreşimi durdur
+  if(alarmCtx){try{alarmCtx.close()}catch(e){} alarmCtx=null}
+  hideAlarmOverlay();
+}
+
+function showAlarmOverlay(){
+  var ov=document.getElementById('alarm-overlay');
+  if(ov)ov.style.display='flex';
+}
+function hideAlarmOverlay(){
+  var ov=document.getElementById('alarm-overlay');
+  if(ov)ov.style.display='none';
+}
+function dismissAlarm(){
+  stopAlarm();
+}
+
+// ═══ BİLDİRİM (alarm + push) ════════════════════════
 async function requestNotificationPermission(){if(!('Notification' in window))return;if(Notification.permission==='default')await Notification.requestPermission()}
 function notifyCustomer(code,kasaNo){
-  if(navigator.vibrate)navigator.vibrate([300,100,300,100,500]);
-  try{var ctx=new(window.AudioContext||window.webkitAudioContext)();var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);o.start(ctx.currentTime);o.stop(ctx.currentTime+.5)}catch(e){}
-  if(Notification.permission==='granted'&&document.hidden)new Notification('Sıranız Geldi!',{body:'Kodunuz: '+code+' — Kasa '+kasaNo+"'e gidiniz",icon:'/icon-192.png',tag:'mp-q',requireInteraction:true});
+  // 1. Sesli alarm başlat (30sn veya kullanıcı durdurana kadar)
+  // Alarm overlay'daki bilgileri güncelle
+  var ac=document.getElementById('alarm-code');if(ac)ac.textContent=code||'---';
+  var ak=document.getElementById('alarm-kasa');if(ak)ak.textContent='KASA '+(kasaNo||'—');
+  startAlarm();
+
+  // 2. Push notification (sayfa arka plandaysa)
+  if(Notification.permission==='granted')
+    new Notification('Sıranız Geldi!',{body:'Kodunuz: '+code+' — Kasa '+kasaNo+"'e gidiniz",icon:'/icon-192.png',tag:'mp-q',requireInteraction:true,silent:false});
 }
 
 // ═══ BAŞLANGIÇ ═══
@@ -342,15 +422,15 @@ function startQueueListener(){
         document.getElementById('called-kasa').textContent='KASA '+(myQueueData.kasaNo||'—');
         startCountdown(myQueueData.calledAt?.toDate()||new Date());
         if(!notifiedForThisCall){notifyCustomer(myQueueData.code,myQueueData.kasaNo);notifiedForThisCall=true}break;
-      case 'arrived':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('arrived');break;
-      case 'active':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('active');break;
-      case 'paused':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('paused');break;
-      case 'timeout':clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('timeout');break;
-      case 'done':clearInterval(countdownInterval);notifiedForThisCall=false;
+      case 'arrived':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('arrived');break;
+      case 'active':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('active');break;
+      case 'paused':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('paused');break;
+      case 'timeout':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;showScreen('timeout');break;
+      case 'done':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;
         document.getElementById('thanks-title').textContent='Kasa İşleminiz Tamamlandı';
         document.getElementById('thanks-sub').textContent='Teşekkür ederiz. İyi günler dileriz!';
         showScreen('thanks');setTimeout(function(){newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname)},6000);break;
-      case 'cancelled':clearInterval(countdownInterval);notifiedForThisCall=false;newSession();enterVitrinMode();
+      case 'cancelled':stopAlarm();clearInterval(countdownInterval);notifiedForThisCall=false;newSession();enterVitrinMode();
         if(window.location.search)history.replaceState({},'',window.location.pathname);break;
       default:showScreen('ready');
     }
@@ -379,13 +459,14 @@ async function tryAssignToOpenRegister(){try{
   }catch(e){}}
 
 async function handleCancel(){
+  stopAlarm();
   var ok=await mpConfirm('Sıranızı iptal etmek istiyor musunuz?','⚠️');
   if(!ok)return;
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
   if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
 }
 
-async function handleErtele(){if(!myQueueData)return;var rid=myQueueData.registerId;
+async function handleErtele(){stopAlarm();if(!myQueueData)return;var rid=myQueueData.registerId;
   await db.collection('queue').doc(sessionId).update({status:'paused',code:null,registerId:null,kasaNo:null,calledAt:null});
   if(rid){await db.collection('registers').doc(rid).update({waitingQueueId:null,waitingCode:null,calledAt:null})}
   clearInterval(countdownInterval);notifiedForThisCall=false;}
