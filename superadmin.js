@@ -86,22 +86,22 @@ function renderPricingPreview() {
   if (!container) return;
   var min = pricingData.minPrice || 20;
   var max = pricingData.maxPrice || 50;
-  var tiers = [
-    { range: '1-2 kasa', count: 2 },
-    { range: '3-5 kasa', count: 4 },
-    { range: '6-10 kasa', count: 8 },
-    { range: '11-20 kasa', count: 15 },
-    { range: '20+ kasa', count: 25 }
+  var examples = [
+    { label: '1 kasa', count: 1 },
+    { label: '3 kasa', count: 3 },
+    { label: '5 kasa', count: 5 },
+    { label: '10 kasa', count: 10 },
+    { label: '20 kasa', count: 20 }
   ];
-  var html = '<div class="pricing-preview-title">Kademe Önizleme</div><div class="pricing-preview-grid">';
-  tiers.forEach(function(t) {
+  var html = '<div class="pricing-preview-title">Fiyat Önizleme (√ formülü)</div><div class="pricing-preview-grid">';
+  examples.forEach(function(t) {
     var price = calculateUnitPrice(t.count, min, max);
     var daily = price * t.count;
     var monthly = daily * 30;
-    html += '<div class="pricing-tier"><div class="pricing-tier-range">' + t.range + '</div><div class="pricing-tier-price">' + price + ' ₺</div><div class="pricing-tier-daily">' + daily + ' ₺/gün</div><div class="pricing-tier-daily">' + (monthly >= 1000 ? (monthly/1000).toFixed(1) + 'K' : monthly) + ' ₺/ay</div></div>';
+    html += '<div class="pricing-tier"><div class="pricing-tier-range">' + t.label + '</div><div class="pricing-tier-price">' + price + ' ₺</div><div class="pricing-tier-daily">Günlük: ' + daily + ' ₺</div><div class="pricing-tier-daily">Aylık: ' + (monthly >= 1000 ? (monthly/1000).toFixed(1) + 'K' : monthly) + ' ₺</div></div>';
   });
   html += '</div>';
-  html += '<div style="margin-top:12px;padding:10px 14px;background:#FFF7ED;border:1px solid #FB923C;border-radius:8px;display:flex;align-items:center;gap:12px"><span style="font-size:18px">⚡</span><div><div style="font-size:13px;font-weight:700;color:#C2410C">Günübirlik Paket</div><div style="font-size:12px;color:#9A3412">Sabit 500 ₺ / gün — kasa sayısından bağımsız.</div></div></div>';
+  html += '<div style="margin-top:12px;padding:10px 14px;background:#EFF6FF;border:1px solid #93C5FD;border-radius:8px;font-size:12px;color:#1E40AF;line-height:1.5">Formül: birimFiyat = min + (max − min) / √kasa — Kasa arttıkça birim fiyat düşer, toplam her zaman artar. Kullanıma dayalı: sadece o gün kullanılan kasalar ücretlendirilir.</div>';
   container.innerHTML = html;
 }
 
@@ -225,7 +225,7 @@ function renderMarkets() {
     if (m.licenseExpiry) {
       var days = getLicenseRemainingDays(m.licenseExpiry);
       var expDate = (m.licenseExpiry.toDate ? m.licenseExpiry.toDate() : new Date(m.licenseExpiry)).toLocaleDateString('tr-TR');
-      var planName = m.licenseDays === 1 ? 'Günübirlik · 500 ₺' : (m.licenseDays || '—') + ' günlük plan';
+      var planName = (m.licenseDays || '—') + ' günlük plan';
       if (days > 0) {
         licBar.innerHTML = '<span class="sa-license-pill active">✓ Aktif</span><span class="sa-license-days">' + days + ' gün kaldı</span><span class="sa-license-plan">' + planName + '</span><span class="sa-license-expiry">Bitiş: ' + expDate + '</span>';
       } else {
@@ -322,16 +322,16 @@ async function saveKasaLimit() {
 async function setLicense(days) {
   var mId = document.getElementById('modal-market-id').value;
   if (!mId) return;
-  var label = days === 1 ? 'Günübirlik (500 ₺)' : days + ' günlük';
+  var label = days + ' günlük';
   if (!(await mpConfirm(label + ' lisans tanımlanacak. Onaylıyor musunuz?', '📋'))) return;
   try {
     var expiry = new Date();
-    if (days === 1) { expiry.setHours(23, 59, 59, 999); }
-    else { expiry.setDate(expiry.getDate() + days); expiry.setHours(23, 59, 59, 999); }
+    expiry.setDate(expiry.getDate() + days);
+    expiry.setHours(23, 59, 59, 999);
     await db.collection('markets').doc(mId).update({
       licenseExpiry: firebase.firestore.Timestamp.fromDate(expiry),
       licenseDays: days,
-      licenseType: days === 1 ? 'daily' : 'standard',
+      licenseType: 'standard',
       status: 'active'
     });
     closeModal();

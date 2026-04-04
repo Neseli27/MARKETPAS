@@ -173,26 +173,22 @@ function formatWaitTime(ms) {
 }
 
 // ─── Fiyatlandırma Hesaplama ─────────────────────────
-// Kasa sayısına göre birim fiyat hesapla (min-max arası kademeli)
-// Kasa arttıkça birim fiyat max'tan min'e doğru düşer
+// Kasa sayısına göre birim fiyat: kök fonksiyonu ile yumuşak düşüş
+// Toplam fiyat HER ZAMAN artar — kademe atlama sorunu yok
+// Formül: unitPrice = minPrice + (maxPrice - minPrice) / √kasaSayısı
 function calculateUnitPrice(kasaSayisi, minPrice, maxPrice) {
   if (!kasaSayisi || kasaSayisi <= 0) return maxPrice;
   if (minPrice >= maxPrice) return minPrice;
-  // Kademe eşikleri: 1-2 → max, 3-5 → %75, 6-10 → %50, 11-20 → %25, 20+ → min
-  var ratio;
-  if (kasaSayisi <= 2) ratio = 1;
-  else if (kasaSayisi <= 5) ratio = 0.75;
-  else if (kasaSayisi <= 10) ratio = 0.45;
-  else if (kasaSayisi <= 20) ratio = 0.2;
-  else ratio = 0;
-  var price = minPrice + (maxPrice - minPrice) * ratio;
+  var price = minPrice + (maxPrice - minPrice) / Math.sqrt(kasaSayisi);
   return Math.round(price);
 }
 
-// Market için geçerli birim fiyat: özel fiyat varsa onu, yoksa otomatik hesapla
+// Market için geçerli birim fiyat
+// Özel fiyat varsa onu, yoksa kasaLimit'e göre hesapla (kasaLimit yoksa kasaSayisi)
 function getEffectiveUnitPrice(market, minPrice, maxPrice) {
   if (market.customPrice && market.customPrice > 0) return market.customPrice;
-  return calculateUnitPrice(market.kasaSayisi || 0, minPrice, maxPrice);
+  var base = market.kasaLimit || market.kasaSayisi || 0;
+  return calculateUnitPrice(base, minPrice, maxPrice);
 }
 
 // ─── Günlük Kasa Kullanım Takibi ────────────────────
