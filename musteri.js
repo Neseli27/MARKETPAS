@@ -458,9 +458,24 @@ async function tryAssignToOpenRegister(){try{
       if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}
   }catch(e){}}
 
+// "GELİYORUM" — alarmı durdur, çağrı durumu devam eder
+function handleGeliyorum(){
+  stopAlarm();
+  // Müşteri geliyorum dedi — sadece alarm kapanır, kasa bekliyor ekranı kalır
+}
+
+// İptal — özel uyarı ile
+async function handleCancelWithWarning(){
+  stopAlarm();
+  var ok=await mpConfirm('İptal ettiğinizde mağazanın QR kodunu tekrar okutmanız gerekir.','⚠️','Tamam, İptal Et','Vazgeç');
+  if(!ok)return;
+  try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
+  if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);
+}
+
 async function handleCancel(){
   stopAlarm();
-  var ok=await mpConfirm('Sıranızı iptal etmek istiyor musunuz?','⚠️');
+  var ok=await mpConfirm('İptal ettiğinizde mağazanın QR kodunu tekrar okutmanız gerekir.','⚠️','Tamam, İptal Et','Vazgeç');
   if(!ok)return;
   try{await db.collection('queue').doc(sessionId).update({status:'cancelled'})}catch(e){}
   if(queueListener)queueListener();newSession();enterVitrinMode();if(window.location.search)history.replaceState({},'',window.location.pathname);

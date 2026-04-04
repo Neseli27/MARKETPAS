@@ -219,12 +219,15 @@ var TURKEY_CITIES = ["Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Am
   };
 
   // mpConfirm — confirm() yerine
-  window.mpConfirm=function(msg,icon){
+  // mpConfirm(msg, icon, confirmText, cancelText)
+  window.mpConfirm=function(msg,icon,confirmText,cancelText){
     return new Promise(function(resolve){
+      var yesLabel=confirmText||'Evet';
+      var noLabel=cancelText||'Vazgeç';
       var ov=document.createElement('div');ov.className='mp-modal-overlay';
       ov.innerHTML='<div class="mp-modal-box">'+(icon?'<div class="mp-modal-icon">'+icon+'</div>':'')+
         '<div class="mp-modal-msg">'+msg+'</div>'+
-        '<div class="mp-modal-btns"><button class="mp-modal-btn cancel" id="mp-no">Vazgeç</button><button class="mp-modal-btn danger" id="mp-yes">Evet</button></div></div>';
+        '<div class="mp-modal-btns"><button class="mp-modal-btn cancel" id="mp-no">'+noLabel+'</button><button class="mp-modal-btn danger" id="mp-yes">'+yesLabel+'</button></div></div>';
       document.body.appendChild(ov);
       ov.querySelector('#mp-no').onclick=function(){ov.remove();resolve(false)};
       ov.querySelector('#mp-yes').onclick=function(){ov.remove();resolve(true)};
