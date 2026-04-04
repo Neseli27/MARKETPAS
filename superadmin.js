@@ -1,10 +1,10 @@
 // =====================================================
-// MarketPas v3 — Süper Admin Paneli (Fiyatlandırma)
+// MarketPas v4 — Süper Admin Paneli
 // =====================================================
 
 var allMarkets = [];
 var currentFilter = 'all';
-var pricingData = { minPrice: 20, maxPrice: 50 }; // varsayılan
+var pricingData = { minPrice: 20, maxPrice: 50 };
 
 // ─── Giriş ───────────────────────────────────────────
 async function saLogin() {
@@ -49,17 +49,20 @@ function startPanel() {
 
 function togglePricingPanel() {
   var panel = document.getElementById('pricing-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  var arrow = document.getElementById('pricing-arrow');
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  arrow.classList.toggle('open', !isOpen);
 }
 
 async function loadPricing() {
   try {
     var doc = await db.collection('config').doc('pricing').get();
-    if (doc.exists) {
-      pricingData = doc.data();
-    }
-    document.getElementById('price-min').value = pricingData.minPrice || 20;
-    document.getElementById('price-max').value = pricingData.maxPrice || 50;
+    if (doc.exists) pricingData = doc.data();
+    var minEl = document.getElementById('price-min');
+    var maxEl = document.getElementById('price-max');
+    if (minEl) minEl.value = pricingData.minPrice || 20;
+    if (maxEl) maxEl.value = pricingData.maxPrice || 50;
     renderPricingPreview();
   } catch(e) {}
 }
@@ -69,7 +72,6 @@ async function savePricing() {
   var max = parseInt(document.getElementById('price-max').value) || 50;
   if (min >= max) { mpAlert('Min fiyat, max fiyattan küçük olmalı.', '⚠️'); return; }
   if (min < 1) { mpAlert('Min fiyat en az 1 TL olmalı.', '⚠️'); return; }
-
   pricingData = { minPrice: min, maxPrice: max };
   try {
     await db.collection('config').doc('pricing').set(pricingData);
@@ -81,9 +83,9 @@ async function savePricing() {
 
 function renderPricingPreview() {
   var container = document.getElementById('pricing-preview');
+  if (!container) return;
   var min = pricingData.minPrice || 20;
   var max = pricingData.maxPrice || 50;
-
   var tiers = [
     { range: '1-2 kasa', count: 2 },
     { range: '3-5 kasa', count: 4 },
@@ -91,31 +93,20 @@ function renderPricingPreview() {
     { range: '11-20 kasa', count: 15 },
     { range: '20+ kasa', count: 25 }
   ];
-
   var html = '<div class="pricing-preview-title">Kademe Önizleme</div><div class="pricing-preview-grid">';
   tiers.forEach(function(t) {
     var price = calculateUnitPrice(t.count, min, max);
     var daily = price * t.count;
     var monthly = daily * 30;
-    html += '<div class="pricing-tier">' +
-      '<div class="pricing-tier-range">' + t.range + '</div>' +
-      '<div class="pricing-tier-price">' + price + ' ₺</div>' +
-      '<div class="pricing-tier-daily">' + daily + ' ₺/gün</div>' +
-      '<div class="pricing-tier-daily">' + (monthly >= 1000 ? (monthly/1000).toFixed(1) + 'K' : monthly) + ' ₺/ay</div>' +
-    '</div>';
+    html += '<div class="pricing-tier"><div class="pricing-tier-range">' + t.range + '</div><div class="pricing-tier-price">' + price + ' ₺</div><div class="pricing-tier-daily">' + daily + ' ₺/gün</div><div class="pricing-tier-daily">' + (monthly >= 1000 ? (monthly/1000).toFixed(1) + 'K' : monthly) + ' ₺/ay</div></div>';
   });
   html += '</div>';
-  // Günübirlik paketi bilgisi
-  html += '<div style="margin-top:12px;padding:10px 14px;background:#FFF7ED;border:1px solid #FB923C;border-radius:8px;display:flex;align-items:center;gap:12px">';
-  html += '<span style="font-size:18px">⚡</span>';
-  html += '<div><div style="font-size:13px;font-weight:700;color:#C2410C">Günübirlik Paket</div>';
-  html += '<div style="font-size:12px;color:#9A3412">Sabit 500 ₺ / gün — kasa sayısından bağımsız. Bayram, hafta sonu gibi özel günler için.</div></div>';
-  html += '</div>';
+  html += '<div style="margin-top:12px;padding:10px 14px;background:#FFF7ED;border:1px solid #FB923C;border-radius:8px;display:flex;align-items:center;gap:12px"><span style="font-size:18px">⚡</span><div><div style="font-size:13px;font-weight:700;color:#C2410C">Günübirlik Paket</div><div style="font-size:12px;color:#9A3412">Sabit 500 ₺ / gün — kasa sayısından bağımsız.</div></div></div>';
   container.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════
-// MARKET LİSTESİ
+// MARKET LİSTESİ + ARAMA + GELİR
 // ═══════════════════════════════════════════════════════
 
 function loadMarkets() {
@@ -127,7 +118,10 @@ function loadMarkets() {
 }
 
 function updateStats() {
-  var total = 0, active = 0, pending = 0, expired = 0;
+  var total = 0, active = 0, pending = 0, expired = 0, monthlyRevenue = 0;
+  var min = pricingData.minPrice || 20;
+  var max = pricingData.maxPrice || 50;
+
   allMarkets.forEach(function(m) {
     if (m.status === 'deleted') return;
     total++;
@@ -136,13 +130,20 @@ function updateStats() {
     if (m.status === 'active') {
       if (!m.licenseExpiry) { expired++; return; }
       var exp = m.licenseExpiry.toDate ? m.licenseExpiry.toDate() : new Date(m.licenseExpiry);
-      if (exp.getTime() < Date.now()) expired++; else active++;
+      if (exp.getTime() < Date.now()) { expired++; return; }
+      active++;
+      // Gelir hesabı: aktif marketlerin aylık toplam geliri
+      var unitPrice = getEffectiveUnitPrice(m, min, max);
+      var kasaCount = m.kasaSayisi || 0;
+      monthlyRevenue += unitPrice * kasaCount * 30;
     }
   });
+
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-pending').textContent = pending;
   document.getElementById('stat-expired').textContent = expired;
+  document.getElementById('stat-revenue').textContent = monthlyRevenue >= 1000 ? (monthlyRevenue/1000).toFixed(1) + 'K' : monthlyRevenue;
 }
 
 function saFilter(filter) {
@@ -151,27 +152,41 @@ function saFilter(filter) {
   renderMarkets();
 }
 
+function getSearchQuery() {
+  var el = document.getElementById('sa-search');
+  return el ? el.value.trim().toLowerCase() : '';
+}
+
 function renderMarkets() {
   var list = document.getElementById('sa-list');
   list.innerHTML = '';
   var min = pricingData.minPrice || 20;
   var max = pricingData.maxPrice || 50;
+  var query = getSearchQuery();
 
   var filtered = allMarkets.filter(function(m) {
-    if (currentFilter === 'all') return m.status !== 'deleted';
-    if (currentFilter === 'expired') {
+    // Durum filtresi
+    if (currentFilter === 'all') { if (m.status === 'deleted') return false; }
+    else if (currentFilter === 'expired') {
       if (m.status !== 'active') return false;
       if (!m.licenseExpiry) return true;
       var exp = m.licenseExpiry.toDate ? m.licenseExpiry.toDate() : new Date(m.licenseExpiry);
-      return exp.getTime() < Date.now();
+      if (exp.getTime() >= Date.now()) return false;
     }
-    return m.status === currentFilter;
+    else { if (m.status !== currentFilter) return false; }
+
+    // Arama filtresi
+    if (query) {
+      var haystack = ((m.name || '') + ' ' + (m.city || '') + ' ' + (m.ownerEmail || '') + ' ' + (m.ownerName || '') + ' ' + (m.ownerPhone || '')).toLowerCase();
+      if (haystack.indexOf(query) === -1) return false;
+    }
+    return true;
   });
 
   document.getElementById('sa-count').textContent = filtered.length + ' market';
 
   if (!filtered.length) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Bu kategoride market yok.</div>';
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">' + (query ? 'Aramanızla eşleşen market bulunamadı.' : 'Bu kategoride market yok.') + '</div>';
     return;
   }
 
@@ -184,20 +199,28 @@ function renderMarkets() {
     // ── Üst: market adı + bilgiler ──
     var top = document.createElement('div'); top.className = 'sa-card-top';
     var info = document.createElement('div'); info.className = 'sa-card-info';
-
     var nameEl = document.createElement('div'); nameEl.className = 'sa-card-name';
     nameEl.textContent = m.name;
     var badgeEl = document.createElement('span'); badgeEl.className = 'sa-badge ' + badge.cls; badgeEl.textContent = badge.text;
     nameEl.appendChild(document.createTextNode(' ')); nameEl.appendChild(badgeEl);
     info.appendChild(nameEl);
-
     var meta = document.createElement('div'); meta.className = 'sa-card-meta';
-    meta.innerHTML = '<span>📍 ' + escapeHtml(m.city || '—') + '</span><span>👤 ' + escapeHtml(m.ownerName || '—') + '</span><span>📧 ' + escapeHtml(m.ownerEmail || '—') + '</span><span>📞 ' + escapeHtml(m.ownerPhone || '—') + '</span><span>📅 ' + created + '</span><span>🖥 ' + (m.kasaSayisi || 0) + ' kasa</span>';
+    meta.innerHTML = '<span>📍 ' + escapeHtml(m.city || '—') + '</span><span>👤 ' + escapeHtml(m.ownerName || '—') + '</span><span>📧 ' + escapeHtml(m.ownerEmail || '—') + '</span><span>📞 ' + escapeHtml(m.ownerPhone || '—') + '</span><span>📅 ' + created + '</span>';
     info.appendChild(meta);
     top.appendChild(info);
     card.appendChild(top);
 
-    // ── Lisans bilgi şeridi ──
+    // ── Kasa limit şeridi ──
+    var kasaBar = document.createElement('div'); kasaBar.className = 'sa-card-kasa-bar';
+    var kasaCount = m.kasaSayisi || 0;
+    var kasaLimit = m.kasaLimit || 0;
+    var isOver = kasaLimit > 0 && kasaCount > kasaLimit;
+    kasaBar.innerHTML = '<span class="kasa-limit-pill ' + (isOver ? 'over' : '') + '">🖥 ' + kasaCount + (kasaLimit > 0 ? ' / ' + kasaLimit : '') + ' kasa</span>' +
+      (kasaLimit === 0 ? '<span style="font-size:12px;color:var(--text3)">Limit tanımlı değil</span>' : '') +
+      (isOver ? '<span style="font-size:12px;color:var(--danger);font-weight:600">⚠ Limit aşılmış!</span>' : '');
+    card.appendChild(kasaBar);
+
+    // ── Lisans şeridi ──
     var licBar = document.createElement('div'); licBar.className = 'sa-card-license-bar';
     if (m.licenseExpiry) {
       var days = getLicenseRemainingDays(m.licenseExpiry);
@@ -218,27 +241,21 @@ function renderMarkets() {
     // ── Fiyat şeridi ──
     var priceBar = document.createElement('div'); priceBar.className = 'sa-card-price-bar';
     var unitPrice = getEffectiveUnitPrice(m, min, max);
-    var kasaCount = m.kasaSayisi || 0;
     var isCustom = m.customPrice && m.customPrice > 0;
     var dailyTotal = unitPrice * kasaCount;
     var monthlyTotal = dailyTotal * 30;
-
     priceBar.innerHTML =
       '<span class="price-tag ' + (isCustom ? 'custom' : '') + '">' + (isCustom ? '✎ Özel: ' : '') + unitPrice + ' ₺/kasa/gün</span>' +
       '<span class="price-daily">Günlük: ' + dailyTotal + ' ₺</span>' +
       '<span class="price-monthly">Aylık: ~' + (monthlyTotal >= 1000 ? (monthlyTotal/1000).toFixed(1) + 'K' : monthlyTotal) + ' ₺</span>';
-
     card.appendChild(priceBar);
 
     // ── Aksiyon şeridi ──
     var actionsBar = document.createElement('div'); actionsBar.className = 'sa-card-actions-bar';
-
-    var licBtn = document.createElement('button'); licBtn.className = 'sa-btn green'; licBtn.textContent = '📋 Lisans';
+    var licBtn = document.createElement('button'); licBtn.className = 'sa-btn green'; licBtn.textContent = '📋 Lisans & Kasa';
     licBtn.onclick = function() { openLicenseModal(m); }; actionsBar.appendChild(licBtn);
-
     var prBtn = document.createElement('button'); prBtn.className = 'sa-btn'; prBtn.style.cssText = 'background:#EFF6FF;color:#2563EB;border-color:rgba(37,99,235,.2)';
-    prBtn.textContent = '💰 Fiyat';
-    prBtn.onclick = function() { openPriceModal(m); }; actionsBar.appendChild(prBtn);
+    prBtn.textContent = '💰 Fiyat'; prBtn.onclick = function() { openPriceModal(m); }; actionsBar.appendChild(prBtn);
 
     if (m.status === 'pending') {
       var appBtn = document.createElement('button'); appBtn.className = 'sa-btn green'; appBtn.textContent = '✓ Onayla';
@@ -277,32 +294,40 @@ async function setStatus(marketId, status) {
 }
 
 // ═══════════════════════════════════════════════════════
-// LİSANS MODAL
+// LİSANS + KASA LİMİT MODAL
 // ═══════════════════════════════════════════════════════
 
 function openLicenseModal(market) {
   document.getElementById('modal-market-id').value = market.id;
   document.getElementById('modal-sub').textContent = market.name + ' — ' + (market.ownerEmail || '') +
     (market.licenseExpiry ? ' · Mevcut: ' + getLicenseRemainingDays(market.licenseExpiry) + ' gün kaldı' : ' · Lisans yok');
+  // Kasa limit
+  document.getElementById('modal-kasa-limit').value = market.kasaLimit || market.kasaSayisi || 1;
+  document.getElementById('modal-current-kasa').textContent = market.kasaSayisi || 0;
   document.getElementById('sa-modal').style.display = 'flex';
 }
 function closeModal() { document.getElementById('sa-modal').style.display = 'none'; }
 
+async function saveKasaLimit() {
+  var mId = document.getElementById('modal-market-id').value;
+  if (!mId) return;
+  var limit = parseInt(document.getElementById('modal-kasa-limit').value) || 1;
+  if (limit < 1) limit = 1;
+  try {
+    await db.collection('markets').doc(mId).update({ kasaLimit: limit });
+    mpSuccess('Kasa limiti ' + limit + ' olarak kaydedildi.', '🖥');
+  } catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
+}
+
 async function setLicense(days) {
   var mId = document.getElementById('modal-market-id').value;
   if (!mId) return;
-
   var label = days === 1 ? 'Günübirlik (500 ₺)' : days + ' günlük';
   if (!(await mpConfirm(label + ' lisans tanımlanacak. Onaylıyor musunuz?', '📋'))) return;
-
   try {
     var expiry = new Date();
-    if (days === 1) {
-      expiry.setHours(23, 59, 59, 999);
-    } else {
-      expiry.setDate(expiry.getDate() + days);
-      expiry.setHours(23, 59, 59, 999);
-    }
+    if (days === 1) { expiry.setHours(23, 59, 59, 999); }
+    else { expiry.setDate(expiry.getDate() + days); expiry.setHours(23, 59, 59, 999); }
     await db.collection('markets').doc(mId).update({
       licenseExpiry: firebase.firestore.Timestamp.fromDate(expiry),
       licenseDays: days,
@@ -322,17 +347,14 @@ function openPriceModal(market) {
   document.getElementById('price-modal-market-id').value = market.id;
   document.getElementById('price-modal-sub').textContent = market.name + ' — ' + (market.kasaSayisi || 0) + ' kasa';
   document.getElementById('price-modal-value').value = market.customPrice || '';
-
   var min = pricingData.minPrice || 20;
   var max = pricingData.maxPrice || 50;
   var autoPrice = calculateUnitPrice(market.kasaSayisi || 0, min, max);
   var kasaCount = market.kasaSayisi || 0;
-
   document.getElementById('price-modal-preview').innerHTML =
     '<strong>Otomatik fiyat:</strong> ' + autoPrice + ' ₺/kasa/gün' +
     (kasaCount > 0 ? ' → Günlük ' + (autoPrice * kasaCount) + ' ₺, Aylık ~' + (autoPrice * kasaCount * 30) + ' ₺' : '') +
     (market.customPrice ? '<br><strong>Mevcut özel fiyat:</strong> ' + market.customPrice + ' ₺/kasa/gün' : '');
-
   document.getElementById('price-modal').style.display = 'flex';
 }
 
@@ -347,6 +369,8 @@ async function saveCustomPrice() {
     mpSuccess('Özel fiyat kaydedildi.', '💰');
   } catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
 }
+
+// ═══════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sa-login').style.display = 'flex';

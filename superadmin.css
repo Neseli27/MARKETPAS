@@ -6,6 +6,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
+/* ═══ CONTAINER — max 1200px ═══ */
+.sa-container{max-width:1200px;margin:0 auto;width:100%}
+.sa-body{padding:0 24px 60px}
+
 /* Login */
 #sa-login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:200}
 .sa-login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.06)}
@@ -22,84 +26,109 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .btn-sa-sm:hover{background:#fff;border-color:var(--danger);color:var(--danger)}
 
 /* Header */
-.sa-header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.sa-header-logo{font-size:18px;font-weight:900;letter-spacing:3px}
-.sa-header-logo span{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:2px;margin-left:8px;vertical-align:middle}
+.sa-header{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:10}
+.sa-header-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
 .sa-market-count{font-size:13px;color:var(--text2);font-weight:600}
 
-/* Stat bar */
-.sa-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 24px}
-.sa-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
-.sa-stat-num{font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
-.sa-stat-num.green{color:var(--green)}
-.sa-stat-num.orange{color:var(--orange)}
-.sa-stat-num.red{color:var(--danger)}
-.sa-stat-num.blue{color:var(--blue)}
+/* ═══ STAT BAR — 5 kart ═══ */
+.sa-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 0 16px}
+.sa-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center;transition:all .2s}
+.sa-stat:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.sa-stat-num{font-size:28px;font-weight:800;line-height:1;margin-bottom:4px;color:var(--text)}
 .sa-stat-label{font-size:12px;color:var(--text3);font-weight:600}
+.green-stat{border-left:3px solid var(--green)}
+.green-stat .sa-stat-num{color:var(--green)}
+.orange-stat{border-left:3px solid var(--orange)}
+.orange-stat .sa-stat-num{color:var(--orange)}
+.red-stat{border-left:3px solid var(--danger)}
+.red-stat .sa-stat-num{color:var(--danger)}
+.blue-stat{border-left:3px solid var(--blue)}
+.blue-stat .sa-stat-num{color:var(--blue)}
 
-/* Filter */
-.sa-filter-bar{display:flex;gap:8px;padding:8px 24px 16px;flex-wrap:wrap}
+/* ═══ SECTION TOGGLE ═══ */
+.section-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;margin-bottom:2px;background:var(--card);border:1px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);transition:all .2s;user-select:none}
+.section-toggle:hover{background:#F1F5F9}
+.toggle-arrow{font-size:12px;color:var(--text3);transition:transform .2s}
+.toggle-arrow.open{transform:rotate(180deg)}
+
+/* ═══ FİYATLANDIRMA ═══ */
+.pricing-panel{padding:0 0 12px}
+.pricing-card{background:var(--card);border:1px solid var(--border);border-radius:0 0 12px 12px;padding:24px;border-top:none}
+.pricing-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5}
+.pricing-inputs{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.pricing-input-group{flex:1;min-width:140px}
+.pricing-input-group label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.pricing-input-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:0 12px;background:#F8FAFC}
+.pricing-input-wrap input{flex:1;padding:12px 0;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--text);outline:none;width:60px}
+.pricing-input-wrap span{font-size:14px;font-weight:600;color:var(--text2)}
+.pricing-arrow{font-size:24px;color:var(--text3);padding-bottom:20px}
+.btn-pricing-save{padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;margin-bottom:20px;transition:all .15s}
+.btn-pricing-save:hover{background:#15803D}
+.btn-pricing-save:active{transform:scale(.97)}
+.pricing-preview{background:#F8FAFC;border:1px solid var(--border);border-radius:12px;padding:16px}
+.pricing-preview-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px}
+.pricing-preview-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pricing-tier{text-align:center;padding:12px 8px;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.pricing-tier-range{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px}
+.pricing-tier-price{font-size:20px;font-weight:800;color:var(--green)}
+.pricing-tier-daily{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* ═══ SEARCH BAR ═══ */
+.sa-search-bar{padding:16px 0 8px}
+.sa-search-wrap{position:relative}
+.sa-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+.sa-search-wrap input{width:100%;padding:12px 14px 12px 42px;border:1px solid var(--border);border-radius:12px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--text);background:var(--card);outline:none;transition:all .2s}
+.sa-search-wrap input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.06)}
+
+/* ═══ FİLTRE ═══ */
+.sa-filter-bar{display:flex;gap:8px;padding:8px 0 16px;flex-wrap:wrap}
 .sa-filter{padding:8px 16px;border:1px solid var(--border);border-radius:100px;background:var(--card);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s}
 .sa-filter:hover{border-color:var(--green);color:var(--green)}
 .sa-filter.active{background:var(--green);color:#fff;border-color:var(--green)}
 
-/* List */
-.sa-list{padding:0 24px 40px;display:flex;flex-direction:column;gap:14px}
+/* ═══ MARKET LİSTESİ ═══ */
+.sa-list{display:flex;flex-direction:column;gap:14px;padding-bottom:20px}
 
-/* Market Card — yeniden tasarım */
-.sa-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:0;overflow:hidden;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+/* Market Card */
+.sa-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
 .sa-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
-
 .sa-card-top{padding:20px 24px 16px;display:flex;align-items:flex-start;gap:16px}
 .sa-card-info{flex:1;min-width:0}
-
-/* Market adı — büyük ve neon yeşil */
-.sa-card-name{
-  font-size:22px;font-weight:800;
-  color:#22C55E;
-  text-shadow:0 0 12px rgba(34,197,94,.35), 0 0 24px rgba(34,197,94,.15);
-  margin-bottom:6px;line-height:1.2;
-}
-.sa-card-name .sa-badge{font-size:11px;vertical-align:middle;margin-left:8px;text-shadow:none}
-
+.sa-card-name{font-size:20px;font-weight:800;color:var(--green);margin-bottom:6px;line-height:1.2}
+.sa-card-name .sa-badge{font-size:11px;vertical-align:middle;margin-left:8px}
 .sa-card-meta{font-size:13px;color:var(--text2);display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
 .sa-card-meta span{display:flex;align-items:center;gap:4px}
-.sa-card-meta a{color:var(--blue);text-decoration:none}
 
-/* Lisans bilgi şeridi */
-.sa-card-license-bar{
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-  padding:12px 24px;
-  background:#F8FAFC;border-top:1px solid var(--border);
-  font-size:13px;color:var(--text2);
-}
-.sa-license-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:4px 12px;border-radius:100px;
-  font-size:12px;font-weight:700;
-}
+/* Lisans şeridi */
+.sa-card-license-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;background:#F8FAFC;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+.sa-license-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700}
 .sa-license-pill.active{background:var(--green-light);color:var(--green)}
 .sa-license-pill.expired{background:#FEE2E2;color:var(--danger)}
 .sa-license-pill.pending{background:#FEF3C7;color:var(--warn)}
 .sa-license-pill.suspended{background:#F1F5F9;color:var(--text3)}
-
 .sa-license-days{font-weight:700;color:var(--text)}
 .sa-license-plan{color:var(--text3);font-size:12px}
 .sa-license-expiry{color:var(--text3);font-size:12px}
 
-/* Aksiyon şeridi */
-.sa-card-actions-bar{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  padding:12px 24px;
-  border-top:1px solid var(--border);
-}
+/* Fiyat şeridi */
+.sa-card-price-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 24px;background:#FAFBFD;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+.price-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:#EFF6FF;color:var(--blue)}
+.price-tag.custom{background:#FFF7ED;color:var(--orange)}
+.price-daily{font-weight:700;color:var(--text)}
+.price-monthly{font-size:12px;color:var(--text3)}
 
+/* Kasa limit şeridi */
+.sa-card-kasa-bar{display:flex;align-items:center;gap:12px;padding:10px 24px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+.kasa-limit-pill{padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:#F3E8FF;color:#7C3AED}
+.kasa-limit-pill.over{background:#FEE2E2;color:var(--danger)}
+
+/* Aksiyon şeridi */
+.sa-card-actions-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 24px;border-top:1px solid var(--border)}
 .sa-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:100px}
 .sa-badge.pending{background:#FEF3C7;color:var(--warn)}
 .sa-badge.active{background:var(--green-light);color:var(--green)}
 .sa-badge.expired{background:#FEE2E2;color:var(--danger)}
 .sa-badge.suspended{background:#F1F5F9;color:var(--text2)}
-
 .sa-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
 .sa-btn:hover{background:var(--bg)}
 .sa-btn.green{border-color:rgba(22,163,74,.3);color:var(--green);background:var(--green-light)}
@@ -109,89 +138,51 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .sa-btn.orange{border-color:rgba(234,88,12,.2);color:var(--orange)}
 .sa-btn.orange:hover{background:#FFEDD5}
 
-/* Modal */
+/* ═══ MODAL ═══ */
 .sa-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
-.sa-modal{background:var(--card);border-radius:20px;padding:32px;width:100%;max-width:420px;box-shadow:0 16px 64px rgba(0,0,0,.15)}
+.sa-modal{background:var(--card);border-radius:20px;padding:32px;width:100%;max-width:480px;box-shadow:0 16px 64px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
 .sa-modal-title{font-size:20px;font-weight:800;margin-bottom:4px}
-.sa-modal-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
-.sa-license-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.sa-modal-sub{font-size:14px;color:var(--text2);margin-bottom:20px}
+
+.modal-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.modal-section:last-of-type{border-bottom:none}
+.modal-label{display:block;font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+
+/* Kasa limit row */
+.kasa-limit-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.kasa-limit-input{width:80px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--text);text-align:center;outline:none}
+.kasa-limit-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.08)}
+.kasa-limit-hint{font-size:13px;color:var(--text2)}
+.btn-kasa-limit{padding:10px 20px;background:#F3E8FF;color:#7C3AED;border:1px solid rgba(124,58,237,.2);border-radius:10px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-kasa-limit:hover{background:#EDE9FE}
+.btn-kasa-limit:active{transform:scale(.97)}
+
+/* Lisans seçenekleri */
+.sa-license-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .license-btn{padding:16px 8px;border:2px solid var(--border);border-radius:12px;background:var(--card);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
 .license-btn small{font-size:11px;font-weight:500;color:var(--text3)}
 .license-btn:hover{border-color:var(--green);background:var(--green-light)}
 .license-btn.daily-special{border-color:#FB923C;background:#FFF7ED}
 .license-btn.daily-special small{color:var(--orange);font-weight:700}
 .license-btn.daily-special:hover{border-color:var(--orange);background:#FFEDD5}
-.btn-sa-close{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer}
+.license-btn.trial{border-color:#93C5FD;background:#EFF6FF}
+.license-btn.trial small{color:var(--blue);font-weight:600}
+.license-btn.trial:hover{border-color:var(--blue);background:#DBEAFE}
+.btn-sa-close{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
+.btn-sa-close:hover{background:#E2E8F0}
 
-/* ── Fiyatlandırma Paneli ── */
-.pricing-panel {
-  padding: 0 24px 8px;
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  .sa-stats{grid-template-columns:repeat(3,1fr)}
+  .pricing-preview-grid{grid-template-columns:repeat(3,1fr)}
 }
-.pricing-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.04);
-}
-.pricing-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
-.pricing-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
-.pricing-inputs {
-  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
-}
-.pricing-input-group { flex: 1; min-width: 160px; }
-.pricing-input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
-.pricing-input-group small { display: block; font-size: 11px; color: var(--text3); margin-top: 4px; }
-.pricing-input-wrap {
-  display: flex; align-items: center; gap: 8px;
-  border: 1px solid var(--border); border-radius: 10px; padding: 0 12px;
-  background: #F8FAFC;
-}
-.pricing-input-wrap input {
-  flex: 1; padding: 12px 0; border: none; background: transparent;
-  font-family: 'Outfit',sans-serif; font-size: 20px; font-weight: 700;
-  color: var(--text); outline: none; width: 80px;
-}
-.pricing-input-wrap span { font-size: 14px; font-weight: 600; color: var(--text2); }
-.pricing-arrow { font-size: 24px; color: var(--text3); padding-bottom: 20px; }
-
-.pricing-preview {
-  background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; padding: 16px;
-}
-.pricing-preview-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
-.pricing-preview-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
-}
-.pricing-tier {
-  text-align: center; padding: 12px 8px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.pricing-tier-range { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 4px; }
-.pricing-tier-price { font-size: 20px; font-weight: 800; color: var(--green); }
-.pricing-tier-daily { font-size: 11px; color: var(--text2); margin-top: 2px; }
-
-/* ── Market kartında fiyat şeridi ── */
-.sa-card-price-bar {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 10px 24px;
-  background: #FAFBFD; border-top: 1px solid var(--border);
-  font-size: 13px; color: var(--text2);
-}
-.price-tag {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 12px; border-radius: 100px;
-  font-size: 12px; font-weight: 700;
-  background: #EFF6FF; color: var(--blue);
-}
-.price-tag.custom { background: #FFF7ED; color: var(--orange); }
-.price-daily { font-weight: 700; color: var(--text); }
-.price-monthly { font-size: 12px; color: var(--text3); }
-
-@media(max-width:768px){
+@media(max-width:640px){
   .sa-stats{grid-template-columns:repeat(2,1fr)}
+  .sa-body{padding:0 16px 40px}
   .sa-card-top{flex-direction:column}
   .sa-card-actions-bar{flex-wrap:wrap}
   .sa-license-options{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:480px){
-  .sa-stats{grid-template-columns:1fr 1fr}
+  .pricing-preview-grid{grid-template-columns:repeat(2,1fr)}
+  .pricing-inputs{flex-direction:column}
+  .pricing-arrow{display:none}
 }

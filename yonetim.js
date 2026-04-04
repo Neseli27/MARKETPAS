@@ -223,13 +223,22 @@ async function deleteKasa(regId) {
 async function handleAddKasa() {
   try {
     var snap = await db.collection('registers').where('marketId', '==', marketId).get();
+    var currentCount = snap.size;
+    var kasaLimit = marketData.kasaLimit || 0;
+
+    // Kasa limit kontrolü
+    if (kasaLimit > 0 && currentCount >= kasaLimit) {
+      mpAlert('Kasa limitinize ulaştınız (' + currentCount + '/' + kasaLimit + '). Daha fazla kasa için yönetici ile iletişime geçin.', '⚠️');
+      return;
+    }
+
     var max = 0; snap.forEach(function(d) { if (d.data().kasaNo > max) max = d.data().kasaNo; });
     await db.collection('registers').add({
       marketId: marketId, kasaNo: max + 1, active: true,
       activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null
     });
     await db.collection('markets').doc(marketId).update({ kasaSayisi: firebase.firestore.FieldValue.increment(1) });
-    mpSuccess('Kasa ' + (max + 1) + ' eklendi.','🎉');
+    mpSuccess('Kasa ' + (max + 1) + ' eklendi.' + (kasaLimit > 0 ? ' (' + (currentCount + 1) + '/' + kasaLimit + ')' : ''),'🎉');
   } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
 }
 
