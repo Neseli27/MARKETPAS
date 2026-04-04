@@ -53,7 +53,7 @@ async function loadMarket(){
     var doc=await db.collection('markets').doc(marketId).get();
     if(!doc.exists){showError('Market bulunamadı.');return}
     market=doc.data();
-    applyBranding();loadAnnouncements();loadGiftData();
+    applyBranding();renderCategories();loadAnnouncements();loadGiftData();
     // Market verisini canlı dinle
     db.collection('markets').doc(marketId).onSnapshot(function(snap){
       if(!snap.exists)return;
@@ -194,108 +194,126 @@ function updateWaitEstimate(s){var el=document.getElementById('wait-est'),d=docu
 }
 
 // ═══ DUYURULAR ═══
+var currentCat='anasayfa';
+
 function loadAnnouncements(){
   db.collection('announcements').where('marketId','==',marketId).where('active','==',true).orderBy('order','asc')
-    .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')==='anasayfa'});renderAnnouncements()},
+    .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===currentCat});renderFeed()},
     function(){db.collection('announcements').where('marketId','==',marketId)
-      .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')==='anasayfa'});renderAnnouncements()})});
+      .onSnapshot(function(snap){allAnnouncements=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(a){return a.active===true}).sort(function(a,b){return(a.order||0)-(b.order||0)});announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===currentCat});renderFeed()})});
 }
+
 function filterCat(cat){
-  document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
-  event.currentTarget.classList.add('active');
-  console.log('MarketPas: Tab değişti →', cat, '| giftData:', giftData ? 'var' : 'yok');
-  // Hediye gösterimi — Sürpriz sekmesinde her zaman göster
+  currentCat=cat;
+  // Alt tab bar senkron
+  document.querySelectorAll('.tab-item').forEach(function(t){
+    t.classList.remove('active');
+    var oc=t.getAttribute('onclick');
+    if(oc&&oc.indexOf("'"+cat+"'")>-1)t.classList.add('active');
+  });
+  // Hediye gösterimi — Sürpriz sekmesinde
   if(cat==='gunun_firsati'){pickActiveGift();showGiftScreen()}
   else{hideGiftScreen()}
   announcements=allAnnouncements.filter(function(a){return(a.category||'kampanya')===cat});
-  renderAnnouncements();
+  renderFeed();
 }
-function renderAnnouncements(){
-  var section=document.getElementById('ann-section'),slider=document.getElementById('ann-slider'),dots=document.getElementById('ann-dots');
-  
+
+function renderCategories(){
+  var row=document.getElementById('cat-row');if(!row)return;
+  var cats=(market&&market.categories)||[
+    {name:'Temizlik',icon:'🧹'},
+    {name:'Manav',icon:'🥬'},
+    {name:'Fırın',icon:'🍞'},
+    {name:'İçecek',icon:'🥤'}
+  ];
+  row.innerHTML='';
+  cats.forEach(function(c,i){
+    var btn=document.createElement('button');
+    btn.className='cat-btn';
+    btn.innerHTML='<div class="cat-icon">'+c.icon+'</div><div class="cat-name">'+escapeHtml(c.name)+'</div>';
+    btn.onclick=function(){
+      row.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      // Kategori butonuna basınca o kategorinin banner'larını filtrele
+      announcements=allAnnouncements.filter(function(a){return a.customCategory===c.name||a.category===c.name});
+      renderFeed();
+    };
+    row.appendChild(btn);
+  });
+}
+
+function renderFeed(){
+  var list=document.getElementById('feed-list');
+  var empty=document.getElementById('feed-empty');
+  if(!list)return;
+
   if(!announcements.length){
-    section.classList.remove('empty');
-    dots.innerHTML='';
-    // Kategori bazlı boş ekran
-    var activeTab='anasayfa';
-    var activeEl=document.querySelector('.tab-item.active');
-    if(activeEl){var oc=activeEl.getAttribute('onclick');if(oc){var m=oc.match(/filterCat\('([^']+)'\)/);if(m)activeTab=m[1]}}
-    
+    list.innerHTML='';
+    // Boş durum göster
     var placeholders={
       anasayfa:{icon:'📢',title:'HOŞ GELDİNİZ',sub:'Duyurularımızı buradan takip edebilirsiniz',color:'#60a5fa'},
       kampanya:{icon:'🏷️',title:'KAMPANYALAR YAKINDA',sub:'İndirim ve kampanyalarımızı kaçırmayın',color:'#4ade80'},
       surpriz:{icon:'⭐',title:'FIRSATLARI TAKİP EDİN',sub:'Sürpriz fırsat indirimleri burada olacak',color:'#fbbf24'},
       gunun_firsati:null
     };
-    var ph=placeholders[activeTab];
-    if(!ph){slider.innerHTML='';return}
-    
-    var wrap=document.createElement('div');wrap.className='empty-state';
-    var particles=document.createElement('div');particles.className='empty-particles';
-    for(var p=0;p<6;p++){particles.appendChild(document.createElement('span'))}
-    wrap.appendChild(particles);
-    var card=document.createElement('div');card.className='empty-card';card.style.borderColor=ph.color;
-    var iconDiv=document.createElement('div');iconDiv.className='empty-icon pulse-icon';iconDiv.style.color=ph.color;iconDiv.textContent=ph.icon;
-    card.appendChild(iconDiv);
-    var title=document.createElement('div');title.className='empty-title';title.style.color=ph.color;title.textContent=ph.title;card.appendChild(title);
-    var sub=document.createElement('div');sub.className='empty-sub';sub.textContent=ph.sub;card.appendChild(sub);
-    wrap.appendChild(card);
-    slider.innerHTML='';slider.appendChild(wrap);
+    var ph=placeholders[currentCat];
+    if(empty){
+      if(!ph){empty.style.display='none';return}
+      document.getElementById('empty-icon').textContent=ph.icon;
+      document.getElementById('empty-icon').style.color=ph.color;
+      document.getElementById('empty-title').textContent=ph.title;
+      document.getElementById('empty-title').style.color=ph.color;
+      document.getElementById('empty-sub').textContent=ph.sub;
+      empty.style.display='flex';
+    }
     return;
   }
-  
-  section.classList.remove('empty');slider.innerHTML='';dots.innerHTML='';
+
+  if(empty)empty.style.display='none';
+  list.innerHTML='';
+  var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',gunun_firsati:'SÜRPRİZ',surpriz:'FIRSAT'};
+  var catIcons={anasayfa:'📢',kampanya:'🏷️',gunun_firsati:'🎁',surpriz:'⭐'};
+
   announcements.forEach(function(a,i){
     var hasVideo=a.videoUrl&&getYouTubeId(a.videoUrl);
     var hasImg=a.imageUrl&&!hasVideo;
-    var s=document.createElement('div');s.className='ann-slide'+(hasImg||hasVideo?'':' no-img')+(i===0?' active':'');
-    if(hasVideo)s.classList.add('video-slide');
 
-    // Video slide
+    var card=document.createElement('div');
+    card.className='feed-card'+(hasImg||hasVideo?'':' no-img');
+    card.style.animationDelay=(i*0.08)+'s';
+
+    // Video
     if(hasVideo){
       var vid=getYouTubeId(a.videoUrl);
       var iframe=document.createElement('iframe');
-      iframe.className='ann-slide-video';
-      iframe.src='https://www.youtube.com/embed/'+vid+'?autoplay='+(i===0?'1':'0')+'&mute=1&loop=1&playlist='+vid+'&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3';
+      iframe.className='feed-card-video';
+      iframe.src='https://www.youtube.com/embed/'+vid+'?autoplay=0&mute=1&loop=1&playlist='+vid+'&controls=1&showinfo=0&rel=0&modestbranding=1&playsinline=1';
       iframe.setAttribute('frameborder','0');
       iframe.setAttribute('allow','autoplay;encrypted-media');
       iframe.setAttribute('allowfullscreen','');
-      s.appendChild(iframe);
+      card.appendChild(iframe);
     }
-    // Görsel slide
+    // Görsel
     else if(hasImg){
-      var img=document.createElement('img');img.className='ann-slide-img has-img';img.src=a.imageUrl;img.alt='';img.onerror=function(){this.style.display='none'};s.appendChild(img);
+      var img=document.createElement('img');
+      img.className='feed-card-img';
+      img.src=a.imageUrl;img.alt='';
+      img.loading='lazy';
+      img.onerror=function(){this.style.display='none';card.classList.add('no-img')};
+      card.appendChild(img);
     }
 
-    // Metin katmanı
-    var t=document.createElement('div');t.className='ann-slide-text';
-    var catNames={anasayfa:'DUYURU',kampanya:'KAMPANYA',gunun_firsati:'SÜRPRİZ',surpriz:'FIRSAT'};
-    var catIcons={anasayfa:'📢',kampanya:'🏷️',gunun_firsati:'🎁',surpriz:'⭐'};
-    var b=document.createElement('div');b.className='ann-slide-badge';b.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');t.appendChild(b);
-    var ti=document.createElement('div');ti.className='ann-slide-title';ti.textContent=a.title;t.appendChild(ti);
-    if(a.content&&!hasVideo){var c=document.createElement('div');c.className='ann-slide-content';c.textContent=a.content;t.appendChild(c)}
-    if(!hasVideo)s.appendChild(t);
+    // İçerik
+    var body=document.createElement('div');body.className='feed-card-body';
+    var badge=document.createElement('div');badge.className='feed-card-badge';
+    badge.textContent=(catIcons[a.category]||'🏷️')+' '+(catNames[a.category]||'KAMPANYA');
+    body.appendChild(badge);
+    if(a.title){var ti=document.createElement('div');ti.className='feed-card-title';ti.textContent=a.title;body.appendChild(ti)}
+    if(a.content){var desc=document.createElement('div');desc.className='feed-card-desc';desc.textContent=a.content;body.appendChild(desc)}
+    card.appendChild(body);
 
-    slider.appendChild(s);
-    var d=document.createElement('div');d.className='ann-dot'+(i===0?' active':'');dots.appendChild(d);
+    list.appendChild(card);
   });
-  annIndex=0;clearInterval(announcementInterval);
-  if(announcements.length>1)announcementInterval=setInterval(function(){
-    var prevIdx=annIndex;
-    annIndex=(annIndex+1)%announcements.length;
-    // Video iframe autoplay yönetimi
-    var slides=document.querySelectorAll('.ann-slide');
-    slides.forEach(function(s,i){
-      s.classList.toggle('active',i===annIndex);
-      var iframe=s.querySelector('iframe');
-      if(iframe){
-        var src=iframe.src;
-        if(i===annIndex)iframe.src=src.replace('autoplay=0','autoplay=1');
-        else iframe.src=src.replace('autoplay=1','autoplay=0');
-      }
-    });
-    document.querySelectorAll('.ann-dot').forEach(function(d,i){d.classList.toggle('active',i===annIndex)});
-  },7000);
 }
 
 function getYouTubeId(url){
@@ -477,8 +495,8 @@ function showGiftScreen(){
   var gs=document.getElementById('gift-screen');
   if(!gs)return;
   gs.style.display='flex';
-  document.getElementById('ann-slider').style.display='none';
-  document.getElementById('ann-dots').style.display='none';
+  document.getElementById('feed-list').style.display='none';
+  var emptyEl=document.getElementById('feed-empty');if(emptyEl)emptyEl.style.display='none';
 
   if(!giftData){showGiftExpired();return}
 
@@ -501,8 +519,7 @@ function showGiftScreen(){
 function hideGiftScreen(){
   var gs=document.getElementById('gift-screen');
   if(gs)gs.style.display='none';
-  document.getElementById('ann-slider').style.display='';
-  document.getElementById('ann-dots').style.display='';
+  document.getElementById('feed-list').style.display='';
   if(giftInterval){clearInterval(giftInterval);giftInterval=null}
 }
 
