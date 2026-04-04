@@ -2,8 +2,15 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0B1120">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MarketPas — Yönetim</title>
+  <link rel="manifest" href="/manifest-yonetim.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="yonetim.css">
 </head>
@@ -23,40 +30,46 @@
     </div>
   </div>
 
+  <!-- Mobil Üst Bar (sadece mobilde görünür) -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <button class="mob-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+    <div class="mob-title" id="mob-title">—</div>
+    <button class="mob-logout-btn" onclick="handleLogout()">⬅</button>
+  </div>
+
+  <!-- Sidebar Overlay (mobil) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <!-- Market adı — büyük, neon yeşil -->
     <div class="sidebar-market-name" id="panel-market-name">—</div>
     <div class="sidebar-market-sub">YÖNETİM PANELİ</div>
 
-    <!-- Lisans durumu -->
-    <div class="sidebar-license active" id="sidebar-license">
-      <span>⏳</span>
-      <span>Yükleniyor...</span>
-    </div>
-
     <!-- Navigasyon -->
     <nav>
-      <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span>📊</span><span>Dashboard</span></div>
+      <div class="nav-item" id="nav-reports" onclick="showSection('reports')"><span>📊</span><span>Raporlar</span></div>
       <div class="nav-item" id="nav-qr" onclick="showSection('qr')"><span>📱</span><span>QR Kodlar</span></div>
-      <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>Duyurular</span></div>
+      <div class="nav-item" id="nav-announcements" onclick="showSection('announcements')"><span>📢</span><span>İçerikler</span></div>
       <div class="nav-item" id="nav-settings" onclick="showSection('settings')"><span>⚙️</span><span>Ayarlar</span></div>
     </nav>
 
-    <!-- Alt kısım — MARKET·PAS + Çıkış -->
+    <!-- Alt kısım -->
     <div class="sidebar-footer">
       <div class="sidebar-brand">MARKET · PAS</div>
+      <div class="sidebar-expiry" id="sidebar-license"></div>
       <button class="btn-logout" onclick="handleLogout()">⬅ Çıkış Yap</button>
     </div>
   </div>
 
   <!-- Main -->
   <main>
-    <!-- Dashboard -->
-    <div id="section-dashboard" class="section">
-      <div class="section-title">Dashboard</div>
-      <div class="section-sub">Canlı kasa ve sıra durumu</div>
+    <!-- ═══ RAPORLAR (birleşik) ═══ -->
+    <div id="section-reports" class="section">
+      <div class="section-title">Raporlar</div>
+      <div class="section-sub">Canlı istatistikler, kasa durumları ve günlük analiz</div>
 
+      <!-- Uyarılar -->
       <div class="alert-card" id="license-warning" style="display:none"></div>
       <div class="alert-card" id="congestion-alert" style="display:none">
         <div class="alert-icon">⚠️</div>
@@ -64,32 +77,102 @@
         <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
       </div>
 
+      <!-- Canlı İstatistikler -->
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="queue-count">0</div><div class="stat-label">Bekleyen</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-today">—</div><div class="stat-label">Bugün Hizmet</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Toplam</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-timeout">—</div><div class="stat-label">Timeout</div></div>
-      </div>
-      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-current">0</div><div class="stat-label">Anlık Müşteri</div></div>
+        <div class="stat-card"><div class="stat-num" id="queue-count">0</div><div class="stat-label">Sıra Bekleyen</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-avg-time">—</div><div class="stat-label">Ort. İşlem</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-congestion">—</div><div class="stat-label">Yoğunluk</div></div>
+      </div>
+      <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="stat-active-kasas">—</div><div class="stat-label">Açık Kasa</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-est-wait">—</div><div class="stat-label">Tahm. Bekleme</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-today">—</div><div class="stat-label">Bugün Hizmet</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-service-rate">—</div><div class="stat-label">Kasa Hızı</div></div>
       </div>
 
+      <!-- Kasa Durumları -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h3>Kasa Durumları</h3>
-          <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="resetAllRegisters()" style="font-size:12px;color:var(--danger);border-color:var(--danger)">🔄 Sıfırla</button>
+            <button class="btn btn-accent btn-sm" onclick="handleAddKasa()">+ Yeni Kasa</button>
+          </div>
         </div>
         <div id="registers-grid"></div>
       </div>
 
+      <!-- Günlük Detay Kartları -->
+      <div class="card"><h3 style="margin-bottom:14px">📈 Günlük Detay</h3>
+      <div class="report-grid" id="report-grid">
+        <div class="report-card rc-green">
+          <div class="rc-icon">🚪</div>
+          <div class="rc-value" id="rp-left">0</div>
+          <div class="rc-label">Ayrılan Müşteri</div>
+          <div class="rc-sub">Ödeme yapıp çıkan</div>
+        </div>
+        <div class="report-card rc-blue">
+          <div class="rc-icon">📊</div>
+          <div class="rc-value" id="rp-total">0</div>
+          <div class="rc-label">Toplam Müşteri</div>
+          <div class="rc-sub">Bugün gelen</div>
+        </div>
+        <div class="report-card rc-orange">
+          <div class="rc-icon">⏱️</div>
+          <div class="rc-value" id="rp-avg-stay">—</div>
+          <div class="rc-label">Ort. Kalış Süresi</div>
+          <div class="rc-sub">Tüm müşteriler</div>
+        </div>
+        <div class="report-card rc-purple">
+          <div class="rc-icon">🐢</div>
+          <div class="rc-value" id="rp-longest">—</div>
+          <div class="rc-label">En Uzun Kalış</div>
+          <div class="rc-sub" id="rp-longest-sub">—</div>
+        </div>
+        <div class="report-card rc-pink">
+          <div class="rc-icon">⚡</div>
+          <div class="rc-value" id="rp-shortest">—</div>
+          <div class="rc-label">En Kısa Kalış</div>
+          <div class="rc-sub" id="rp-shortest-sub">—</div>
+        </div>
+        <div class="report-card rc-yellow">
+          <div class="rc-icon">🔥</div>
+          <div class="rc-value" id="rp-peak-hour">—</div>
+          <div class="rc-label">En Yoğun Saat</div>
+          <div class="rc-sub" id="rp-peak-sub">—</div>
+        </div>
+        <div class="report-card rc-red">
+          <div class="rc-icon">⚠️</div>
+          <div class="rc-value" id="rp-timeout-rate">%0</div>
+          <div class="rc-label">Timeout Oranı</div>
+          <div class="rc-sub">Kasaya gelemeyenler</div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Grafikler -->
+      <div class="card">
+        <h3>🕐 Saatlik Müşteri Dağılımı</h3>
+        <div style="position:relative;height:300px"><canvas id="hourly-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🖥️ Kasa Bazlı Performans</h3>
+        <div style="position:relative;height:260px"><canvas id="kasa-chart"></canvas></div>
+      </div>
+
+      <!-- Kasa Performans Detayı -->
       <div class="card">
         <h3>Kasa Performans Raporu</h3>
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Her kasanın bugünkü ortalama işlem süresi</p>
         <div id="perf-grid"></div>
         <div id="perf-empty" style="display:none;text-align:center;padding:24px;color:var(--text2);font-size:14px">Henüz yeterli veri yok.</div>
+      </div>
+
+      <!-- Yenile -->
+      <div style="text-align:center;padding:8px 0">
+        <button class="btn" onclick="loadReport()" style="font-size:13px">🔄 Raporu Yenile</button>
+        <span style="font-size:12px;color:var(--text3);margin-left:8px" id="report-updated">—</span>
       </div>
     </div>
 
@@ -111,63 +194,129 @@
       <div class="card"><h3>🖥️ Kasiyer Linkleri</h3><div id="kasiyer-links"></div></div>
     </div>
 
-    <!-- Duyurular -->
+    <!-- İçerik Yönetimi (3 Kategori) -->
     <div id="section-announcements" class="section">
-      <div class="section-title">Duyurular</div>
-      <div class="section-sub">Müşterilere gösterilecek kampanya ve reklam bannerları</div>
-      <div class="ann-list-header"><span style="font-size:14px;font-weight:600">Duyuru Listesi</span><button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Duyuru</button></div>
-      <div id="ann-form">
-        <h3 id="ann-form-title">Yeni Duyuru</h3>
-        <!-- Sekme kategorisi -->
-        <div class="form-row">
-          <label>Sekme Kategorisi *</label>
-          <div class="cat-select" id="form-cat-select">
-            <label class="cat-opt active" onclick="document.querySelectorAll('.cat-opt').forEach(function(o){o.classList.remove('active')});this.classList.add('active')"><input type="radio" name="ann-cat" value="anasayfa" checked><span>🏠 Ana Sayfa</span></label>
-            <label class="cat-opt" onclick="document.querySelectorAll('.cat-opt').forEach(function(o){o.classList.remove('active')});this.classList.add('active')"><input type="radio" name="ann-cat" value="kampanya"><span>🏷️ Kampanya</span></label>
-            <label class="cat-opt" onclick="document.querySelectorAll('.cat-opt').forEach(function(o){o.classList.remove('active')});this.classList.add('active')"><input type="radio" name="ann-cat" value="surpriz"><span>⭐ Fırsat</span></label>
+      <div class="section-title">İçerik Yönetimi</div>
+      <div class="section-sub">Müşterilerin telefonunda gösterilecek kampanya, indirim ve fırsat içerikleri</div>
+
+      <!-- Kategori Sekmeleri -->
+      <div class="cat-tabs">
+        <button class="cat-tab active" onclick="switchCategory('anasayfa')" id="tab-anasayfa">
+          <span class="cat-tab-icon">🏠</span>
+          <span class="cat-tab-name">Ana Sayfa</span>
+          <span class="cat-tab-count" id="count-anasayfa">0</span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('kampanya')" id="tab-kampanya">
+          <span class="cat-tab-icon">🏷️</span>
+          <span class="cat-tab-name">Kampanya</span>
+          <span class="cat-tab-count" id="count-kampanya">0</span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('gunun_firsati')" id="tab-gunun_firsati">
+          <span class="cat-tab-icon">🎁</span>
+          <span class="cat-tab-name">Sürpriz</span>
+          <span class="cat-tab-count" id="count-gunun_firsati"></span>
+        </button>
+        <button class="cat-tab" onclick="switchCategory('surpriz')" id="tab-surpriz">
+          <span class="cat-tab-icon">⭐</span>
+          <span class="cat-tab-name">Fırsat</span>
+          <span class="cat-tab-count" id="count-surpriz">0</span>
+        </button>
+      </div>
+
+      <!-- Sürpriz Hediye Paketi Yönetimi -->
+      <div id="gift-settings" class="gift-panel" style="display:none">
+        <div class="gift-panel-head">
+          <span>🎁 Sürpriz Yönetimi</span>
+          <button class="btn btn-accent btn-sm" onclick="showGiftForm()">+ Yeni Ekle</button>
+        </div>
+
+        <!-- Yeni/Düzenle Formu -->
+        <div id="gift-form" style="display:none">
+          <div id="gift-form-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:10px;border-radius:8px;margin-bottom:10px"></div>
+          <div class="form-row"><label>Sürpriz Başlığı *</label><input type="text" id="gift-title" placeholder="Örn: Et Reyonunda %50 İndirim!"></div>
+          <div class="form-row"><label>Açıklama</label><textarea id="gift-content" rows="2" placeholder="Detay..." style="resize:vertical;font-family:'Outfit',sans-serif;font-size:14px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea></div>
+          <div class="form-row"><label>Görsel URL (opsiyonel)</label><input type="url" id="gift-image" placeholder="https://..."></div>
+          <div style="display:flex;gap:10px">
+            <div class="form-row" style="flex:1"><label>Başlama Tarih & Saat *</label><input type="datetime-local" id="gift-start" style="width:100%"></div>
+            <div class="form-row" style="flex:1"><label>Bitiş Tarih & Saat *</label><input type="datetime-local" id="gift-end" style="width:100%"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button class="btn btn-accent" onclick="saveGift()">💾 Kaydet</button>
+            <button class="btn" onclick="cancelGiftForm()">İptal</button>
           </div>
         </div>
-        <!-- Üst buton kategorisi (opsiyonel) -->
+
+        <!-- Sürpriz Listesi -->
+        <div id="gift-list"></div>
+      </div>
+
+      <!-- İçerik Listesi + Ekle Butonu -->
+      <div class="ann-list-header">
+        <span style="font-size:14px;font-weight:600" id="cat-list-title">Kampanyalar</span>
+        <button class="btn btn-accent" onclick="showAnnForm()">+ Yeni Ekle</button>
+      </div>
+
+      <!-- Ekleme/Düzenleme Formu -->
+      <div id="ann-form">
+        <h3 id="ann-form-title">Yeni İçerik</h3>
+        <div id="ann-save-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;font-weight:600;padding:12px;border-radius:8px;margin-bottom:12px"></div>
+
+        <div class="form-row">
+          <label>Kategori</label>
+          <div class="cat-select" id="form-cat-select">
+            <label class="cat-opt active" id="opt-anasayfa"><input type="radio" name="ann-cat" value="anasayfa" checked><span>🏠 Ana Sayfa</span></label>
+            <label class="cat-opt" id="opt-kampanya"><input type="radio" name="ann-cat" value="kampanya"><span>🏷️ Kampanya</span></label>
+            <label class="cat-opt" id="opt-surpriz"><input type="radio" name="ann-cat" value="surpriz"><span>⭐ Fırsat</span></label>
+          </div>
+        </div>
         <div class="form-row">
           <label>Reyon Kategorisi (opsiyonel)</label>
           <select id="form-custom-cat" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;background:var(--bg3);color:var(--text)">
             <option value="">— Tümü (genel) —</option>
           </select>
-          <div style="font-size:11px;color:var(--text3);margin-top:4px">Müşteri ekranındaki üst butonlarla eşleşir</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Müşteri ekranındaki üst reyon butonlarıyla eşleşir</div>
         </div>
         <div class="form-row"><label>Başlık *</label><input type="text" id="form-ann-title" placeholder="Örn: Süt Ürünlerinde %20 İndirim"></div>
-        <div class="form-row"><label>İçerik</label><input type="text" id="form-ann-content" placeholder="Kısa açıklama..."></div>
+        <div class="form-row"><label>Açıklama / Mesaj</label><textarea id="form-ann-content" rows="3" placeholder="Detaylı açıklama, duyuru metni veya mesajınız..." style="resize:vertical;min-height:60px;font-family:'Outfit',sans-serif;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;width:100%"></textarea></div>
         <div class="form-row">
-          <label>Banner Görseli</label>
-          <div class="upload-area" id="upload-area">
-            <div class="upload-preview" id="upload-preview" style="display:none">
+          <label>Görsel</label>
+          <div class="img-upload-row">
+            <div class="img-preview" id="upload-preview" style="display:none">
               <img id="upload-preview-img" src="" alt="">
-              <button type="button" class="upload-remove" onclick="removeUpload()">✕</button>
+              <button type="button" class="img-remove" onclick="removeUpload()">✕</button>
+              <div class="img-size" id="upload-size"></div>
             </div>
-            <div class="upload-placeholder" id="upload-placeholder">
-              <div style="font-size:28px;margin-bottom:8px">📸</div>
-              <div style="font-size:14px;font-weight:600;color:var(--text)">Görsel Yükle</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:4px">Sürükle bırak veya tıkla · JPG, PNG · Max 2MB</div>
+            <div class="img-placeholder" id="upload-placeholder" onclick="document.getElementById('form-ann-file').click()">
+              <div style="font-size:24px">📸</div>
+              <div style="font-size:12px;color:var(--text2)">Görsel Yükle</div>
             </div>
-            <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+            <input type="file" id="form-ann-file" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this)" style="display:none">
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
             <span style="font-size:12px;color:var(--text3)">veya</span>
-            <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px">
+            <input type="url" id="form-ann-img" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
           </div>
         </div>
-        <div class="form-row"><label>Sıra (küçük numara önce)</label><input type="number" id="form-ann-order" value="1" min="1" max="20"></div>
-        <div style="display:flex;gap:10px;margin-top:8px">
+        <div class="form-row">
+          <label>🎬 Video (YouTube linki — opsiyonel)</label>
+          <input type="url" id="form-ann-video" placeholder="https://www.youtube.com/watch?v=... veya https://youtu.be/..." style="padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;width:100%">
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Video sessiz + otomatik oynar, bitince tekrarlar. YouTube logosu görünmez.</div>
+        </div>
+        <div class="form-row"><label>Gösterim Sırası (küçük numara önce)</label><input type="number" id="form-ann-order" value="1" min="1" max="20"></div>
+        <div style="display:flex;gap:10px;margin-top:12px">
           <button class="btn btn-accent" id="btn-save-ann" onclick="saveAnn()">Kaydet</button>
           <button class="btn" onclick="cancelAnnForm()">İptal</button>
         </div>
       </div>
+
+      <!-- İçerik Listesi -->
       <div id="ann-list"></div>
     </div>
 
     <!-- Ayarlar -->
     <div id="section-settings" class="section">
       <div class="section-title">Ayarlar</div>
+
       <div class="card settings-form">
         <h3>Market Bilgileri</h3>
         <div class="form-row"><label>Market Adı</label><input type="text" id="settings-name"></div>
@@ -177,44 +326,125 @@
         <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px">Kaydet</button>
       </div>
 
+      <!-- Karşılama Görseli -->
+      <div class="card">
+        <h3>🎉 Karşılama Ekranı Görseli</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+          Müşteri QR kod okuttuğunda tam ekran karşılama görseli gösterilir. 6 saniye sonra otomatik kapanır.<br>
+          Dikey format, minimum 1080×1920 piksel önerilir.
+        </p>
+        <div class="pwa-icon-area">
+          <div class="pwa-icon-preview" id="welcome-img-preview" style="width:120px;height:200px;border-radius:16px">
+            <img id="welcome-img-thumb" src="" alt="" style="display:none;border-radius:14px">
+            <div class="pwa-icon-empty" id="welcome-img-empty">
+              <div style="font-size:24px">🎉</div>
+              <div style="font-size:10px;color:var(--text3)">Görsel yok</div>
+            </div>
+          </div>
+          <div class="pwa-icon-controls">
+            <div class="pwa-icon-info" id="welcome-img-info">Henüz karşılama görseli tanımlanmamış. Varsayılan koyu gradient kullanılıyor.</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-accent btn-sm" onclick="document.getElementById('welcome-img-file').click()">📸 Görsel Yükle</button>
+              <button class="btn btn-sm" onclick="removeWelcomeImage()" id="btn-remove-welcome" style="display:none">🗑 Kaldır</button>
+            </div>
+            <input type="file" id="welcome-img-file" accept="image/png,image/jpeg,image/webp" onchange="handleWelcomeImageUpload(this)" style="display:none">
+            <div style="margin-top:10px">
+              <div style="font-size:11px;color:var(--text3)">veya</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <input type="url" id="welcome-img-url" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="saveWelcomeImageUrl()">Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PWA İkon Ayarı -->
+      <div class="card">
+        <h3>📱 Uygulama İkonu (PWA)</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+          Müşteriler uygulamayı telefonlarına eklediğinde bu ikon görünür.<br>
+          Kare format, minimum 192×192 piksel, PNG önerilir.
+        </p>
+
+        <div class="pwa-icon-area">
+          <div class="pwa-icon-preview" id="pwa-icon-preview">
+            <img id="pwa-icon-img" src="" alt="" style="display:none">
+            <div class="pwa-icon-empty" id="pwa-icon-empty">
+              <div style="font-size:24px">📱</div>
+              <div style="font-size:11px;color:var(--text3)">İkon yok</div>
+            </div>
+          </div>
+
+          <div class="pwa-icon-controls">
+            <div class="pwa-icon-info" id="pwa-icon-info">Henüz özel ikon tanımlanmamış. Varsayılan MarketPas ikonu kullanılıyor.</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-accent btn-sm" onclick="document.getElementById('pwa-icon-file').click()">📸 İkon Yükle</button>
+              <button class="btn btn-sm" onclick="removePwaIcon()" id="btn-remove-icon" style="display:none">🗑 Kaldır</button>
+            </div>
+            <input type="file" id="pwa-icon-file" accept="image/png,image/jpeg,image/webp" onchange="handlePwaIconUpload(this)" style="display:none">
+            <div style="margin-top:10px">
+              <div style="font-size:11px;color:var(--text3)">veya</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <input type="url" id="pwa-icon-url" placeholder="İkon URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="savePwaIconUrl()">Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telefon simülasyonu -->
+        <div class="pwa-phone-sim">
+          <div class="pwa-phone-sim-title">Ana ekranda böyle görünecek:</div>
+          <div class="pwa-phone-homescreen">
+            <div class="pwa-app-icon">
+              <div class="pwa-app-icon-img" id="pwa-sim-icon">
+                <div style="font-size:20px">🛒</div>
+              </div>
+              <div class="pwa-app-icon-name" id="pwa-sim-name">Market</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Kategori Butonları -->
       <div class="card" style="margin-top:16px">
         <h3>🏷️ Müşteri Ekranı Kategori Butonları</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müşteri ekranında görünecek 4 kategori butonu. Müşteri butona basınca o kategoriye ait banner'lar görünür.</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müşteri ekranında görünecek 4 reyon kategorisi. Müşteri butona basınca o kategoriye ait banner'lar görünür.</p>
         <div id="cat-editor">
-          <div class="cat-edit-row">
-            <span class="cat-edit-num">1</span>
-            <input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2">
-            <input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik">
-          </div>
-          <div class="cat-edit-row">
-            <span class="cat-edit-num">2</span>
-            <input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2">
-            <input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav">
-          </div>
-          <div class="cat-edit-row">
-            <span class="cat-edit-num">3</span>
-            <input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2">
-            <input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın">
-          </div>
-          <div class="cat-edit-row">
-            <span class="cat-edit-num">4</span>
-            <input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2">
-            <input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek">
-          </div>
+          <div class="cat-edit-row"><span class="cat-edit-num">1</span><input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">2</span><input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">3</span><input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">4</span><input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek"></div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
-          <button class="btn btn-accent" onclick="saveCategories()">💾 Kategorileri Kaydet</button>
-          <span id="cat-save-msg" style="display:none;font-size:13px;font-weight:600"></span>
-        </div>
-        <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2)">
-          💡 <strong>İpucu:</strong> İkon alanına emoji yapıştırın (🧹🥬🍞🥤🧀🍖🥛🧃). Boş bırakılan satırlar müşteri ekranında görünmez.
-        </div>
+        <button class="btn btn-accent" onclick="saveCategories()" style="margin-top:12px">💾 Kategorileri Kaydet</button>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2)">💡 İkon alanına emoji yapıştırın. Boş bırakılan satırlar müşteri ekranında görünmez.</div>
       </div>
     </div>
   </main>
 
+  <!-- Mobil Alt Navigasyon (sadece mobilde görünür) -->
+  <div class="mobile-nav" id="mobile-nav">
+    <button class="mnav-item" id="mnav-reports" onclick="showSection('reports')"><span class="mnav-icon">📊</span><span class="mnav-label">Raporlar</span></button>
+    <button class="mnav-item" id="mnav-qr" onclick="showSection('qr')"><span class="mnav-icon">📱</span><span class="mnav-label">QR</span></button>
+    <button class="mnav-item" id="mnav-announcements" onclick="showSection('announcements')"><span class="mnav-icon">📢</span><span class="mnav-label">İçerikler</span></button>
+    <button class="mnav-item" id="mnav-settings" onclick="showSection('settings')"><span class="mnav-icon">⚙️</span><span class="mnav-label">Ayarlar</span></button>
+  </div>
+
+  <!-- Özel Onay Modalı -->
+  <div class="mp-modal-overlay" id="mp-modal" style="display:none">
+    <div class="mp-modal-box">
+      <div class="mp-modal-icon" id="mp-modal-icon">⚠️</div>
+      <div class="mp-modal-msg" id="mp-modal-msg"></div>
+      <div class="mp-modal-btns">
+        <button class="mp-modal-btn cancel" id="mp-modal-cancel">Vazgeç</button>
+        <button class="mp-modal-btn confirm" id="mp-modal-confirm">Evet</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
