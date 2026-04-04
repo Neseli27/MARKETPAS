@@ -365,6 +365,14 @@ async function loadStats() {
     var t3 = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'timeout').where('createdAt', '>=', ts).get();
     var el1 = document.getElementById('stat-today'); if (el1) el1.textContent = t1.size;
     var el3 = document.getElementById('stat-timeout'); if (el3) el3.textContent = t3.size;
+
+    // Bugünkü kasa kullanımını göster
+    var todayUsage = await getTodayUsage(marketId);
+    var elUsage = document.getElementById('stat-kasa-usage');
+    if (elUsage) {
+      var limit = marketData.kasaLimit || 0;
+      elUsage.textContent = todayUsage + (limit > 0 ? '/' + limit : '');
+    }
   } catch(e) {}
 }
 

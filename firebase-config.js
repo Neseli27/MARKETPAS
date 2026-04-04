@@ -195,6 +195,79 @@ function getEffectiveUnitPrice(market, minPrice, maxPrice) {
   return calculateUnitPrice(market.kasaSayisi || 0, minPrice, maxPrice);
 }
 
+// ─── Günlük Kasa Kullanım Takibi ────────────────────
+// Bir kasa işlem gördüğünde çağrılır. O kasayı bugünün kullanım kaydına yazar.
+// Firestore: dailyUsage/{marketId}_{YYYY-MM-DD}
+// { marketId, date, kasas: { "1": true, "3": true }, count: 2, lastUpdated }
+function getTodayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function logKasaUsage(marketId, kasaNo) {
+  if (!marketId || !kasaNo) return;
+  try {
+    var today = getTodayStr();
+    var docId = marketId + '_' + today;
+    var ref = db.collection('dailyUsage').doc(docId);
+
+    // Mevcut belgeyi oku
+    var doc = await ref.get();
+    var kasas = {};
+    if (doc.exists && doc.data().kasas) {
+      kasas = doc.data().kasas;
+    }
+
+    // Bu kasa zaten kaydedildiyse tekrar yazma
+    if (kasas[String(kasaNo)]) return;
+
+    // Yeni kasayı ekle
+    kasas[String(kasaNo)] = true;
+    var count = Object.keys(kasas).length;
+
+    await ref.set({
+      marketId: marketId,
+      date: today,
+      kasas: kasas,
+      count: count,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    console.log('MarketPas: Kasa ' + kasaNo + ' bugün kullanıldı (' + count + ' kasa aktif)');
+  } catch(e) { console.warn('MarketPas logKasaUsage hata:', e); }
+}
+
+// Bir marketin belirli ay içindeki kullanım özetini al
+// Döndürür: { totalDays, totalKasaDays, avgKasaPerDay, dailyDetails: [...] }
+async function getMonthlyUsage(marketId, year, month) {
+  var prefix = marketId + '_' + year + '-' + String(month).padStart(2,'0');
+  var result = { totalDays: 0, totalKasaDays: 0, avgKasaPerDay: 0, dailyDetails: [] };
+  try {
+    var snap = await db.collection('dailyUsage')
+      .where('marketId', '==', marketId)
+      .where('date', '>=', year + '-' + String(month).padStart(2,'0') + '-01')
+      .where('date', '<=', year + '-' + String(month).padStart(2,'0') + '-31')
+      .orderBy('date', 'asc').get();
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      result.totalDays++;
+      result.totalKasaDays += d.count || 0;
+      result.dailyDetails.push({ date: d.date, count: d.count || 0, kasas: d.kasas || {} });
+    });
+    result.avgKasaPerDay = result.totalDays > 0 ? Math.round(result.totalKasaDays / result.totalDays * 10) / 10 : 0;
+  } catch(e) { console.warn('getMonthlyUsage hata:', e); }
+  return result;
+}
+
+// Bugünkü kullanım sayısını al (hızlı)
+async function getTodayUsage(marketId) {
+  try {
+    var doc = await db.collection('dailyUsage').doc(marketId + '_' + getTodayStr()).get();
+    if (doc.exists) return doc.data().count || 0;
+  } catch(e) {}
+  return 0;
+}
+
 // ─── Türkiye Şehirleri ───────────────────────────────
 var TURKEY_CITIES = ["Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya","Ardahan","Artvin","Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkâri","Hatay","Iğdır","Isparta","İstanbul","İzmir","Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kilis","Kırıkkale","Kırklareli","Kırşehir","Kocaeli","Konya","Kütahya","Malatya","Manisa","Mardin","Mersin","Muğla","Muş","Nevşehir","Niğde","Ordu","Osmaniye","Rize","Sakarya","Samsun","Şanlıurfa","Siirt","Sinop","Sivas","Şırnak","Tekirdağ","Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak"];
 // ═══ GLOBAL MODAL SİSTEMİ ═══════════════════════════

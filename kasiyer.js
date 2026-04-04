@@ -288,6 +288,9 @@ async function handleGeldi(queueId) {
     var d = registerData;
     var now = firebase.firestore.FieldValue.serverTimestamp();
 
+    // Kasa kullanım kaydı — bu kasa bugün işlem gördü
+    logKasaUsage(marketId, kasaNo);
+
     if (!d.activeQueueId) {
       // Aktif slot BOŞ → müşteriyi direkt aktife al
       await db.collection('queue').doc(queueId).update({ status: 'active', arrivedAt: now });
