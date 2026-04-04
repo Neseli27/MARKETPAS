@@ -3,12 +3,13 @@
   "short_name": "MarketPas",
   "description": "Dijital Sıra Yönetim Sistemi",
   "start_url": "/musteri.html",
-  "id": "/musteri.html",
+  "id": "/musteri",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0a0f1a",
   "theme_color": "#0a0f1a",
   "orientation": "portrait",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192.png",

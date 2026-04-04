@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png" id="pwa-apple-icon">
   <title>MarketPas</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" id="pwa-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -183,6 +183,21 @@
   </div>
 
   <!-- Modallar firebase-config.js'teki global sistem tarafından oluşturuluyor -->
+
+  <!-- PWA Kurulum Banneri -->
+  <div class="pwa-install-banner" id="pwa-install-banner" style="display:none">
+    <div class="pwa-install-inner">
+      <div class="pwa-install-icon" id="pwa-install-icon">
+        <img src="/icon-192.png" alt="MP" width="44" height="44" style="border-radius:10px">
+      </div>
+      <div class="pwa-install-text">
+        <div class="pwa-install-title" id="pwa-install-title">MarketPas'ı Yükle</div>
+        <div class="pwa-install-sub">Ana ekrana ekle, anında aç</div>
+      </div>
+      <button class="pwa-install-btn" id="pwa-install-btn" onclick="doPwaInstall()">Yükle</button>
+      <button class="pwa-install-close" onclick="dismissInstall()">✕</button>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.10/dist/dotlottie-wc.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>

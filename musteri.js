@@ -77,12 +77,14 @@ function applyBranding(){
   document.title=market.name;
   var icon=market.pwaIconUrl||market.logoUrl||'/icon-192.png';
   var name=market.name||'MarketPas';
+  // Favicon + Apple icon güncelle (manifest'e dokunma!)
   var f=document.getElementById('pwa-icon'),a=document.getElementById('pwa-apple-icon');
   if(f)f.href=icon;if(a)a.href=icon;
-  var startUrl='/musteri.html'+(marketId?'?market='+marketId:'');
-  var m={name:name,short_name:name.substring(0,12),start_url:startUrl,id:startUrl,display:'standalone',background_color:'#0a0f1a',theme_color:'#10e5b0',orientation:'portrait',icons:[{src:icon,sizes:'192x192',type:'image/png',purpose:'any maskable'},{src:icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
-  var old=document.querySelector('link[rel="manifest"]');if(old)old.remove();
-  var lnk=document.createElement('link');lnk.rel='manifest';lnk.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));document.head.appendChild(lnk);
+  // Install banner'daki ikonu ve adı güncelle
+  var bi=document.getElementById('pwa-install-icon');
+  if(bi)bi.innerHTML='<img src="'+escapeHtml(icon)+'" alt="MP" width="44" height="44" style="border-radius:10px">';
+  var bt=document.getElementById('pwa-install-title');
+  if(bt)bt.textContent=name+"'ı Yükle";
 }
 
 // ═══ BUTON DURUMLARI ═══
@@ -436,8 +438,6 @@ function showLoading(v){var el=document.getElementById('loading');if(el)el.style
 function showError(msg){document.body.innerHTML='<div class="error-screen"><p>⚠️</p><p>'+escapeHtml(msg)+'</p></div>'}
 function newSession(){sessionId=generateId();localStorage.setItem('mp_s_'+marketId,sessionId);if(queueListener){queueListener();queueListener=null}clearInterval(countdownInterval);notifiedForThisCall=false;myQueueData=null}
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
-
 // ═══ SÜRPRİZ HEDİYE KUTUSU ═══
 var giftData=null,giftInterval=null,giftRevealed=false;
 var allGifts=[];
@@ -612,4 +612,85 @@ function showGiftExpired(){
   document.getElementById('gift-expired').style.display='flex';
 }
 
+// ═══ PWA KURULUM SİSTEMİ ═════════════════════════════
+
+var deferredPrompt=null;
+var installDismissed=false;
+
+// Chrome/Edge: beforeinstallprompt yakala
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  deferredPrompt=e;
+  console.log('MarketPas: PWA kurulum prompt hazır');
+  if(!installDismissed && !isStandalone()) showInstallBanner();
+});
+
+// Kurulum tamamlandı
+window.addEventListener('appinstalled',function(){
+  console.log('MarketPas: PWA kuruldu!');
+  deferredPrompt=null;
+  hideInstallBanner();
+});
+
+function isStandalone(){
+  return window.matchMedia('(display-mode:standalone)').matches
+    || window.navigator.standalone===true
+    || document.referrer.includes('android-app://');
+}
+
+function showInstallBanner(){
+  var b=document.getElementById('pwa-install-banner');
+  if(b) b.style.display='flex';
+}
+
+function hideInstallBanner(){
+  var b=document.getElementById('pwa-install-banner');
+  if(b) b.style.display='none';
+}
+
+// "Yükle" butonu tıklandığında
+async function doPwaInstall(){
+  if(!deferredPrompt){
+    // iOS veya prompt yoksa — manuel talimat göster
+    await mpAlert(
+      navigator.userAgent.match(/iPhone|iPad/i)
+        ? 'Safari\'de alttaki paylaş butonuna (⎋) basın → "Ana Ekrana Ekle" seçin.'
+        : 'Tarayıcı menüsünden "Ana Ekrana Ekle" veya "Uygulamayı Yükle" seçin.',
+      '📲'
+    );
+    return;
+  }
+  deferredPrompt.prompt();
+  var result=await deferredPrompt.userChoice;
+  console.log('MarketPas: Kurulum sonucu:',result.outcome);
+  deferredPrompt=null;
+  hideInstallBanner();
+}
+
+// Banner'ı kapat
+function dismissInstall(){
+  installDismissed=true;
+  hideInstallBanner();
+  // 3 gün sonra tekrar göster
+  localStorage.setItem('mp_install_dismiss',Date.now().toString());
+}
+
+// Sayfa açıldığında: zaten standalone ise veya yakın zamanda dismiss edildiyse banner gösterme
+(function(){
+  if(isStandalone()){installDismissed=true;return}
+  var last=localStorage.getItem('mp_install_dismiss');
+  if(last && (Date.now()-parseInt(last))<3*24*60*60*1000) installDismissed=true;
+})();
+
+// ═══ iOS için 3 saniye sonra otomatik banner ═════════
+// iOS'ta beforeinstallprompt yok, ama kullanıcıya talimat gösterebiliriz
+setTimeout(function(){
+  if(!installDismissed && !isStandalone() && !deferredPrompt && /iPhone|iPad/i.test(navigator.userAgent)){
+    showInstallBanner();
+  }
+},3000);
+
+// ═══════════════════════════════════════════════════════
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 document.addEventListener('DOMContentLoaded',init);
