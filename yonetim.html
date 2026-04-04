@@ -326,6 +326,20 @@
         <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px">Kaydet</button>
       </div>
 
+      <!-- Kategori Butonları -->
+      <div class="card" style="margin-top:16px">
+        <h3>🏷️ Müşteri Ekranı Kategori Butonları</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müşteri ekranında görünecek 4 reyon kategorisi. Müşteri butona basınca o kategoriye ait banner'lar görünür.</p>
+        <div id="cat-editor">
+          <div class="cat-edit-row"><span class="cat-edit-num">1</span><input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">2</span><input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">3</span><input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın"></div>
+          <div class="cat-edit-row"><span class="cat-edit-num">4</span><input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek"></div>
+        </div>
+        <button class="btn btn-accent" onclick="saveCategories()" style="margin-top:12px">💾 Kategorileri Kaydet</button>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2)">💡 İkon alanına emoji yapıştırın. Boş bırakılan satırlar müşteri ekranında görünmez.</div>
+      </div>
+
       <!-- Karşılama Görseli -->
       <div class="card">
         <h3>🎉 Karşılama Ekranı Görseli</h3>
@@ -405,20 +419,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Kategori Butonları -->
-      <div class="card" style="margin-top:16px">
-        <h3>🏷️ Müşteri Ekranı Kategori Butonları</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müşteri ekranında görünecek 4 reyon kategorisi. Müşteri butona basınca o kategoriye ait banner'lar görünür.</p>
-        <div id="cat-editor">
-          <div class="cat-edit-row"><span class="cat-edit-num">1</span><input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">2</span><input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">3</span><input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">4</span><input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek"></div>
-        </div>
-        <button class="btn btn-accent" onclick="saveCategories()" style="margin-top:12px">💾 Kategorileri Kaydet</button>
-        <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2)">💡 İkon alanına emoji yapıştırın. Boş bırakılan satırlar müşteri ekranında görünmez.</div>
       </div>
     </div>
   </main>
