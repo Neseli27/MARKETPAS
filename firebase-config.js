@@ -184,11 +184,20 @@ function calculateUnitPrice(kasaSayisi, minPrice, maxPrice) {
 }
 
 // Market için geçerli birim fiyat
-// Özel fiyat varsa onu, yoksa kasaLimit'e göre hesapla (kasaLimit yoksa kasaSayisi)
+// Birim fiyat günlük KULLANILAN kasa sayısına göre hesaplanır
+// kasaLimit sadece maksimum kasa sınırıdır, fiyat indirimi için geçerli değildir
+// Bu fonksiyon genel amaçlı — süper admin kartlarında kasaSayisi ile gösterim yapar
 function getEffectiveUnitPrice(market, minPrice, maxPrice) {
   if (market.customPrice && market.customPrice > 0) return market.customPrice;
-  var base = market.kasaLimit || market.kasaSayisi || 0;
-  return calculateUnitPrice(base, minPrice, maxPrice);
+  return calculateUnitPrice(market.kasaSayisi || 0, minPrice, maxPrice);
+}
+
+// Günlük kullanıma dayalı gerçek maliyet hesabı
+// dailyCount: o gün kullanılan kasa sayısı
+function calculateDailyCost(dailyCount, minPrice, maxPrice) {
+  if (!dailyCount || dailyCount <= 0) return 0;
+  var unitPrice = calculateUnitPrice(dailyCount, minPrice, maxPrice);
+  return unitPrice * dailyCount;
 }
 
 // ─── Günlük Kasa Kullanım Takibi ────────────────────
@@ -207,7 +216,6 @@ async function logKasaUsage(marketId, kasaNo) {
     var docId = marketId + '_' + today;
     var ref = db.collection('dailyUsage').doc(docId);
 
-    // Mevcut belgeyi oku
     var doc = await ref.get();
     var kasas = {};
     if (doc.exists && doc.data().kasas) {
@@ -221,15 +229,33 @@ async function logKasaUsage(marketId, kasaNo) {
     kasas[String(kasaNo)] = true;
     var count = Object.keys(kasas).length;
 
+    // Fiyatlandırma bilgisini al ve günlük maliyeti hesapla
+    var unitPrice = 0, dailyCost = 0;
+    try {
+      var pricingDoc = await db.collection('config').doc('pricing').get();
+      var min = 20, max = 50;
+      if (pricingDoc.exists) { min = pricingDoc.data().minPrice || 20; max = pricingDoc.data().maxPrice || 50; }
+      // Özel fiyat kontrolü
+      var mDoc = await db.collection('markets').doc(marketId).get();
+      if (mDoc.exists && mDoc.data().customPrice > 0) {
+        unitPrice = mDoc.data().customPrice;
+      } else {
+        unitPrice = calculateUnitPrice(count, min, max);
+      }
+      dailyCost = unitPrice * count;
+    } catch(pe) {}
+
     await ref.set({
       marketId: marketId,
       date: today,
       kasas: kasas,
       count: count,
+      unitPrice: unitPrice,
+      dailyCost: dailyCost,
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    console.log('MarketPas: Kasa ' + kasaNo + ' bugün kullanıldı (' + count + ' kasa aktif)');
+    console.log('MarketPas: Kasa ' + kasaNo + ' bugün kullanıldı → ' + count + ' kasa aktif, birim: ' + unitPrice + '₺, günlük: ' + dailyCost + '₺');
   } catch(e) { console.warn('MarketPas logKasaUsage hata:', e); }
 }
 
