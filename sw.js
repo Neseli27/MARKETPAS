@@ -1,4 +1,4 @@
-var CACHE = 'marketpas-v24.0';
+var CACHE = 'marketpas-v25.0';
 var ASSETS = ['/index.html','/musteri.html','/musteri.css','/musteri.js','/yonetim.html','/yonetim.css','/yonetim.js','/kasiyer.html','/kasiyer.css','/kasiyer.js','/superadmin.html','/superadmin.css','/superadmin.js','/firebase-config.js','/manifest.json','/manifest-yonetim.json','/manifest-kasiyer.json','/manifest-superadmin.json','/icon-192.png','/icon-512.png','/icon-yonetim-192.png','/icon-yonetim-512.png','/icon-kasiyer-192.png','/icon-kasiyer-512.png','/icon-admin-192.png','/icon-admin-512.png','/roi.html','/roi-calculator.html'];
 
 self.addEventListener('install', function(e) {

@@ -336,14 +336,26 @@ async function handleIslemTamam(queueId) {
     }
     updateKasiyerStats();
 
-    // 2) Bekleme slotundaki müşteriyi aktife taşı
+    // 2) Bekleme slotundaki müşteriyi yönet
     if (d.waitingQueueId) {
       var wDoc = await db.collection('queue').doc(d.waitingQueueId).get();
-      if (wDoc.exists && wDoc.data().status === 'arrived') {
-        await db.collection('queue').doc(d.waitingQueueId).update({ status: 'active' });
-        await regRef.update({ activeQueueId: d.waitingQueueId, waitingQueueId: null, waitingCode: null, calledAt: null });
-        if (autoMode) await assignNextToRegister(marketId, registerId, kasaNo);
+      if (wDoc.exists) {
+        var wStatus = wDoc.data().status;
+        if (wStatus === 'arrived') {
+          // Müşteri kasaya gelmiş → aktife taşı
+          await db.collection('queue').doc(d.waitingQueueId).update({ status: 'active' });
+          await regRef.update({ activeQueueId: d.waitingQueueId, waitingQueueId: null, waitingCode: null, calledAt: null });
+          if (autoMode) await assignNextToRegister(marketId, registerId, kasaNo);
+        } else if (wStatus === 'called') {
+          // Müşteri henüz gelmedi ama çağrılmış → bekleme slotunda kalsın, sadece aktifi temizle
+          await regRef.update({ activeQueueId: null });
+        } else {
+          // Geçersiz durum → her şeyi temizle
+          await regRef.update({ activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null });
+          if (autoMode) await assignNextToRegister(marketId, registerId, kasaNo);
+        }
       } else {
+        // Bekleme dokümanı yok → temizle
         await regRef.update({ activeQueueId: null, waitingQueueId: null, waitingCode: null, calledAt: null });
         if (autoMode) await assignNextToRegister(marketId, registerId, kasaNo);
       }
