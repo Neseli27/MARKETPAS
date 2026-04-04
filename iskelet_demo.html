@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1a">
+<title>MarketPas — İskelet Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2235;--card:#151d2e;--border:#1e293b;--accent:#10e5b0;--accent-glow:rgba(16,229,176,.15);--warn:#f59e0b;--text:#f1f5f9;--text2:#94a3b8;--text3:#475569;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;height:100dvh}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);flex-shrink:0}
+.hdr-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent)}
+
+.act-row{display:flex;gap:12px;padding:0 16px 12px;flex-shrink:0}
+.act-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none}
+.act-card:disabled{opacity:.35;cursor:not-allowed}
+.act-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.qr-card .act-icon{background:rgba(139,92,246,.15);color:#a78bfa}
+.sira-card .act-icon{background:var(--accent-glow);color:var(--accent)}
+.sira-card:not(:disabled){background:linear-gradient(135deg,rgba(16,229,176,.12),rgba(16,229,176,.04));border:1px solid rgba(16,229,176,.2)}
+.act-label{font-size:13px;font-weight:700}
+
+.cat-row{display:flex;gap:8px;padding:0 16px 12px;flex-shrink:0}
+.cat-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;transition:all .2s}
+.cat-btn.active{background:linear-gradient(135deg,rgba(16,229,176,.12),rgba(16,229,176,.04));border-color:rgba(16,229,176,.3);color:var(--accent)}
+.cat-btn:active{transform:scale(.95)}
+.cat-icon{font-size:20px;line-height:1}
+.cat-name{font-size:10px}
+
+.feed{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.feed-list{display:flex;flex-direction:column;gap:16px;padding:4px 16px 24px}
+.feed-card{background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);animation:feedIn .4s ease both}
+.feed-card:active{transform:scale(.98)}
+.feed-card-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--bg3)}
+.feed-card-body{padding:14px 16px}
+.feed-card-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:rgba(16,229,176,.1);color:var(--accent);padding:3px 10px;border-radius:20px;margin-bottom:6px}
+.feed-card-title{font-size:16px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.feed-card-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.feed-card.no-img{background:linear-gradient(135deg,var(--bg3),var(--card))}
+.feed-card.no-img .feed-card-body{padding:24px 16px}
+@keyframes feedIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.tab-bar{display:flex;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;padding:6px 0}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;position:relative}
+.tab-item.active{color:var(--accent)}
+.tab-item.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--accent);border-radius:0 0 4px 4px;box-shadow:0 0 8px var(--accent),0 0 20px rgba(16,229,176,.15)}
+.tab-item.active::after{content:'';position:absolute;top:0;left:10%;right:10%;height:24px;background:linear-gradient(180deg,rgba(16,229,176,.1),transparent);border-radius:0 0 12px 12px;pointer-events:none}
+.tab-icon{font-size:18px;line-height:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hdr">
+    <div class="hdr-name">Mavi Market</div>
+  </header>
+
+  <div class="act-row">
+    <button class="act-card qr-card">
+      <div class="act-icon">📱</div>
+      <span class="act-label">QR Okut</span>
+    </button>
+    <button class="act-card sira-card">
+      <div class="act-icon">🎫</div>
+      <span class="act-label">Kasa Sırası Al</span>
+    </button>
+  </div>
+
+  <div class="cat-row">
+    <button class="cat-btn active"><div class="cat-icon">🧹</div><div class="cat-name">Temizlik</div></button>
+    <button class="cat-btn" onclick="this.parentElement.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')"><div class="cat-icon">🥬</div><div class="cat-name">Manav</div></button>
+    <button class="cat-btn" onclick="this.parentElement.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')"><div class="cat-icon">🍞</div><div class="cat-name">Fırın</div></button>
+    <button class="cat-btn" onclick="this.parentElement.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')"><div class="cat-icon">🥤</div><div class="cat-name">İçecek</div></button>
+  </div>
+
+  <div class="feed">
+    <div class="feed-list">
+      <div class="feed-card" style="animation-delay:0s">
+        <img class="feed-card-img" src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=450&fit=crop" alt="">
+        <div class="feed-card-body">
+          <div class="feed-card-badge">🏷️ KAMPANYA</div>
+          <div class="feed-card-title">Meyve & Sebzede Büyük İndirim!</div>
+          <div class="feed-card-desc">Taze meyve ve sebzelerde %30'a varan indirimler sizi bekliyor.</div>
+        </div>
+      </div>
+      <div class="feed-card" style="animation-delay:.1s">
+        <img class="feed-card-img" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=450&fit=crop" alt="">
+        <div class="feed-card-body">
+          <div class="feed-card-badge">📢 DUYURU</div>
+          <div class="feed-card-title">Yeni Ürünler Raflarda!</div>
+          <div class="feed-card-desc">İthal peynir çeşitlerimiz ve organik ürünlerimiz geldi.</div>
+        </div>
+      </div>
+      <div class="feed-card no-img" style="animation-delay:.2s">
+        <div class="feed-card-body">
+          <div class="feed-card-badge">⭐ FIRSAT</div>
+          <div class="feed-card-title">Temizlik Malzemelerinde 2 Al 1 Öde</div>
+          <div class="feed-card-desc">Bu hafta sonu tüm temizlik ürünlerinde geçerli kampanya.</div>
+        </div>
+      </div>
+      <div class="feed-card" style="animation-delay:.3s">
+        <img class="feed-card-img" src="https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=600&h=450&fit=crop" alt="">
+        <div class="feed-card-body">
+          <div class="feed-card-badge">🎁 SÜRPRİZ</div>
+          <div class="feed-card-title">Sürpriz İndirim Yakında!</div>
+          <div class="feed-card-desc">Saat 22:00'da sürpriz fırsatımızı kaçırmayın.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));this.classList.add('active')"><span class="tab-icon">🏠</span><span>Ana Sayfa</span></button>
+    <button class="tab-item" onclick="document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));this.classList.add('active')"><span class="tab-icon">🏷️</span><span>Kampanya</span></button>
+    <button class="tab-item" onclick="document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));this.classList.add('active')"><span class="tab-icon">🎁</span><span>Sürpriz</span></button>
+    <button class="tab-item" onclick="document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));this.classList.add('active')"><span class="tab-icon">⭐</span><span>Fırsat</span></button>
+  </div>
+</div>
+</body>
+</html>

@@ -29,59 +29,78 @@
     </div>
   </div>
 
-  <!-- APP -->
+  <!-- ═══ ANA UYGULAMA ═══ -->
   <div class="app" id="app">
 
-    <!-- HEADER -->
+    <!-- ÜST BAR — ince, market adı -->
     <header class="hdr">
       <div class="hdr-name" id="hdr-name">MarketPas</div>
+      <div class="hdr-right" id="hdr-right"></div>
     </header>
 
-    <!-- AKSİYON BUTONLARI — yazılı, büyük, net -->
+    <!-- AKSİYON BUTONLARI — iki büyük kart -->
     <div class="act-row">
-      <button class="act-btn qr-btn" id="btn-qr" onclick="openQRScanner()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
-        <span>QR Okut</span>
+      <button class="act-card qr-card" id="btn-qr" onclick="openQRScanner()">
+        <div class="act-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11V3h8v8H3zm2-6v4h4V5H5zM3 21v-8h8v8H3zm2-6v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zm-2 8h2v2h-2v-2zm0 4h2v4h-2v-4zm4-4h2v2h-2v-2zm-4 8h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v4h-2v-4zm0-4h2v2h-2v-2z"/></svg>
+        </div>
+        <span class="act-label">QR Okut</span>
       </button>
-      <button class="act-btn sira-btn" id="btn-sira" onclick="openSheet()" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><line x1="9" y1="6" x2="9" y2="18" stroke-dasharray="2 2"/></svg>
-        <span>Kasa Sırası Al</span>
+      <button class="act-card sira-card" id="btn-sira" onclick="openSheet()" disabled>
+        <div class="act-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        </div>
+        <span class="act-label">Kasa Sırası Al</span>
       </button>
     </div>
 
-    <!-- BANNER SLIDER — tam ekran -->
-    <div class="banners" id="ann-section">
-      <div class="ann-slider" id="ann-slider"></div>
-      <div class="ann-dots" id="ann-dots"></div>
+    <!-- KATEGORİ BUTONLARI — yatay 4 adet -->
+    <div class="cat-row" id="cat-row">
+      <button class="cat-btn active" data-cat="anasayfa" onclick="filterCat('anasayfa')">
+        <div class="cat-icon">🏠</div>
+        <div class="cat-name">Ana Sayfa</div>
+      </button>
+      <button class="cat-btn" data-cat="kampanya" onclick="filterCat('kampanya')">
+        <div class="cat-icon">🏷️</div>
+        <div class="cat-name">Kampanya</div>
+      </button>
+      <button class="cat-btn" data-cat="gunun_firsati" onclick="filterCat('gunun_firsati')">
+        <div class="cat-icon">🎁</div>
+        <div class="cat-name">Sürpriz</div>
+      </button>
+      <button class="cat-btn" data-cat="surpriz" onclick="filterCat('surpriz')">
+        <div class="cat-icon">⭐</div>
+        <div class="cat-name">Fırsat</div>
+      </button>
+    </div>
+
+    <!-- ═══ ORTA ALAN — sadece burası değişir ═══ -->
+    <div class="feed" id="feed-area">
+
+      <!-- IG tarzı dikey scroll banner listesi -->
+      <div class="feed-list" id="feed-list"></div>
+
+      <!-- Boş durum -->
+      <div class="feed-empty" id="feed-empty" style="display:none">
+        <div class="empty-state">
+          <div class="empty-particles"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="empty-card">
+            <div class="empty-icon pulse-icon" id="empty-icon">📢</div>
+            <div class="empty-title" id="empty-title">HOŞ GELDİNİZ</div>
+            <div class="empty-sub" id="empty-sub">Duyurularımızı buradan takip edebilirsiniz</div>
+          </div>
+        </div>
+      </div>
 
       <!-- SÜRPRİZ HEDİYE KUTUSU -->
       <div class="gift-screen" id="gift-screen" style="display:none">
-        <!-- Geri sayım -->
         <div class="gift-pre" id="gift-pre">
-          <!-- Işık efektleri -->
           <div class="gift-glow"></div>
           <div class="gift-rays"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="gift-sparkles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-
-          <!-- 3D Hediye Kutusu + Lottie -->
           <div class="gift-anim-wrap">
             <div class="lottie-gift" id="lottie-gift"></div>
-            <div class="gift-box-3d" id="gift-box" style="display:none">
-            <div class="gbox-lid">
-              <div class="gbox-lid-top"></div>
-              <div class="gbox-lid-front"></div>
-              <div class="gbox-bow"><div class="bow-loop left"></div><div class="bow-loop right"></div><div class="bow-knot"></div></div>
-            </div>
-            <div class="gbox-body">
-              <div class="gbox-front"></div>
-              <div class="gbox-right"></div>
-              <div class="gbox-ribbon-v"></div>
-              <div class="gbox-ribbon-h"></div>
-              <div class="gbox-q">?</div>
-            </div>
           </div>
-          </div>
-
           <div class="gift-label">SÜRPRİZ FIRSAT</div>
           <div class="gift-countdown" id="gift-countdown">
             <div class="gcd-item"><span class="gcd-num" id="gcd-h">00</span><span class="gcd-lbl">saat</span></div>
@@ -92,16 +111,10 @@
           </div>
           <div class="gift-hint">SÜRPRİZ AÇILIYOR</div>
         </div>
-
-        <!-- Açılmış hediye — tam ekran -->
         <div class="gift-reveal" id="gift-reveal" style="display:none">
-          <!-- Tüm sahne — kutu pozisyonundan başlar -->
           <div class="scene" id="reveal-scene">
-            <!-- Işık patlaması — kutudan yayılır -->
             <div class="scene-light"></div>
-            <!-- Konfeti — kutudan fışkırır -->
             <div class="scene-confetti" id="scene-confetti"></div>
-            <!-- Kart — kutudan yükselir -->
             <div class="scene-card" id="reveal-card">
               <div class="reveal-stars">✦ ✦ ✦</div>
               <div class="reveal-badge">🎉 SÜRPRİZ AÇILDI!</div>
@@ -114,15 +127,13 @@
             </div>
           </div>
         </div>
-
-        <!-- Süre doldu ekranı -->
         <div class="gift-expired" id="gift-expired" style="display:none">
           <div class="expired-text">SÜRPRİZLERİ<br>TAKİP EDİN<br>KAÇIRMAYIN!</div>
         </div>
       </div>
     </div>
 
-    <!-- ALT TAB BAR -->
+    <!-- ALT TAB BAR — 4 sekme (sabit) -->
     <div class="tab-bar">
       <button class="tab-item active" onclick="filterCat('anasayfa')"><span class="tab-icon">🏠</span><span class="tab-lbl">Ana Sayfa</span></button>
       <button class="tab-item" onclick="filterCat('kampanya')"><span class="tab-icon">🏷️</span><span class="tab-lbl">Kampanya</span></button>
@@ -186,13 +197,7 @@
     </div>
   </div>
 
-  <!-- ONAY MODAL -->
-  <div class="modal-overlay" id="confirm-modal" style="display:none">
-    <div class="modal-box">
-      <div class="modal-msg" id="modal-msg"></div>
-      <div class="modal-btns"><button class="modal-btn cancel" id="modal-cancel">Vazgeç</button><button class="modal-btn confirm" id="modal-confirm">Evet</button></div>
-    </div>
-  </div>
+  <!-- Modallar firebase-config.js'teki global sistem tarafından oluşturuluyor -->
 
   <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.10/dist/dotlottie-wc.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
