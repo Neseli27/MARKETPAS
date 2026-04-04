@@ -14,10 +14,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-// ─── SÜPER ADMİN KİMLİK BİLGİLERİ ──────────────────
-var SUPER_ADMIN = { username: 'marketpas_admin', passwordHash: '' };
-// Şifre hash'i ilk çalıştırmada konsoldan ayarlanır (aşağıdaki hashPassword fonk.)
-
 // ─── SHA-256 Hash ────────────────────────────────────
 async function hashPassword(password) {
   var encoder = new TextEncoder();

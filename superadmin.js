@@ -67,16 +67,16 @@ async function loadPricing() {
 async function savePricing() {
   var min = parseInt(document.getElementById('price-min').value) || 20;
   var max = parseInt(document.getElementById('price-max').value) || 50;
-  if (min >= max) { alert('Min fiyat, max fiyattan küçük olmalı.'); return; }
-  if (min < 1) { alert('Min fiyat en az 1 TL olmalı.'); return; }
+  if (min >= max) { mpAlert('Min fiyat, max fiyattan küçük olmalı.', '⚠️'); return; }
+  if (min < 1) { mpAlert('Min fiyat en az 1 TL olmalı.', '⚠️'); return; }
 
   pricingData = { minPrice: min, maxPrice: max };
   try {
     await db.collection('config').doc('pricing').set(pricingData);
     renderPricingPreview();
-    renderMarkets(); // Fiyatlar güncellendi, kartları yenile
-    alert('Fiyatlandırma kaydedildi.');
-  } catch(e) { alert('Hata: ' + e.message); }
+    renderMarkets();
+    mpSuccess('Fiyatlandırma kaydedildi.', '💰');
+  } catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
 }
 
 function renderPricingPreview() {
@@ -246,14 +246,14 @@ function renderMarkets() {
     }
     if (m.status === 'active') {
       var susBtn = document.createElement('button'); susBtn.className = 'sa-btn orange'; susBtn.textContent = '⏸ Askıya Al';
-      susBtn.onclick = function() { if (confirm(m.name + ' askıya alınsın mı?')) setStatus(m.id, 'suspended'); }; actionsBar.appendChild(susBtn);
+      susBtn.onclick = async function() { if (await mpConfirm(m.name + ' askıya alınsın mı?', '⏸')) setStatus(m.id, 'suspended'); }; actionsBar.appendChild(susBtn);
     }
     if (m.status === 'suspended') {
       var actBtn = document.createElement('button'); actBtn.className = 'sa-btn green'; actBtn.textContent = '▶ Aktifleştir';
       actBtn.onclick = function() { setStatus(m.id, 'active'); }; actionsBar.appendChild(actBtn);
     }
     var delBtn = document.createElement('button'); delBtn.className = 'sa-btn red'; delBtn.textContent = '🗑 Sil';
-    delBtn.onclick = function() { if (confirm(m.name + ' silinsin mi?')) setStatus(m.id, 'deleted'); }; actionsBar.appendChild(delBtn);
+    delBtn.onclick = async function() { if (await mpConfirm(m.name + ' silinsin mi?', '🗑️')) setStatus(m.id, 'deleted'); }; actionsBar.appendChild(delBtn);
 
     card.appendChild(actionsBar);
     list.appendChild(card);
@@ -273,7 +273,7 @@ function getBadge(m) {
 
 async function setStatus(marketId, status) {
   try { await db.collection('markets').doc(marketId).update({ status: status }); }
-  catch(e) { alert('Hata: ' + e.message); }
+  catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -293,12 +293,11 @@ async function setLicense(days) {
   if (!mId) return;
 
   var label = days === 1 ? 'Günübirlik (500 ₺)' : days + ' günlük';
-  if (!confirm(label + ' lisans tanımlanacak. Onaylıyor musunuz?')) return;
+  if (!(await mpConfirm(label + ' lisans tanımlanacak. Onaylıyor musunuz?', '📋'))) return;
 
   try {
     var expiry = new Date();
     if (days === 1) {
-      // Günübirlik — bugün gece 23:59:59'a kadar
       expiry.setHours(23, 59, 59, 999);
     } else {
       expiry.setDate(expiry.getDate() + days);
@@ -311,7 +310,8 @@ async function setLicense(days) {
       status: 'active'
     });
     closeModal();
-  } catch(e) { alert('Hata: ' + e.message); }
+    mpSuccess(label + ' lisans tanımlandı.', '✅');
+  } catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -344,7 +344,8 @@ async function saveCustomPrice() {
   try {
     await db.collection('markets').doc(mId).update({ customPrice: val });
     closePriceModal();
-  } catch(e) { alert('Hata: ' + e.message); }
+    mpSuccess('Özel fiyat kaydedildi.', '💰');
+  } catch(e) { mpAlert('Hata: ' + e.message, '❌'); }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

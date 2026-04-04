@@ -197,7 +197,7 @@ function renderRegisters(registers) {
     var del = document.createElement('button');
     del.className = 'btn btn-sm'; del.style.cssText = 'background:#FEE2E2;color:#DC2626;margin-left:8px;padding:4px 10px;font-size:11px;';
     del.textContent = 'Sil';
-    del.onclick = function() { showAppConfirm('Kasa ' + r.kasaNo + ' silinsin mi?', function() { deleteKasa(r.id); }, {icon:'🗑️'}); };
+    del.onclick = async function() { if (await mpConfirm('Kasa ' + r.kasaNo + ' silinsin mi?', '🗑️')) deleteKasa(r.id); };
     td.appendChild(del);
 
     card.appendChild(td);
@@ -235,7 +235,7 @@ async function handleAddKasa() {
 
 // ─── Kasaları Sıfırla (stuck verileri temizle) ───────
 async function resetAllRegisters() {
-  showAppConfirm('Tüm kasaların bekleyen/aktif müşteri verileri sıfırlanacak. Bu işlem geri alınamaz.', async function() {
+  if (!(await mpConfirm('Tüm kasaların bekleyen/aktif müşteri verileri sıfırlanacak. Bu işlem geri alınamaz.', '🔄'))) return;
   try {
     var snap = await db.collection('registers').where('marketId', '==', marketId).get();
     var batch = db.batch();
@@ -246,7 +246,6 @@ async function resetAllRegisters() {
       });
       count++;
     });
-    // Bekleyen queue kayıtlarını da temizle
     var qSnap = await db.collection('queue').where('marketId', '==', marketId)
       .where('status', 'in', ['waiting', 'priority', 'priority_ready', 'called', 'arrived', 'active', 'paused']).get();
     qSnap.forEach(function(doc) {
@@ -255,7 +254,6 @@ async function resetAllRegisters() {
     await batch.commit();
     mpSuccess(count + ' kasa sıfırlandı, ' + qSnap.size + ' sıra iptal edildi.','✅');
   } catch(e) { mpAlert('Sıfırlama hatası: ' + e.message,'❌'); }
-  }, {icon:'🔄'});
 }
 
 // ─── Yoğunluk + Performans ──────────────────────────
@@ -679,7 +677,7 @@ function cancelAnnForm() {
   uploadedImageData = null;
 }
 async function toggleAnn(id, active) { await db.collection('announcements').doc(id).update({ active: active }); }
-async function deleteAnn(id) { showAppConfirm('Bu içerik silinsin mi?', async function() { await db.collection('announcements').doc(id).delete(); }, {icon:'🗑️'}); }
+async function deleteAnn(id) { if (await mpConfirm('Bu içerik silinsin mi?', '🗑️')) await db.collection('announcements').doc(id).delete(); }
 
 // ─── Sürpriz Hediye Yönetimi ─────────────────────────
 var editingGiftId = null;
@@ -782,15 +780,13 @@ async function saveGift() {
 }
 
 async function stopGift(id) {
-  showAppConfirm('Bu sürprizi durdurmak istiyor musunuz?', async function() {
+  if (await mpConfirm('Bu sürprizi durdurmak istiyor musunuz?', '⏹️'))
     try { await db.collection('gifts').doc(id).update({ status: 'stopped' }); } catch (e) { mpAlert('Hata: ' + e.message,'❌'); }
-  }, {icon:'⏹️'});
 }
 
 async function deleteGift(id) {
-  showAppConfirm('Bu sürpriz kalıcı olarak silinecek. Emin misiniz?', async function() {
+  if (await mpConfirm('Bu sürpriz kalıcı olarak silinecek. Emin misiniz?', '🗑️'))
     try { await db.collection('gifts').doc(id).delete(); } catch (e) { mpAlert('Hata: ' + e.message,'❌'); }
-  }, {icon:'🗑️'});
 }
 
 // ─── Ayarlar ──────────────────────────────────────────
@@ -983,13 +979,12 @@ async function savePwaIconUrl() {
 }
 
 async function removePwaIcon() {
-  showAppConfirm('Özel ikon kaldırılsın mı? Varsayılan ikon kullanılacak.', async function() {
-    try {
-      await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
-      marketData.pwaIconUrl = '';
-      loadPwaIconPreview();
-    } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
-  }, {icon:'🖼️'});
+  if (!(await mpConfirm('Özel ikon kaldırılsın mı? Varsayılan ikon kullanılacak.', '🖼️'))) return;
+  try {
+    await db.collection('markets').doc(marketId).update({ pwaIconUrl: '' });
+    marketData.pwaIconUrl = '';
+    loadPwaIconPreview();
+  } catch(e) { mpAlert('Hata: ' + e.message,'❌'); }
 }
 
 // ─── Karşılama Görseli Yönetimi ──────────────────────
@@ -1369,25 +1364,6 @@ async function renderKasaChart(doneRecords) {
       }
     }
   });
-}
-
-// ═══ ÖZEL ONAY MODALI ═════════════════════════════════
-function showAppConfirm(msg, onConfirm, opts) {
-  opts = opts || {};
-  var m = document.getElementById('mp-modal');
-  var icon = document.getElementById('mp-modal-icon');
-  var msgEl = document.getElementById('mp-modal-msg');
-  var confirmBtn = document.getElementById('mp-modal-confirm');
-  var cancelBtn = document.getElementById('mp-modal-cancel');
-  icon.textContent = opts.icon || '⚠️';
-  msgEl.textContent = msg;
-  confirmBtn.textContent = opts.confirmText || 'Evet';
-  confirmBtn.className = 'mp-modal-btn confirm' + (opts.green ? ' green' : '');
-  cancelBtn.textContent = opts.cancelText || 'Vazgeç';
-  m.style.display = 'flex';
-  confirmBtn.onclick = function() { m.style.display = 'none'; if (onConfirm) onConfirm(); };
-  cancelBtn.onclick = function() { m.style.display = 'none'; };
-  m.onclick = function(e) { if (e.target === m) m.style.display = 'none'; };
 }
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});

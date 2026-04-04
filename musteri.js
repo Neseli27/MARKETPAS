@@ -79,7 +79,8 @@ function applyBranding(){
   var name=market.name||'MarketPas';
   var f=document.getElementById('pwa-icon'),a=document.getElementById('pwa-apple-icon');
   if(f)f.href=icon;if(a)a.href=icon;
-  var m={name:name,short_name:name.substring(0,12),start_url:'/musteri.html',display:'standalone',background_color:'#0a0f1a',theme_color:'#10e5b0',orientation:'portrait',icons:[{src:icon,sizes:'192x192',type:'image/png',purpose:'any maskable'},{src:icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
+  var startUrl='/musteri.html'+(marketId?'?market='+marketId:'');
+  var m={name:name,short_name:name.substring(0,12),start_url:startUrl,id:startUrl,display:'standalone',background_color:'#0a0f1a',theme_color:'#10e5b0',orientation:'portrait',icons:[{src:icon,sizes:'192x192',type:'image/png',purpose:'any maskable'},{src:icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
   var old=document.querySelector('link[rel="manifest"]');if(old)old.remove();
   var lnk=document.createElement('link');lnk.rel='manifest';lnk.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));document.head.appendChild(lnk);
 }

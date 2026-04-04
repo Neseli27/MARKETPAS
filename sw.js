@@ -1,5 +1,5 @@
-var CACHE = 'marketpas-v10.0';
-var ASSETS = ['/index.html','/musteri.html','/musteri.css','/musteri.js','/yonetim.html','/yonetim.css','/yonetim.js','/kasiyer.html','/kasiyer.css','/kasiyer.js','/superadmin.html','/superadmin.css','/superadmin.js','/firebase-config.js','/manifest.json','/manifest-yonetim.json','/icon-192.png','/icon-512.png'];
+var CACHE = 'marketpas-v11.0';
+var ASSETS = ['/index.html','/musteri.html','/musteri.css','/musteri.js','/yonetim.html','/yonetim.css','/yonetim.js','/kasiyer.html','/kasiyer.css','/kasiyer.js','/superadmin.html','/superadmin.css','/superadmin.js','/firebase-config.js','/manifest.json','/manifest-yonetim.json','/icon-192.png','/icon-512.png','/roi.html','/roi-calculator.html'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(ASSETS); }));
