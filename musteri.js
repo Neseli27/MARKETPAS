@@ -451,11 +451,29 @@ async function handleQueueButton(){var btn=document.getElementById('btn-queue');
 
 async function tryAssignToOpenRegister(){try{
     var snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
+
+    // Stuck temizliği — geçersiz waitingQueueId'leri temizle
     for(var i=0;i<snap.docs.length;i++){var d=snap.docs[i].data();
       if(d.waitingQueueId){try{var stuckDoc=await db.collection('queue').doc(d.waitingQueueId).get();
         if(!stuckDoc.exists||['done','cancelled','timeout'].indexOf(stuckDoc.data().status)>-1){
-          await db.collection('registers').doc(snap.docs[i].id).update({waitingQueueId:null,waitingCode:null,calledAt:null});d.waitingQueueId=null}}catch(e){}}
-      if(!d.waitingQueueId){await assignNextToRegister(marketId,snap.docs[i].id,d.kasaNo);break}}
+          await db.collection('registers').doc(snap.docs[i].id).update({waitingQueueId:null,waitingCode:null,calledAt:null})}}catch(e){}}}
+
+    // Kasaları yeniden oku (temizlikten sonra)
+    snap=await db.collection('registers').where('marketId','==',marketId).where('active','==',true).get();
+
+    // 1. ÖNCELİK: Tamamen boş kasa (aktif yok, bekleyen yok)
+    for(var j=0;j<snap.docs.length;j++){var r=snap.docs[j].data();
+      if(!r.activeQueueId && !r.waitingQueueId){
+        console.log('MarketPas: Boş kasa bulundu → Kasa',r.kasaNo);
+        await assignNextToRegister(marketId,snap.docs[j].id,r.kasaNo);return}}
+
+    // 2. YEDEK: Aktifi var ama bekleme slotu boş (pre-load)
+    for(var k=0;k<snap.docs.length;k++){var r2=snap.docs[k].data();
+      if(!r2.waitingQueueId){
+        console.log('MarketPas: Bekleme slotu boş kasa → Kasa',r2.kasaNo);
+        await assignNextToRegister(marketId,snap.docs[k].id,r2.kasaNo);return}}
+
+    console.log('MarketPas: Tüm kasalar dolu');
   }catch(e){}}
 
 // "GELİYORUM" — alarmı durdur, çağrı durumu devam eder
