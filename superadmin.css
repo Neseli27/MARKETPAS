@@ -121,6 +121,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .sa-card-kasa-bar{display:flex;align-items:center;gap:12px;padding:10px 24px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
 .kasa-limit-pill{padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:#F3E8FF;color:#7C3AED}
 .kasa-limit-pill.over{background:#FEE2E2;color:var(--danger)}
+.kasa-today-pill{font-size:12px;font-weight:600;color:var(--green);background:var(--green-light);padding:3px 12px;border-radius:100px}
 
 /* Aksiyon şeridi */
 .sa-card-actions-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 24px;border-top:1px solid var(--border)}

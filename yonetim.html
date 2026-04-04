@@ -104,6 +104,32 @@
         <div id="registers-grid"></div>
       </div>
 
+      <!-- Kasa Kullanım İstatistikleri -->
+      <div class="card">
+        <h3 style="margin-bottom:14px">📊 Kasa Kullanım İstatistikleri</h3>
+        <div class="usage-stats-grid">
+          <div class="usage-stat-card">
+            <div class="usage-stat-icon">📅</div>
+            <div class="usage-stat-num" id="usage-today">—</div>
+            <div class="usage-stat-label">Bugün</div>
+            <div class="usage-stat-sub" id="usage-today-cost"></div>
+          </div>
+          <div class="usage-stat-card">
+            <div class="usage-stat-icon">📆</div>
+            <div class="usage-stat-num" id="usage-week">—</div>
+            <div class="usage-stat-label">Bu Hafta (ort.)</div>
+            <div class="usage-stat-sub" id="usage-week-total"></div>
+          </div>
+          <div class="usage-stat-card">
+            <div class="usage-stat-icon">🗓</div>
+            <div class="usage-stat-num" id="usage-month">—</div>
+            <div class="usage-stat-label">Bu Ay (ort.)</div>
+            <div class="usage-stat-sub" id="usage-month-total"></div>
+          </div>
+        </div>
+        <div id="usage-daily-list" style="margin-top:16px"></div>
+      </div>
+
       <!-- Günlük Detay Kartları -->
       <div class="card"><h3 style="margin-bottom:14px">📈 Günlük Detay</h3>
       <div class="report-grid" id="report-grid">

@@ -74,9 +74,10 @@ function startPanel() {
   if (mobTitle) mobTitle.textContent = marketData.name;
   showSection('reports');
   startLiveListeners();
-  startMarketListener(); // Market verisini canlı dinle (lisans değişiklikleri vs.)
+  startMarketListener();
   loadAnnouncements();
   loadCongestionStats();
+  loadUsageStats();
   congestionInterval = setInterval(loadCongestionStats, 10000);
   checkLicenseWarning();
   updateSidebarLicense();
@@ -374,6 +375,103 @@ async function loadStats() {
       elUsage.textContent = todayUsage + (limit > 0 ? '/' + limit : '');
     }
   } catch(e) {}
+}
+
+// ─── Kasa Kullanım İstatistikleri ────────────────────
+async function loadUsageStats() {
+  try {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var today = getTodayStr();
+
+    // Bu ayın tüm kullanım verilerini al
+    var monthStart = year + '-' + String(month).padStart(2, '0') + '-01';
+    var monthEnd = year + '-' + String(month).padStart(2, '0') + '-31';
+
+    var snap = await db.collection('dailyUsage')
+      .where('marketId', '==', marketId)
+      .where('date', '>=', monthStart)
+      .where('date', '<=', monthEnd)
+      .orderBy('date', 'desc').get();
+
+    var days = [];
+    var totalKasaDays = 0;
+    var totalCost = 0;
+    var todayData = null;
+    var weekKasaDays = 0;
+    var weekDays = 0;
+    var weekCost = 0;
+
+    // Haftanın başlangıcını bul (Pazartesi)
+    var weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    weekStart.setHours(0, 0, 0, 0);
+    var weekStartStr = weekStart.getFullYear() + '-' + String(weekStart.getMonth() + 1).padStart(2, '0') + '-' + String(weekStart.getDate()).padStart(2, '0');
+
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      var count = d.count || 0;
+      var cost = d.dailyCost || 0;
+      days.push({ date: d.date, count: count, cost: cost, kasas: d.kasas || {} });
+      totalKasaDays += count;
+      totalCost += cost;
+      if (d.date === today) todayData = d;
+      if (d.date >= weekStartStr) {
+        weekKasaDays += count;
+        weekDays++;
+        weekCost += cost;
+      }
+    });
+
+    var monthDays = days.length;
+    var avgMonth = monthDays > 0 ? Math.round(totalKasaDays / monthDays * 10) / 10 : 0;
+    var avgWeek = weekDays > 0 ? Math.round(weekKasaDays / weekDays * 10) / 10 : 0;
+
+    // Bugün
+    var elToday = document.getElementById('usage-today');
+    var elTodayCost = document.getElementById('usage-today-cost');
+    if (elToday) elToday.textContent = todayData ? todayData.count + ' kasa' : '0 kasa';
+    if (elTodayCost) elTodayCost.textContent = todayData ? todayData.dailyCost + ' ₺' : '';
+
+    // Bu hafta
+    var elWeek = document.getElementById('usage-week');
+    var elWeekTotal = document.getElementById('usage-week-total');
+    if (elWeek) elWeek.textContent = avgWeek + ' kasa';
+    if (elWeekTotal) elWeekTotal.textContent = weekDays + ' gün · ' + weekCost + ' ₺';
+
+    // Bu ay
+    var elMonth = document.getElementById('usage-month');
+    var elMonthTotal = document.getElementById('usage-month-total');
+    if (elMonth) elMonth.textContent = avgMonth + ' kasa';
+    if (elMonthTotal) elMonthTotal.textContent = monthDays + ' gün · ' + totalCost + ' ₺';
+
+    // Günlük detay listesi (son 14 gün)
+    var listEl = document.getElementById('usage-daily-list');
+    if (listEl && days.length > 0) {
+      var maxCount = Math.max.apply(null, days.map(function(d) { return d.count; }));
+      if (maxCount < 1) maxCount = 1;
+      var limit = Math.min(days.length, 14);
+      var html = '<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">Son ' + limit + ' gün</div>';
+      for (var i = 0; i < limit; i++) {
+        var d = days[i];
+        var pct = Math.round(d.count / maxCount * 100);
+        var dateObj = new Date(d.date + 'T00:00:00');
+        var dayName = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'][dateObj.getDay()];
+        var dateStr = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + ' ' + dayName;
+        html += '<div class="usage-daily-row">' +
+          '<div class="usage-daily-date">' + dateStr + '</div>' +
+          '<div class="usage-daily-bar-wrap"><div class="usage-daily-bar" style="width:' + pct + '%"></div></div>' +
+          '<div class="usage-daily-count">' + d.count + ' kasa</div>' +
+          '<div class="usage-daily-cost">' + d.cost + ' ₺</div>' +
+          '</div>';
+      }
+      listEl.innerHTML = html;
+    } else if (listEl) {
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Henüz kullanım verisi yok</div>';
+    }
+
+  } catch(e) { console.warn('loadUsageStats hata:', e); }
 }
 
 // ─── İçerik Yönetimi (3 Kategori) ────────────────────

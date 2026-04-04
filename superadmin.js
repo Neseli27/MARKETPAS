@@ -109,10 +109,24 @@ function renderPricingPreview() {
 // MARKET LİSTESİ + ARAMA + GELİR
 // ═══════════════════════════════════════════════════════
 
+var todayUsageMap = {}; // marketId → { count, kasas }
+
 function loadMarkets() {
   db.collection('markets').orderBy('createdAt', 'desc').onSnapshot(function(snap) {
     allMarkets = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
     updateStats();
+    loadTodayUsage();
+  });
+}
+
+function loadTodayUsage() {
+  var today = getTodayStr();
+  db.collection('dailyUsage').where('date', '==', today).onSnapshot(function(snap) {
+    todayUsageMap = {};
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      todayUsageMap[d.marketId] = { count: d.count || 0, dailyCost: d.dailyCost || 0, unitPrice: d.unitPrice || 0 };
+    });
     renderMarkets();
   });
 }
@@ -210,12 +224,17 @@ function renderMarkets() {
     top.appendChild(info);
     card.appendChild(top);
 
-    // ── Kasa limit şeridi ──
+    // ── Kasa limit şeridi + bugünkü kullanım ──
     var kasaBar = document.createElement('div'); kasaBar.className = 'sa-card-kasa-bar';
     var kasaCount = m.kasaSayisi || 0;
     var kasaLimit = m.kasaLimit || 0;
     var isOver = kasaLimit > 0 && kasaCount > kasaLimit;
+    var todayData = todayUsageMap[m.id] || null;
+    var todayCount = todayData ? todayData.count : 0;
+    var todayCost = todayData ? todayData.dailyCost : 0;
+
     kasaBar.innerHTML = '<span class="kasa-limit-pill ' + (isOver ? 'over' : '') + '">🖥 ' + kasaCount + (kasaLimit > 0 ? ' / ' + kasaLimit : '') + ' kasa</span>' +
+      '<span class="kasa-today-pill">' + (todayCount > 0 ? '📊 Bugün: ' + todayCount + ' kasa aktif · ' + todayCost + ' ₺' : '💤 Bugün kullanım yok') + '</span>' +
       (kasaLimit === 0 ? '<span style="font-size:12px;color:var(--text3)">Limit tanımlı değil</span>' : '') +
       (isOver ? '<span style="font-size:12px;color:var(--danger);font-weight:600">⚠ Limit aşılmış!</span>' : '');
     card.appendChild(kasaBar);
