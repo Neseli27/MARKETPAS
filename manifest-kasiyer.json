@@ -1,0 +1,19 @@
+{
+  "name": "MarketPas Kasiyer",
+  "short_name": "MP Kasiyer",
+  "description": "MarketPas Kasiyer Paneli",
+  "start_url": "/kasiyer.html",
+  "id": "/kasiyer",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B1120",
+  "theme_color": "#F97316",
+  "orientation": "any",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icon-kasiyer-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-kasiyer-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-kasiyer-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-kasiyer-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

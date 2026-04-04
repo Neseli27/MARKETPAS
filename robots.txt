@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /musteri.html
+Disallow: /yonetim.html
+Disallow: /kasiyer.html
+Disallow: /superadmin.html
+Disallow: /roi.html
+Disallow: /roi-calculator.html
+
+Sitemap: https://www.marketpas.com/sitemap.xml
