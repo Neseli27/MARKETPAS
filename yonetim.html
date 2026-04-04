@@ -317,105 +317,84 @@
     <div id="section-settings" class="section">
       <div class="section-title">Ayarlar</div>
 
-      <div class="card settings-form">
-        <h3>Market Bilgileri</h3>
-        <div class="form-row"><label>Market Adı</label><input type="text" id="settings-name"></div>
-        <div class="form-row"><label>Logo URL</label><input type="url" id="settings-logo"></div>
-        <div class="form-row"><label>Yeni Kasiyer PIN</label><input type="text" id="settings-pin" placeholder="Boş bırakırsanız değişmez"></div>
-        <div class="form-row"><label>Teşekkür Mesajı</label><input type="text" id="settings-thanks"></div>
-        <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px">Kaydet</button>
-      </div>
-
-      <!-- Kategori Butonları -->
-      <div class="card" style="margin-top:16px">
-        <h3>🏷️ Müşteri Ekranı Kategori Butonları</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müşteri ekranında görünecek 4 reyon kategorisi. Müşteri butona basınca o kategoriye ait banner'lar görünür.</p>
-        <div id="cat-editor">
-          <div class="cat-edit-row"><span class="cat-edit-num">1</span><input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">2</span><input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">3</span><input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın"></div>
-          <div class="cat-edit-row"><span class="cat-edit-num">4</span><input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek"></div>
-        </div>
-        <button class="btn btn-accent" onclick="saveCategories()" style="margin-top:12px">💾 Kategorileri Kaydet</button>
-        <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2)">💡 İkon alanına emoji yapıştırın. Boş bırakılan satırlar müşteri ekranında görünmez.</div>
-      </div>
-
-      <!-- Karşılama Görseli -->
-      <div class="card">
-        <h3>🎉 Karşılama Ekranı Görseli</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
-          Müşteri QR kod okuttuğunda tam ekran karşılama görseli gösterilir. 6 saniye sonra otomatik kapanır.<br>
-          Dikey format, minimum 1080×1920 piksel önerilir.
-        </p>
-        <div class="pwa-icon-area">
-          <div class="pwa-icon-preview" id="welcome-img-preview" style="width:120px;height:200px;border-radius:16px">
-            <img id="welcome-img-thumb" src="" alt="" style="display:none;border-radius:14px">
-            <div class="pwa-icon-empty" id="welcome-img-empty">
-              <div style="font-size:24px">🎉</div>
-              <div style="font-size:10px;color:var(--text3)">Görsel yok</div>
-            </div>
+      <!-- Üst satır: Market Bilgileri + Kategoriler yan yana -->
+      <div class="settings-grid">
+        <div class="card settings-form">
+          <h3>Market Bilgileri</h3>
+          <div class="form-row"><label>Market Adı</label><input type="text" id="settings-name"></div>
+          <div class="form-row"><label>Logo URL</label><input type="url" id="settings-logo"></div>
+          <div class="s-row2">
+            <div class="form-row" style="flex:1"><label>Kasiyer PIN</label><input type="text" id="settings-pin" placeholder="Boş = değişmez"></div>
+            <div class="form-row" style="flex:1"><label>Teşekkür Mesajı</label><input type="text" id="settings-thanks"></div>
           </div>
-          <div class="pwa-icon-controls">
-            <div class="pwa-icon-info" id="welcome-img-info">Henüz karşılama görseli tanımlanmamış. Varsayılan koyu gradient kullanılıyor.</div>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <button class="btn btn-accent btn-sm" onclick="document.getElementById('welcome-img-file').click()">📸 Görsel Yükle</button>
-              <button class="btn btn-sm" onclick="removeWelcomeImage()" id="btn-remove-welcome" style="display:none">🗑 Kaldır</button>
+          <button class="btn btn-primary btn-sm" onclick="saveSettings()" style="margin-top:6px">Kaydet</button>
+        </div>
+
+        <div class="card">
+          <h3>🏷️ Kategori Butonları</h3>
+          <div id="cat-editor">
+            <div class="cat-edit-row"><span class="cat-edit-num">1</span><input type="text" class="cat-edit-icon" id="cat-icon-0" placeholder="🧹" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-0" placeholder="Temizlik"></div>
+            <div class="cat-edit-row"><span class="cat-edit-num">2</span><input type="text" class="cat-edit-icon" id="cat-icon-1" placeholder="🥬" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-1" placeholder="Manav"></div>
+            <div class="cat-edit-row"><span class="cat-edit-num">3</span><input type="text" class="cat-edit-icon" id="cat-icon-2" placeholder="🍞" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-2" placeholder="Fırın"></div>
+            <div class="cat-edit-row"><span class="cat-edit-num">4</span><input type="text" class="cat-edit-icon" id="cat-icon-3" placeholder="🥤" maxlength="2"><input type="text" class="cat-edit-name" id="cat-name-3" placeholder="İçecek"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+            <button class="btn btn-accent btn-sm" onclick="saveCategories()">💾 Kaydet</button>
+            <span style="font-size:10px;color:var(--text3)">İkon alanına emoji yapıştırın</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alt satır: Karşılama Görseli + PWA İkonu yan yana -->
+      <div class="settings-grid" style="margin-top:12px">
+        <div class="card">
+          <h3>🎉 Karşılama Görseli</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px">QR okutunca 6 sn gösterilir. Dikey 1080×1920px.</p>
+          <div class="pwa-icon-area">
+            <div class="pwa-icon-preview" id="welcome-img-preview" style="width:80px;height:140px;border-radius:12px">
+              <img id="welcome-img-thumb" src="" alt="" style="display:none;border-radius:10px">
+              <div class="pwa-icon-empty" id="welcome-img-empty"><div style="font-size:20px">🎉</div></div>
             </div>
-            <input type="file" id="welcome-img-file" accept="image/png,image/jpeg,image/webp" onchange="handleWelcomeImageUpload(this)" style="display:none">
-            <div style="margin-top:10px">
-              <div style="font-size:11px;color:var(--text3)">veya</div>
-              <div style="display:flex;gap:8px;margin-top:4px">
-                <input type="url" id="welcome-img-url" placeholder="Görsel URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
-                <button class="btn btn-sm" onclick="saveWelcomeImageUrl()">Kaydet</button>
+            <div class="pwa-icon-controls">
+              <div class="pwa-icon-info" id="welcome-img-info" style="font-size:11px">Henüz tanımlanmamış.</div>
+              <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                <button class="btn btn-accent btn-sm" onclick="document.getElementById('welcome-img-file').click()">📸 Yükle</button>
+                <button class="btn btn-sm" onclick="removeWelcomeImage()" id="btn-remove-welcome" style="display:none">🗑 Kaldır</button>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PWA İkon Ayarı -->
-      <div class="card">
-        <h3>📱 Uygulama İkonu (PWA)</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
-          Müşteriler uygulamayı telefonlarına eklediğinde bu ikon görünür.<br>
-          Kare format, minimum 192×192 piksel, PNG önerilir.
-        </p>
-
-        <div class="pwa-icon-area">
-          <div class="pwa-icon-preview" id="pwa-icon-preview">
-            <img id="pwa-icon-img" src="" alt="" style="display:none">
-            <div class="pwa-icon-empty" id="pwa-icon-empty">
-              <div style="font-size:24px">📱</div>
-              <div style="font-size:11px;color:var(--text3)">İkon yok</div>
-            </div>
-          </div>
-
-          <div class="pwa-icon-controls">
-            <div class="pwa-icon-info" id="pwa-icon-info">Henüz özel ikon tanımlanmamış. Varsayılan MarketPas ikonu kullanılıyor.</div>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <button class="btn btn-accent btn-sm" onclick="document.getElementById('pwa-icon-file').click()">📸 İkon Yükle</button>
-              <button class="btn btn-sm" onclick="removePwaIcon()" id="btn-remove-icon" style="display:none">🗑 Kaldır</button>
-            </div>
-            <input type="file" id="pwa-icon-file" accept="image/png,image/jpeg,image/webp" onchange="handlePwaIconUpload(this)" style="display:none">
-            <div style="margin-top:10px">
-              <div style="font-size:11px;color:var(--text3)">veya</div>
-              <div style="display:flex;gap:8px;margin-top:4px">
-                <input type="url" id="pwa-icon-url" placeholder="İkon URL yapıştır..." style="flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif">
-                <button class="btn btn-sm" onclick="savePwaIconUrl()">Kaydet</button>
+              <input type="file" id="welcome-img-file" accept="image/png,image/jpeg,image/webp" onchange="handleWelcomeImageUpload(this)" style="display:none">
+              <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+                <input type="url" id="welcome-img-url" placeholder="URL yapıştır..." style="flex:1;padding:6px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="saveWelcomeImageUrl()" style="padding:6px 12px">Kaydet</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Telefon simülasyonu -->
-        <div class="pwa-phone-sim">
-          <div class="pwa-phone-sim-title">Ana ekranda böyle görünecek:</div>
-          <div class="pwa-phone-homescreen">
-            <div class="pwa-app-icon">
-              <div class="pwa-app-icon-img" id="pwa-sim-icon">
-                <div style="font-size:20px">🛒</div>
+        <div class="card">
+          <h3>📱 Uygulama İkonu (PWA)</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Ana ekran ikonu. Kare 192×192px PNG.</p>
+          <div class="pwa-icon-area">
+            <div class="pwa-icon-preview" id="pwa-icon-preview">
+              <img id="pwa-icon-img" src="" alt="" style="display:none">
+              <div class="pwa-icon-empty" id="pwa-icon-empty"><div style="font-size:20px">📱</div></div>
+            </div>
+            <div class="pwa-icon-controls">
+              <div class="pwa-icon-info" id="pwa-icon-info" style="font-size:11px">Varsayılan ikon kullanılıyor.</div>
+              <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                <button class="btn btn-accent btn-sm" onclick="document.getElementById('pwa-icon-file').click()">📸 Yükle</button>
+                <button class="btn btn-sm" onclick="removePwaIcon()" id="btn-remove-icon" style="display:none">🗑 Kaldır</button>
               </div>
-              <div class="pwa-app-icon-name" id="pwa-sim-name">Market</div>
+              <input type="file" id="pwa-icon-file" accept="image/png,image/jpeg,image/webp" onchange="handlePwaIconUpload(this)" style="display:none">
+              <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+                <input type="url" id="pwa-icon-url" placeholder="URL yapıştır..." style="flex:1;padding:6px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:'Outfit',sans-serif">
+                <button class="btn btn-sm" onclick="savePwaIconUrl()" style="padding:6px 12px">Kaydet</button>
+              </div>
+            </div>
+          </div>
+          <div class="pwa-phone-sim" style="margin-top:10px">
+            <div class="pwa-phone-sim-title" style="font-size:11px">Ana ekranda:</div>
+            <div class="pwa-phone-homescreen" style="padding:8px 12px">
+              <div class="pwa-app-icon"><div class="pwa-app-icon-img" id="pwa-sim-icon" style="width:40px;height:40px"><div style="font-size:16px">🛒</div></div><div class="pwa-app-icon-name" id="pwa-sim-name" style="font-size:9px">Market</div></div>
             </div>
           </div>
         </div>
