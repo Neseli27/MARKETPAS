@@ -615,6 +615,8 @@ async function editAnn(id) {
   document.getElementById('form-ann-video').value = d.videoUrl || '';
   document.getElementById('form-ann-order').value = d.order || 1;
   setFormCategory(d.category || 'kampanya');
+  var sel = document.getElementById('form-custom-cat');
+  if (sel && d.customCategory) sel.value = d.customCategory;
   if (d.imageUrl) {
     document.getElementById('upload-preview-img').src = d.imageUrl;
     document.getElementById('upload-preview').style.display = 'block';
@@ -650,8 +652,9 @@ async function saveAnn() {
   }
 
   var videoUrl = document.getElementById('form-ann-video').value.trim();
+  var customCat = document.getElementById('form-custom-cat') ? document.getElementById('form-custom-cat').value : '';
 
-  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl || '', videoUrl: videoUrl || '', order: o, active: true, category: category };
+  var data = { marketId: marketId, title: t, content: c, imageUrl: imageUrl || '', videoUrl: videoUrl || '', order: o, active: true, category: category, customCategory: customCat };
 
   try {
     if (editingAnnId) {
