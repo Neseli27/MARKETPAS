@@ -3,13 +3,13 @@
 // =====================================================
 
 var firebaseConfig = {
-  apiKey: "AIzaSyCqUSoowo2EbKKhG0SBcIzBYddwYOzHKRo",
-  authDomain: "egitim-yonetim-platformu.firebaseapp.com",
-  projectId: "egitim-yonetim-platformu",
-  storageBucket: "egitim-yonetim-platformu.firebasestorage.app",
+  apiKey:            "AIzaSyCqUSoowo2EbKKhG0SBcIzBYddwYOzHKRo",
+  authDomain:        "egitim-yonetim-platformu.firebaseapp.com",
+  projectId:         "egitim-yonetim-platformu",
+  storageBucket:     "egitim-yonetim-platformu.firebasestorage.app",
   messagingSenderId: "548967060709",
-  appId: "1:548967060709:web:d95bbd360347021634700c",
-  measurementId: "G-89D843J9RF"
+  appId:             "1:548967060709:web:d95bbd360347021634700c",
+  measurementId:     "G-89D843J9RF"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
@@ -139,63 +139,22 @@ async function assignNextToRegister(marketId, registerId, kasaNo) {
 
 // ─── Market İstatistikleri ────────────────────────────
 async function getMarketStats(marketId) {
-  var stats = { activeCasas: 0, busyCasas: 0, waitingCount: 0, avgProcessTime: 0, estimatedWait: 0, congestionPercent: 0, congestionLevel: 'sakin', servedToday: 0, avgServiceRate: 0 };
+  var stats = { activeCasas: 0, busyCasas: 0, waitingCount: 0, avgProcessTime: 0, estimatedWait: 0, congestionPercent: 0, congestionLevel: 'sakin' };
   try {
-    // Kasa durumları
     var regSnap = await db.collection('registers').where('marketId', '==', marketId).where('active', '==', true).get();
     stats.activeCasas = regSnap.size;
-    var busyWithActive = 0, busyWithWaiting = 0;
-    regSnap.forEach(function(doc) {
-      var d = doc.data();
-      if (d.activeQueueId) busyWithActive++;
-      if (d.waitingQueueId) busyWithWaiting++;
-    });
-    stats.busyCasas = busyWithActive + busyWithWaiting;
-
-    // Sırada bekleyenler
+    regSnap.forEach(function(doc) { var d = doc.data(); if (d.activeQueueId || d.waitingQueueId) stats.busyCasas++; });
     var qSnap = await db.collection('queue').where('marketId', '==', marketId).where('status', 'in', ['waiting', 'priority', 'priority_ready']).get();
     stats.waitingCount = qSnap.size;
-
-    // Ortalama işlem süresi (gerçek veriden)
     var mDoc = await db.collection('markets').doc(marketId).get();
     stats.avgProcessTime = (mDoc.exists && mDoc.data().avgProcessTime) ? mDoc.data().avgProcessTime : 3 * 60 * 1000;
-
-    // Bugün hizmet verilen müşteri sayısı
-    var today = new Date(); today.setHours(0,0,0,0);
-    try {
-      var doneSnap = await db.collection('queue').where('marketId', '==', marketId).where('status', '==', 'done').where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(today)).get();
-      stats.servedToday = doneSnap.size;
-    } catch(e) {}
-
-    // Saatlik hizmet hızı (kasa başına)
-    if (stats.avgProcessTime > 0) {
-      stats.avgServiceRate = Math.round(3600000 / stats.avgProcessTime); // müşteri/saat/kasa
-    }
-
     if (stats.activeCasas > 0) {
-      // Akıllı bekleme süresi hesabı:
-      // - Şu an aktif kasalardaki işlemler ortalama yarısı kadar sürede bitecek
-      // - Toplam bekleyen = sıradakiler + çağrılmış ama kasaya gitmemiş
-      // - Bekleme = (bekleyen / boş kasa kapasitesi) * ort. işlem süresi
-      var freeCasas = stats.activeCasas - busyWithActive;
-      var effectiveWaiting = stats.waitingCount;
-
-      if (freeCasas >= effectiveWaiting) {
-        // Boş kasa var — hemen işleme alınır
-        stats.estimatedWait = 0;
-      } else {
-        // Aktif kasalardaki müşteriler ortalama yarı sürede bitecek (istatistiksel)
-        var halfProcess = stats.avgProcessTime * 0.5;
-        var firstBatchTime = freeCasas > 0 ? 0 : halfProcess;
-        var remaining = effectiveWaiting - Math.max(0, freeCasas);
-        stats.estimatedWait = firstBatchTime + Math.ceil(remaining / stats.activeCasas) * stats.avgProcessTime;
-      }
-
-      var cap = stats.activeCasas * 4; // Kasa başına 4 müşteri = %100 yoğunluk
-      stats.congestionPercent = Math.min(100, Math.round((stats.waitingCount / cap) * 100));
+      stats.estimatedWait = Math.ceil((stats.waitingCount / stats.activeCasas) * stats.avgProcessTime);
+      var cap = stats.activeCasas * 2;
+      stats.congestionPercent = Math.min(100, Math.round(((stats.busyCasas + stats.waitingCount) / cap) * 100));
     }
-    if (stats.congestionPercent < 25) stats.congestionLevel = 'sakin';
-    else if (stats.congestionPercent < 60) stats.congestionLevel = 'normal';
+    if (stats.congestionPercent < 30) stats.congestionLevel = 'sakin';
+    else if (stats.congestionPercent < 70) stats.congestionLevel = 'normal';
     else stats.congestionLevel = 'yogun';
   } catch(e) {}
   return stats;
@@ -242,49 +201,3 @@ function getEffectiveUnitPrice(market, minPrice, maxPrice) {
 
 // ─── Türkiye Şehirleri ───────────────────────────────
 var TURKEY_CITIES = ["Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya","Ardahan","Artvin","Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkâri","Hatay","Iğdır","Isparta","İstanbul","İzmir","Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kilis","Kırıkkale","Kırklareli","Kırşehir","Kocaeli","Konya","Kütahya","Malatya","Manisa","Mardin","Mersin","Muğla","Muş","Nevşehir","Niğde","Ordu","Osmaniye","Rize","Sakarya","Samsun","Şanlıurfa","Siirt","Sinop","Sivas","Şırnak","Tekirdağ","Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak"];
-
-// ═══ GLOBAL MODAL SİSTEMİ ═══════════════════════════
-// Tüm sayfalarda kullanılır — alert() ve confirm() yerine
-(function(){
-  // Modal container'ı oluştur
-  var css=document.createElement('style');
-  css.textContent='.mp-modal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;animation:mpModalFade .2s ease;font-family:"DM Sans","Outfit",sans-serif}.mp-modal-box{background:#151c2c;border:1px solid #1e293b;border-radius:18px;padding:28px 24px;max-width:340px;width:100%;text-align:center;animation:mpModalPop .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px rgba(0,0,0,.5)}.mp-modal-icon{font-size:36px;margin-bottom:10px}.mp-modal-msg{font-size:15px;font-weight:600;color:#f1f5f9;line-height:1.5;margin-bottom:20px}.mp-modal-btns{display:flex;gap:10px}.mp-modal-btn{flex:1;padding:13px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:inherit}.mp-modal-btn:active{transform:scale(.96)}.mp-modal-btn.cancel{background:#1e293b;color:#94a3b8}.mp-modal-btn.ok{background:#10e5b0;color:#0a0f1a}.mp-modal-btn.danger{background:#ef4444;color:#fff}@keyframes mpModalFade{from{opacity:0}to{opacity:1}}@keyframes mpModalPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}@media(prefers-color-scheme:light){.mp-modal-box{background:#fff;border-color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.15)}.mp-modal-msg{color:#0f172a}.mp-modal-btn.cancel{background:#f0f2f5;color:#64748b}}';
-  document.head.appendChild(css);
-
-  // mpAlert — alert() yerine
-  window.mpAlert=function(msg,icon){
-    return new Promise(function(resolve){
-      var ov=document.createElement('div');ov.className='mp-modal-overlay';
-      ov.innerHTML='<div class="mp-modal-box">'+(icon?'<div class="mp-modal-icon">'+icon+'</div>':'')+
-        '<div class="mp-modal-msg">'+msg+'</div>'+
-        '<div class="mp-modal-btns"><button class="mp-modal-btn ok" id="mp-ok">Tamam</button></div></div>';
-      document.body.appendChild(ov);
-      ov.querySelector('#mp-ok').onclick=function(){ov.remove();resolve()};
-      ov.querySelector('#mp-ok').focus();
-    });
-  };
-
-  // mpConfirm — confirm() yerine
-  window.mpConfirm=function(msg,icon){
-    return new Promise(function(resolve){
-      var ov=document.createElement('div');ov.className='mp-modal-overlay';
-      ov.innerHTML='<div class="mp-modal-box">'+(icon?'<div class="mp-modal-icon">'+icon+'</div>':'')+
-        '<div class="mp-modal-msg">'+msg+'</div>'+
-        '<div class="mp-modal-btns"><button class="mp-modal-btn cancel" id="mp-no">Vazgeç</button><button class="mp-modal-btn danger" id="mp-yes">Evet</button></div></div>';
-      document.body.appendChild(ov);
-      ov.querySelector('#mp-no').onclick=function(){ov.remove();resolve(false)};
-      ov.querySelector('#mp-yes').onclick=function(){ov.remove();resolve(true)};
-      ov.onclick=function(e){if(e.target===ov){ov.remove();resolve(false)}};
-    });
-  };
-
-  // mpSuccess — başarı bildirimi (otomatik kapanır)
-  window.mpSuccess=function(msg,icon){
-    var ov=document.createElement('div');ov.className='mp-modal-overlay';
-    ov.innerHTML='<div class="mp-modal-box">'+(icon?'<div class="mp-modal-icon">'+icon+'</div>':'<div class="mp-modal-icon">✅</div>')+
-      '<div class="mp-modal-msg">'+msg+'</div></div>';
-    document.body.appendChild(ov);
-    ov.onclick=function(){ov.remove()};
-    setTimeout(function(){if(ov.parentNode)ov.remove()},2000);
-  };
-})();
