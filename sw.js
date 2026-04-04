@@ -1,4 +1,4 @@
-var CACHE = 'marketpas-v21.0';
+var CACHE = 'marketpas-v22.0';
 var ASSETS = ['/index.html','/musteri.html','/musteri.css','/musteri.js','/yonetim.html','/yonetim.css','/yonetim.js','/kasiyer.html','/kasiyer.css','/kasiyer.js','/superadmin.html','/superadmin.css','/superadmin.js','/firebase-config.js','/manifest.json','/manifest-yonetim.json','/manifest-kasiyer.json','/manifest-superadmin.json','/icon-192.png','/icon-512.png','/icon-yonetim-192.png','/icon-yonetim-512.png','/icon-kasiyer-192.png','/icon-kasiyer-512.png','/icon-admin-192.png','/icon-admin-512.png','/roi.html','/roi-calculator.html'];
 
 self.addEventListener('install', function(e) {
@@ -15,6 +15,7 @@ self.addEventListener('activate', function(e) {
 
 self.addEventListener('fetch', function(e) {
   if (e.request.method !== 'GET') return;
+  if (!e.request.url.startsWith('http')) return;
   if (e.request.url.indexOf('firestore') > -1 || e.request.url.indexOf('firebase') > -1 || e.request.url.indexOf('googleapis') > -1) return;
   e.respondWith(
     fetch(e.request).then(function(response) {
